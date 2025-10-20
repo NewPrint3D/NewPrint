@@ -386,8 +386,5 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 
 <div align="center">
 
-**⭐ Se este projeto te ajudou, dê uma estrela! ⭐**
-
-**🚀 Pronto para produção! Deploy agora! 🚀**
 
 </div>
