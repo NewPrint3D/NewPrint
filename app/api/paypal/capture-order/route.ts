@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { query } from "@/lib/db"
+import { sql } from "@/lib/db"
 import { cookies } from "next/headers"
 import { verifyToken } from "@/lib/auth"
 
@@ -9,8 +9,8 @@ const PAYPAL_API_BASE =
     : "https://api-m.sandbox.paypal.com"
 
 async function getPayPalAccessToken(): Promise<string> {
-  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
-  const clientSecret = process.env.PAYPAL_CLIENT_SECRET
+  const clientId = process.env.PAYPAL_CLIENT_ID
+  const clientSecret = process.env.PAYPAL_SECRET
 
   if (!clientId || !clientSecret) {
     throw new Error("PayPal credentials not configured")
@@ -77,8 +77,7 @@ export async function POST(request: NextRequest) {
         const decoded = await verifyToken(token)
         userId = decoded.userId
       }
-    } catch (error) {
-      // User not logged in - that's ok for guest checkout
+    } catch {
       console.log("[PAYPAL] Guest checkout")
     }
 
@@ -90,70 +89,41 @@ export async function POST(request: NextRequest) {
 
     // Save order to database
     try {
-      const orderResult = await query(
-        `INSERT INTO orders (
-          user_id,
-          total,
-          status,
-          payment_status,
-          payment_method,
-          paypal_order_id,
-          shipping_address,
-          shipping_city,
-          shipping_state,
-          shipping_zip,
-          shipping_country,
-          customer_email,
-          customer_phone
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-        RETURNING id`,
-        [
-          userId,
-          total.toFixed(2),
-          "pending",
-          "paid",
-          "paypal",
-          orderID,
-          customerData.address,
-          customerData.city,
-          customerData.state,
-          customerData.zipCode,
-          customerData.country,
-          customerData.email,
-          customerData.phone,
-        ],
-      )
+      const orderResult = await sql`
+        INSERT INTO orders (
+          user_id, total, status, payment_status, payment_method,
+          paypal_order_id, shipping_address, shipping_city, shipping_state,
+          shipping_zip, shipping_country, customer_email, customer_phone
+        )
+        VALUES (
+          ${userId}, ${total.toFixed(2)}, 'pending', 'paid', 'paypal',
+          ${orderID}, ${customerData.address}, ${customerData.city},
+          ${customerData.state}, ${customerData.zipCode}, ${customerData.country},
+          ${customerData.email}, ${customerData.phone}
+        )
+        RETURNING id
+      `
 
-      const orderId = orderResult.rows[0].id
+      const orderId = orderResult[0].id
 
       // Insert order items
       for (const item of items) {
-        await query(
-          `INSERT INTO order_items (
-            order_id,
-            product_id,
-            quantity,
-            price,
-            selected_color,
-            selected_size
-          ) VALUES ($1, $2, $3, $4, $5, $6)`,
-          [
-            orderId,
-            item.product.id,
-            item.quantity,
-            item.price.toFixed(2),
-            item.selectedColor || null,
-            item.selectedSize || null,
-          ],
-        )
+        await sql`
+          INSERT INTO order_items (
+            order_id, product_id, quantity, price, selected_color, selected_size
+          )
+          VALUES (
+            ${orderId}, ${item.product.id}, ${item.quantity}, ${item.price.toFixed(2)},
+            ${item.selectedColor || null}, ${item.selectedSize || null}
+          )
+        `
 
         // Update product stock
-        await query(
-          `UPDATE products
-           SET stock = GREATEST(0, stock - $1)
-           WHERE id = $2`,
-          [item.quantity, item.product.id],
-        )
+        await sql`
+          UPDATE products
+          SET stock = GREATEST(0, stock - ${item.quantity})
+          WHERE id = ${item.product.id}
+        `
       }
 
       console.log(`[PAYPAL] Order saved to database: ${orderId}`)
@@ -166,8 +136,6 @@ export async function POST(request: NextRequest) {
       })
     } catch (dbError) {
       console.error("[PAYPAL] Database error:", dbError)
-      // Payment was captured but database save failed
-      // You may want to implement a retry mechanism or manual intervention here
       return NextResponse.json(
         {
           error: "Payment successful but failed to save order",

@@ -3,7 +3,10 @@ import { sql } from "@/lib/db"
 import { requireAuth, requireAdmin } from "@/lib/auth"
 
 // GET - Buscar pedido por ID
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   const authResult = await requireAuth(request)
 
   if ("error" in authResult) {
@@ -37,7 +40,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     const order = orders[0]
 
-    // Verificar se o usuário tem permissão para ver este pedido
     if (authResult.user.role !== "admin" && order.user_id !== authResult.user.userId) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 })
     }
@@ -50,7 +52,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // PUT - Atualizar status do pedido (apenas admin)
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   const authResult = await requireAdmin(request)
 
   if ("error" in authResult) {
