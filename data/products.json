@@ -1,0 +1,212 @@
+[
+  {
+    "id": "toy01",
+    "name": {
+      "pt": "Brinquedo Sensorial Fidget",
+      "en": "Sensory Fidget Toy",
+      "es": "Juguete Sensorial Fidget"
+    },
+    "description": {
+      "pt": "Brinquedo sensorial perfeito para alívio de estresse e ansiedade, com textura agradável",
+      "en": "Perfect sensory toy for stress and anxiety relief, with pleasant texture",
+      "es": "Juguete sensorial perfecto para alivio del estrés y ansiedad, con textura agradable"
+    },
+    "category": "toys",
+    "basePrice": 15.99,
+    "image": "/modern-3d-printed-phone-stand.jpg",
+    "model": "/models/toy01.glb",
+    "colors": ["#8B5CF6", "#06B6D4", "#EF4444", "#10B981", "#F59E0B"],
+    "sizes": ["Standard"],
+    "materials": ["PLA", "PETG"],
+    "featured": true
+  },
+  {
+    "id": "vase02",
+    "name": {
+      "pt": "Vaso Geométrico Moderno",
+      "en": "Modern Geometric Vase",
+      "es": "Jarrón Geométrico Moderno"
+    },
+    "description": {
+      "pt": "Vaso decorativo com design geométrico único, perfeito para plantas ou como peça decorativa",
+      "en": "Decorative vase with unique geometric design, perfect for plants or as a decorative piece",
+      "es": "Jarrón decorativo con diseño geométrico único, perfecto para plantas o como pieza decorativa"
+    },
+    "category": "home",
+    "basePrice": 34.99,
+    "image": "/geometric-3d-printed-vase.jpg",
+    "model": "/models/vase02.glb",
+    "colors": ["#8B5CF6", "#06B6D4", "#EC4899", "#F59E0B", "#64748B"],
+    "sizes": ["Small", "Medium", "Large"],
+    "materials": ["PLA", "PETG"],
+    "featured": true
+  },
+  {
+    "id": "organizer03",
+    "name": {
+      "pt": "Organizador de Mesa Completo",
+      "en": "Complete Desk Organizer",
+      "es": "Organizador de Escritorio Completo"
+    },
+    "description": {
+      "pt": "Organizador multifuncional para mesa com compartimentos para canetas, clips e acessórios",
+      "en": "Multifunctional desk organizer with compartments for pens, clips and accessories",
+      "es": "Organizador multifuncional para escritorio con compartimentos para bolígrafos, clips y accesorios"
+    },
+    "category": "accessories",
+    "basePrice": 24.99,
+    "image": "/3d-printed-cable-organizer.jpg",
+    "model": "/models/organizer03.glb",
+    "colors": ["#8B5CF6", "#06B6D4", "#10B981", "#64748B", "#EF4444"],
+    "sizes": ["Standard"],
+    "materials": ["PLA", "ABS"],
+    "featured": true
+  },
+  {
+    "id": "lamp04",
+    "name": {
+      "pt": "Luminária LED Artística",
+      "en": "Artistic LED Lamp",
+      "es": "Lámpara LED Artística"
+    },
+    "description": {
+      "pt": "Luminária de mesa com design artístico e iluminação LED ajustável em múltiplas cores",
+      "en": "Desk lamp with artistic design and adjustable LED lighting in multiple colors",
+      "es": "Lámpara de escritorio con diseño artístico e iluminación LED ajustable en múltiples colores"
+    },
+    "category": "home",
+    "basePrice": 49.99,
+    "image": "/modern-3d-printed-desk-lamp.jpg",
+    "model": "/models/lamp04.glb",
+    "colors": ["#8B5CF6", "#06B6D4", "#F59E0B", "#EF4444", "#10B981"],
+    "sizes": ["Standard"],
+    "materials": ["PLA", "PETG"],
+    "featured": false
+  },
+  {
+    "id": "pot05",
+    "name": {
+      "pt": "Vaso para Plantas Suculentas",
+      "en": "Succulent Plant Pot",
+      "es": "Maceta para Plantas Suculentas"
+    },
+    "description": {
+      "pt": "Vaso geométrico com sistema de drenagem integrado, ideal para suculentas e cactos",
+      "en": "Geometric pot with integrated drainage system, ideal for succulents and cacti",
+      "es": "Maceta geométrica con sistema de drenaje integrado, ideal para suculentas y cactus"
+    },
+    "category": "home",
+    "basePrice": 19.99,
+    "image": "/geometric-3d-printed-plant-pot.jpg",
+    "model": "/models/pot05.glb",
+    "colors": ["#8B5CF6", "#06B6D4", "#10B981", "#EC4899", "#F59E0B"],
+    "sizes": ["Small", "Medium", "Large"],
+    "materials": ["PLA", "PETG"],
+    "featured": true
+  },
+  {
+    "id": "holder06",
+    "name": {
+      "pt": "Porta-Chaves de Parede Premium",
+      "en": "Premium Wall Key Holder",
+      "es": "Llavero de Pared Premium"
+    },
+    "description": {
+      "pt": "Porta-chaves elegante para parede com ganchos resistentes e design minimalista",
+      "en": "Elegant wall key holder with sturdy hooks and minimalist design",
+      "es": "Elegante llavero de pared con ganchos resistentes y diseño minimalista"
+    },
+    "category": "accessories",
+    "basePrice": 16.99,
+    "image": "/modern-3d-printed-key-holder.jpg",
+    "model": "/models/holder06.glb",
+    "colors": ["#8B5CF6", "#06B6D4", "#10B981", "#64748B", "#EF4444"],
+    "sizes": ["Standard"],
+    "materials": ["PLA", "ABS"],
+    "featured": false
+  },
+  {
+    "id": "stand07",
+    "name": {
+      "pt": "Suporte para Celular Ajustável",
+      "en": "Adjustable Phone Stand",
+      "es": "Soporte para Celular Ajustable"
+    },
+    "description": {
+      "pt": "Suporte ergonômico para celular com ângulo ajustável e base antiderrapante",
+      "en": "Ergonomic phone stand with adjustable angle and non-slip base",
+      "es": "Soporte ergonómico para celular con ángulo ajustable y base antideslizante"
+    },
+    "category": "accessories",
+    "basePrice": 27.99,
+    "image": "/modern-3d-printed-phone-stand.jpg",
+    "model": "/models/stand07.glb",
+    "colors": ["#8B5CF6", "#06B6D4", "#10B981", "#F59E0B", "#64748B"],
+    "sizes": ["Small", "Medium", "Large"],
+    "materials": ["PLA", "ABS", "PETG"],
+    "featured": true
+  },
+  {
+    "id": "box08",
+    "name": {
+      "pt": "Caixa Organizadora Modular",
+      "en": "Modular Storage Box",
+      "es": "Caja Organizadora Modular"
+    },
+    "description": {
+      "pt": "Sistema modular de caixas organizadoras que se encaixam perfeitamente para máxima organização",
+      "en": "Modular storage box system that fits together perfectly for maximum organization",
+      "es": "Sistema modular de cajas organizadoras que encajan perfectamente para máxima organización"
+    },
+    "category": "home",
+    "basePrice": 22.99,
+    "image": "/3d-printed-cable-organizer.jpg",
+    "model": "/models/box08.glb",
+    "colors": ["#8B5CF6", "#06B6D4", "#10B981", "#EC4899", "#64748B"],
+    "sizes": ["Small", "Medium", "Large"],
+    "materials": ["PLA", "ABS"],
+    "featured": false
+  },
+  {
+    "id": "toy09",
+    "name": {
+      "pt": "Cubo Mágico Sensorial",
+      "en": "Sensory Magic Cube",
+      "es": "Cubo Mágico Sensorial"
+    },
+    "description": {
+      "pt": "Cubo sensorial com diferentes texturas e mecanismos para estimulação tátil",
+      "en": "Sensory cube with different textures and mechanisms for tactile stimulation",
+      "es": "Cubo sensorial con diferentes texturas y mecanismos para estimulación táctil"
+    },
+    "category": "toys",
+    "basePrice": 18.99,
+    "image": "/modern-3d-printed-phone-stand.jpg",
+    "model": "/models/toy09.glb",
+    "colors": ["#8B5CF6", "#06B6D4", "#EF4444", "#10B981", "#F59E0B"],
+    "sizes": ["Standard"],
+    "materials": ["PLA", "PETG"],
+    "featured": true
+  },
+  {
+    "id": "toy10",
+    "name": {
+      "pt": "Carrinho de Brinquedo Articulado",
+      "en": "Articulated Toy Car",
+      "es": "Coche de Juguete Articulado"
+    },
+    "description": {
+      "pt": "Carrinho com rodas móveis e peças articuladas, perfeito para crianças",
+      "en": "Car with moving wheels and articulated parts, perfect for children",
+      "es": "Coche con ruedas móviles y piezas articuladas, perfecto para niños"
+    },
+    "category": "toys",
+    "basePrice": 21.99,
+    "image": "/modern-3d-printed-phone-stand.jpg",
+    "model": "/models/toy10.glb",
+    "colors": ["#EF4444", "#10B981", "#F59E0B", "#06B6D4", "#8B5CF6"],
+    "sizes": ["Small", "Medium"],
+    "materials": ["PLA", "ABS"],
+    "featured": false
+  }
+]
