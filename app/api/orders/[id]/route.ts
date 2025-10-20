@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { sql } from "@/lib/db"
 import { requireAuth, requireAdmin } from "@/lib/auth"
-import type { RouteContext } from "next" // ✅ Next.js 15+ tipo de contexto
+import type { RouteContext } from "next"
 
 // GET - Buscar pedido por ID
 export async function GET(

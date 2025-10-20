@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { sql, isDemoMode } from "@/lib/db"
 import { requireAdmin } from "@/lib/auth"
 import productsData from "@/data/products.json"
+import type { RouteContext } from "next"
 
 // GET - Buscar produto por ID
 export async function GET(request: Request, { params }: { params: { id: string } }) {
