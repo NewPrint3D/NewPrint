@@ -2,10 +2,15 @@ import { NextResponse } from "next/server"
 import { sql, isDemoMode } from "@/lib/db"
 import { requireAdmin } from "@/lib/auth"
 import productsData from "@/data/products.json"
-import type { RouteContext } from "next"
+import type { RouteContext } from "next" // ✅ Tipagem nova do Next 15
 
 // GET - Buscar produto por ID
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  request: Request,
+  context: RouteContext<{ id: string }>
+) {
+  const { params } = context
+
   // Modo demonstração: buscar no arquivo JSON
   if (isDemoMode) {
     console.log(`[DEMO MODE] GET /api/products/${params.id} - buscando no arquivo JSON`)
@@ -62,7 +67,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // PUT - Atualizar produto (apenas admin)
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: Request,
+  context: RouteContext<{ id: string }>
+) {
+  const { params } = context
+
   if (isDemoMode) {
     console.log("[DEMO MODE] PUT /api/products - operação não permitida em modo demo")
     return NextResponse.json({
@@ -134,7 +144,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 // DELETE - Deletar produto (apenas admin)
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: Request,
+  context: RouteContext<{ id: string }>
+) {
+  const { params } = context
+
   if (isDemoMode) {
     console.log("[DEMO MODE] DELETE /api/products - operação não permitida em modo demo")
     return NextResponse.json({
