@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server"
 import { sql } from "@/lib/db"
 import { requireAuth, requireAdmin } from "@/lib/auth"
+import type { RouteContext } from "next" // ✅ Next.js 15+ tipo de contexto
 
 // GET - Buscar pedido por ID
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
+  const { params } = context
   const authResult = await requireAuth(request)
 
   if ("error" in authResult) {
@@ -54,8 +56,9 @@ export async function GET(
 // PUT - Atualizar status do pedido (apenas admin)
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
+  const { params } = context
   const authResult = await requireAdmin(request)
 
   if ("error" in authResult) {
