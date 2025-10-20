@@ -384,39 +384,6 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 
 ---
 
-## 👨‍💻 Autor
-
-**NewPrint3D Team**
-
-- Website: https://newprint3d.com
-- Email: admin@newprint3d.com
-
----
-
-## 🙏 Agradecimentos
-
-- [Next.js](https://nextjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Radix UI](https://www.radix-ui.com/)
-- [Stripe](https://stripe.com/)
-- [Neon](https://neon.tech/)
-- [Render](https://render.com/)
-
----
-
-## 📞 Suporte
-
-**Problemas?**
-- Abra uma issue no GitHub
-- Leia a documentação
-- Verifique logs do Render
-
-**Dúvidas?**
-- Consulte [DEPLOY-FINAL-CHECKLIST.md](DEPLOY-FINAL-CHECKLIST.md)
-- Veja [troubleshooting section](DEPLOY-FINAL-CHECKLIST.md#-troubleshooting)
-
----
-
 <div align="center">
 
 **⭐ Se este projeto te ajudou, dê uma estrela! ⭐**
