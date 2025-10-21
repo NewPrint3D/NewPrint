@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { headers } from "next/headers"
 import { stripe } from "@/lib/stripe"
-import { sql } from "@/lib/db"
+import { sql, isDemoMode } from "@/lib/db"
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -30,6 +30,28 @@ export async function POST(request: Request) {
 
     // Processar evento
     switch (event.type) {
+      // ========================================
+      // CHECKOUT SESSIONS
+      // ========================================
+      case "checkout.session.completed":
+        await fulfillCheckout(event.data.object.id)
+        break
+
+      case "checkout.session.async_payment_succeeded":
+        await fulfillCheckout(event.data.object.id)
+        break
+
+      case "checkout.session.async_payment_failed":
+        await handleFailedCheckout(event.data.object.id)
+        break
+
+      case "checkout.session.expired":
+        console.log(`[STRIPE WEBHOOK] Checkout session expirada: ${event.data.object.id}`)
+        break
+
+      // ========================================
+      // PAYMENT INTENTS
+      // ========================================
       case "payment_intent.succeeded":
         const paymentIntent = event.data.object
 
@@ -91,16 +113,55 @@ export async function POST(request: Request) {
         }
         break
 
+      // ========================================
+      // DISPUTAS E REEMBOLSOS
+      // ========================================
       case "charge.dispute.created":
         const dispute = event.data.object
         console.log(`[STRIPE WEBHOOK] Disputa criada: ${dispute.id}`)
-        // TODO: Notificar admin sobre disputa
+        if (!isDemoMode) {
+          await sql!`
+            UPDATE orders
+            SET status = 'disputed', updated_at = CURRENT_TIMESTAMP
+            WHERE stripe_payment_intent_id = ${dispute.payment_intent}
+          `
+        }
+        break
+
+      case "charge.dispute.funds_reinstated":
+        const reinstated = event.data.object
+        console.log(`[STRIPE WEBHOOK] Fundos reintegrados: ${reinstated.id}`)
+        if (!isDemoMode) {
+          await sql!`
+            UPDATE orders
+            SET status = 'processing', updated_at = CURRENT_TIMESTAMP
+            WHERE stripe_payment_intent_id = ${reinstated.payment_intent}
+          `
+        }
         break
 
       case "charge.refunded":
         const refund = event.data.object
         console.log(`[STRIPE WEBHOOK] Reembolso processado: ${refund.id}`)
-        // TODO: Atualizar status do pedido para refunded
+        if (!isDemoMode) {
+          await sql!`
+            UPDATE orders
+            SET payment_status = 'refunded', status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+            WHERE stripe_payment_intent_id = ${refund.payment_intent}
+          `
+        }
+        break
+
+      case "refund.created":
+        console.log(`[STRIPE WEBHOOK] Reembolso criado: ${event.data.object.id}`)
+        break
+
+      case "refund.updated":
+        console.log(`[STRIPE WEBHOOK] Reembolso atualizado: ${event.data.object.id}`)
+        break
+
+      case "refund.failed":
+        console.log(`[STRIPE WEBHOOK] Reembolso falhou: ${event.data.object.id}`)
         break
 
       default:
@@ -116,5 +177,185 @@ export async function POST(request: Request) {
 
     console.error("[STRIPE WEBHOOK] Erro ao processar webhook:", error)
     return NextResponse.json({ error: "Erro ao processar webhook" }, { status: 400 })
+  }
+}
+
+// ========================================
+// FUNÇÕES DE EXECUÇÃO
+// ========================================
+
+/**
+ * Executa um pedido após checkout bem-sucedido
+ * Idempotente - pode ser chamada múltiplas vezes com segurança
+ */
+async function fulfillCheckout(sessionId: string) {
+  console.log('[STRIPE] Fulfilling checkout session:', sessionId)
+
+  if (isDemoMode || !stripe) {
+    console.log('[STRIPE] Demo mode - skipping fulfillment')
+    return
+  }
+
+  try {
+    // Recuperar a sessão com line_items expandidos
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['line_items', 'payment_intent']
+    })
+
+    // Verificar se o pagamento foi concluído
+    if (session.payment_status !== 'paid') {
+      console.log(`[STRIPE] Payment not completed yet: ${session.payment_status}`)
+      return
+    }
+
+    // Buscar pedido existente ou criar novo
+    const existingOrders = await sql!`
+      SELECT id, payment_status
+      FROM orders
+      WHERE stripe_payment_intent_id = ${session.payment_intent}
+      LIMIT 1
+    `
+
+    if (existingOrders.length > 0) {
+      const order = existingOrders[0]
+
+      // Verificar se já foi executado (idempotência)
+      if (order.payment_status === 'paid') {
+        console.log(`[STRIPE] Order already fulfilled: ${order.id}`)
+        return
+      }
+
+      // Atualizar pedido existente
+      await sql!`
+        UPDATE orders
+        SET payment_status = 'paid', status = 'processing', updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${order.id}
+      `
+
+      console.log(`[STRIPE] Order ${order.id} fulfilled successfully`)
+    } else {
+      // Criar novo pedido a partir da sessão do Checkout
+      const lineItems = session.line_items?.data || []
+      const shipping = session.shipping_cost?.amount_total || 0
+      const subtotal = session.amount_subtotal || 0
+      const total = session.amount_total || 0
+      const tax = total - subtotal - shipping
+
+      // Extrair informações de envio
+      const sessionData = session as any
+      const shippingName = sessionData.shipping?.name || sessionData.customer_details?.name || ''
+      const nameParts = shippingName.split(' ')
+      const firstName = nameParts[0] || ''
+      const lastName = nameParts.slice(1).join(' ') || ''
+
+      const newOrder = await sql!`
+        INSERT INTO orders (
+          user_id,
+          order_number,
+          subtotal,
+          shipping,
+          tax,
+          total,
+          status,
+          payment_status,
+          payment_method,
+          stripe_payment_intent_id,
+          shipping_first_name,
+          shipping_last_name,
+          shipping_email,
+          shipping_phone,
+          shipping_address,
+          shipping_city,
+          shipping_state,
+          shipping_zip_code,
+          shipping_country
+        ) VALUES (
+          ${session.metadata?.user_id || null},
+          ${`CS-${sessionId.slice(-10)}`},
+          ${subtotal / 100},
+          ${shipping / 100},
+          ${tax / 100},
+          ${total / 100},
+          'processing',
+          'paid',
+          'stripe',
+          ${session.payment_intent},
+          ${firstName},
+          ${lastName},
+          ${sessionData.customer_email || sessionData.customer_details?.email || ''},
+          ${sessionData.shipping?.phone || sessionData.customer_details?.phone || ''},
+          ${sessionData.shipping?.address?.line1 || ''},
+          ${sessionData.shipping?.address?.city || ''},
+          ${sessionData.shipping?.address?.state || ''},
+          ${sessionData.shipping?.address?.postal_code || ''},
+          ${sessionData.shipping?.address?.country || ''}
+        )
+        RETURNING id
+      `
+
+      const orderId = newOrder[0].id
+
+      // Criar itens do pedido
+      for (const item of lineItems) {
+        const priceData = item.price as any
+        const productData = priceData?.product as any
+
+        await sql!`
+          INSERT INTO order_items (
+            order_id,
+            product_id,
+            product_name,
+            quantity,
+            unit_price,
+            selected_color,
+            selected_size,
+            selected_material,
+            subtotal
+          ) VALUES (
+            ${orderId},
+            ${productData?.metadata?.product_id || null},
+            ${item.description || ''},
+            ${item.quantity || 1},
+            ${(priceData?.unit_amount || 0) / 100},
+            ${productData?.metadata?.color || null},
+            ${productData?.metadata?.size || null},
+            ${productData?.metadata?.material || null},
+            ${(item.amount_total || 0) / 100}
+          )
+        `
+      }
+
+      console.log(`[STRIPE] New order ${orderId} created and fulfilled`)
+    }
+  } catch (error) {
+    console.error('[STRIPE] Error fulfilling checkout:', error)
+    // Não lançar erro - deixar Stripe tentar novamente
+  }
+}
+
+/**
+ * Trata checkouts com pagamento falhado
+ */
+async function handleFailedCheckout(sessionId: string) {
+  console.log('[STRIPE] Handling failed checkout:', sessionId)
+
+  if (isDemoMode || !stripe) {
+    return
+  }
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId)
+
+    if (session.payment_intent) {
+      await sql!`
+        UPDATE orders
+        SET payment_status = 'failed', updated_at = CURRENT_TIMESTAMP
+        WHERE stripe_payment_intent_id = ${session.payment_intent}
+      `
+    }
+
+    console.log('[STRIPE] Failed checkout handled')
+  } catch (error) {
+    console.error('[STRIPE] Error handling failed checkout:', error)
   }
 }
