@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   }
 
   // Buscar dados atualizados do usuário
-  const users = await sql`
+  const users = await sql!`
     SELECT id, email, first_name, last_name, role
     FROM users
     WHERE id = ${authResult.user.userId}

@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server"
 import { sql } from "@/lib/db"
 import { requireAuth, requireAdmin } from "@/lib/auth"
-import type { RouteContext } from "next"
 
 // GET - Buscar pedido por ID
 export async function GET(
   request: Request,
-  context: RouteContext<{ id: string }>
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { params } = context
+  const resolvedParams = await params
   const authResult = await requireAuth(request)
 
   if ("error" in authResult) {
@@ -16,7 +15,7 @@ export async function GET(
   }
 
   try {
-    const orders = await sql`
+    const orders = await sql!`
       SELECT o.*,
         json_agg(
           json_build_object(
@@ -32,7 +31,7 @@ export async function GET(
         ) as items
       FROM orders o
       LEFT JOIN order_items oi ON o.id = oi.order_id
-      WHERE o.id = ${params.id}
+      WHERE o.id = ${resolvedParams.id}
       GROUP BY o.id
     `
 
@@ -56,9 +55,9 @@ export async function GET(
 // PUT - Atualizar status do pedido (apenas admin)
 export async function PUT(
   request: Request,
-  context: RouteContext<{ id: string }>
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { params } = context
+  const resolvedParams = await params
   const authResult = await requireAdmin(request)
 
   if ("error" in authResult) {
@@ -73,10 +72,10 @@ export async function PUT(
       return NextResponse.json({ error: "Status inválido" }, { status: 400 })
     }
 
-    const updatedOrders = await sql`
+    const updatedOrders = await sql!`
       UPDATE orders
       SET status = ${status}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${params.id}
+      WHERE id = ${resolvedParams.id}
       RETURNING *
     `
 

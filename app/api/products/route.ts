@@ -57,21 +57,37 @@ export async function GET(request: Request) {
     const category = searchParams.get("category")
     const featured = searchParams.get("featured")
 
-    let query = `SELECT * FROM products WHERE active = true`
-    const params: any[] = []
+    let products
 
-    if (category) {
-      query += ` AND category = $${params.length + 1}`
-      params.push(category)
+    if (category && featured === "true") {
+      products = await sql!`
+        SELECT * FROM products
+        WHERE active = true
+        AND category = ${category}
+        AND featured = true
+        ORDER BY created_at DESC
+      `
+    } else if (category) {
+      products = await sql!`
+        SELECT * FROM products
+        WHERE active = true
+        AND category = ${category}
+        ORDER BY created_at DESC
+      `
+    } else if (featured === "true") {
+      products = await sql!`
+        SELECT * FROM products
+        WHERE active = true
+        AND featured = true
+        ORDER BY created_at DESC
+      `
+    } else {
+      products = await sql!`
+        SELECT * FROM products
+        WHERE active = true
+        ORDER BY created_at DESC
+      `
     }
-
-    if (featured === "true") {
-      query += ` AND featured = true`
-    }
-
-    query += ` ORDER BY created_at DESC`
-
-    const products = await sql!(query, params)
 
     return NextResponse.json({ products })
   } catch (error) {

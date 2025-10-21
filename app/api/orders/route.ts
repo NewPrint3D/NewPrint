@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 
     if (authResult.user.role === "admin") {
       // Admin vê todos os pedidos
-      orders = await sql`
+      orders = await sql!`
         SELECT o.*,
           json_agg(
             json_build_object(
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
       `
     } else {
       // Usuário vê apenas seus pedidos
-      orders = await sql`
+      orders = await sql!`
         SELECT o.*,
           json_agg(
             json_build_object(

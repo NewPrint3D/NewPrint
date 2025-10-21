@@ -75,7 +75,9 @@ export async function POST(request: NextRequest) {
       const token = cookieStore.get("auth_token")?.value
       if (token) {
         const decoded = await verifyToken(token)
-        userId = decoded.userId
+        if (decoded) {
+          userId = decoded.userId
+        }
       }
     } catch {
       console.log("[PAYPAL] Guest checkout")
@@ -89,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     // Save order to database
     try {
-      const orderResult = await sql`
+      const orderResult = await sql!`
         INSERT INTO orders (
           user_id, total, status, payment_status, payment_method,
           paypal_order_id, shipping_address, shipping_city, shipping_state,
@@ -108,7 +110,7 @@ export async function POST(request: NextRequest) {
 
       // Insert order items
       for (const item of items) {
-        await sql`
+        await sql!`
           INSERT INTO order_items (
             order_id, product_id, quantity, price, selected_color, selected_size
           )
@@ -119,7 +121,7 @@ export async function POST(request: NextRequest) {
         `
 
         // Update product stock
-        await sql`
+        await sql!`
           UPDATE products
           SET stock = GREATEST(0, stock - ${item.quantity})
           WHERE id = ${item.product.id}

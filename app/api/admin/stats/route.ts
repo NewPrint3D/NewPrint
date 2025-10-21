@@ -45,9 +45,9 @@ export async function GET(request: Request) {
     const totalRevenue = Number(revenueResult[0]?.revenue || 0)
 
     // Buscar pedidos pendentes
-    const pendingResult = await sql`
-      SELECT COUNT(*) as count 
-      FROM orders 
+    const pendingResult = await sql!`
+      SELECT COUNT(*) as count
+      FROM orders
       WHERE status = 'pending'
     `
     const pendingOrders = Number(pendingResult[0]?.count || 0)

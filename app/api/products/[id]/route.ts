@@ -2,19 +2,18 @@ import { NextResponse } from "next/server"
 import { sql, isDemoMode } from "@/lib/db"
 import { requireAdmin } from "@/lib/auth"
 import productsData from "@/data/products.json"
-import type { RouteContext } from "next" // ✅ Tipagem nova do Next 15
 
 // GET - Buscar produto por ID
 export async function GET(
   request: Request,
-  context: RouteContext<{ id: string }>
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { params } = context
+  const resolvedParams = await params
 
   // Modo demonstração: buscar no arquivo JSON
   if (isDemoMode) {
-    console.log(`[DEMO MODE] GET /api/products/${params.id} - buscando no arquivo JSON`)
-    const product = productsData.find(p => p.id === params.id)
+    console.log(`[DEMO MODE] GET /api/products/${resolvedParams.id} - buscando no arquivo JSON`)
+    const product = productsData.find(p => p.id === resolvedParams.id)
 
     if (!product) {
       return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 })
@@ -24,23 +23,23 @@ export async function GET(
       id: product.id,
       name: product.name,
       description: product.description,
-      name_en: product.name?.en ?? product.name_en,
-      name_pt: product.name?.pt ?? product.name_pt,
-      name_es: product.name?.es ?? product.name_es,
-      description_en: product.description?.en ?? product.description_en,
-      description_pt: product.description?.pt ?? product.description_pt,
-      description_es: product.description?.es ?? product.description_es,
+      name_en: product.name?.en ?? '',
+      name_pt: product.name?.pt ?? '',
+      name_es: product.name?.es ?? '',
+      description_en: product.description?.en ?? '',
+      description_pt: product.description?.pt ?? '',
+      description_es: product.description?.es ?? '',
       category: product.category,
-      base_price: product.base_price ?? product.basePrice ?? 0,
-      basePrice: product.base_price ?? product.basePrice ?? 0,
-      image_url: product.image_url ?? product.image ?? null,
-      image: product.image ?? product.image_url ?? null,
+      base_price: product.basePrice ?? 0,
+      basePrice: product.basePrice ?? 0,
+      image_url: product.image ?? null,
+      image: product.image ?? null,
       colors: product.colors ?? [],
       sizes: product.sizes ?? [],
       materials: product.materials ?? [],
       featured: Boolean(product.featured),
       active: true,
-      stock_quantity: product.stock_quantity ?? 0,
+      stock_quantity: 0,
     }
 
     return NextResponse.json({
@@ -52,7 +51,7 @@ export async function GET(
 
   try {
     const products = await sql!`
-      SELECT * FROM products WHERE id = ${params.id} AND active = true
+      SELECT * FROM products WHERE id = ${resolvedParams.id} AND active = true
     `
 
     if (products.length === 0) {
@@ -69,9 +68,9 @@ export async function GET(
 // PUT - Atualizar produto (apenas admin)
 export async function PUT(
   request: Request,
-  context: RouteContext<{ id: string }>
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { params } = context
+  const resolvedParams = await params
 
   if (isDemoMode) {
     console.log("[DEMO MODE] PUT /api/products - operação não permitida em modo demo")
@@ -128,7 +127,7 @@ export async function PUT(
         stock_quantity = ${stock_quantity},
         active = ${active !== undefined ? active : true},
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${params.id}
+      WHERE id = ${resolvedParams.id}
       RETURNING *
     `
 
@@ -146,9 +145,9 @@ export async function PUT(
 // DELETE - Deletar produto (apenas admin)
 export async function DELETE(
   request: Request,
-  context: RouteContext<{ id: string }>
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { params } = context
+  const resolvedParams = await params
 
   if (isDemoMode) {
     console.log("[DEMO MODE] DELETE /api/products - operação não permitida em modo demo")
@@ -169,7 +168,7 @@ export async function DELETE(
     const deletedProducts = await sql!`
       UPDATE products
       SET active = false, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${params.id}
+      WHERE id = ${resolvedParams.id}
       RETURNING id
     `
 

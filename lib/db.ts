@@ -16,12 +16,6 @@ export function logDemoMode(operation: string) {
   }
 }
 
-// (Opcional) Helper para quem ainda quer usar query(sql, params)
-export async function query(queryString: string, params?: any[]) {
-  if (!sql) throw new Error("Database not configured")
-  return await sql(queryString, params)
-}
-
 // Tipos do banco de dados
 export interface User {
   id: number

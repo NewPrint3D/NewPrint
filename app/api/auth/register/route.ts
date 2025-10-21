@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     const passwordHash = await hashPassword(password)
 
     // Criar usuário
-    const newUsers = await sql`
+    const newUsers = await sql!`
       INSERT INTO users (email, password_hash, first_name, last_name, phone, role)
       VALUES (${email}, ${passwordHash}, ${firstName}, ${lastName}, ${phone || null}, 'customer')
       RETURNING id, email, first_name, last_name, role
