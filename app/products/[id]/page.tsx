@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { getProductById, products } from "@/lib/products"
+import { getProductById, getProductsByCategory } from "@/lib/db-products"
 import { notFound } from "next/navigation"
 import { ProductDetailClient } from "./product-detail-client"
 
@@ -9,7 +9,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params
-  const product = getProductById(resolvedParams.id)
+  const product = await getProductById(resolvedParams.id)
 
   if (!product) {
     return {
@@ -44,13 +44,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductDetailPage({ params }: Props) {
   const resolvedParams = await params
-  const product = getProductById(resolvedParams.id)
+  const product = await getProductById(resolvedParams.id)
 
   if (!product) {
     notFound()
   }
 
-  const relatedProducts = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 3)
+  const allRelatedProducts = await getProductsByCategory(product.category)
+  const relatedProducts = allRelatedProducts.filter((p) => p.id !== product.id).slice(0, 3)
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://newprint3d.com"
 

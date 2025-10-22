@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, Eye } from "lucide-react"
 import Link from "next/link"
-import type { Product } from "@/lib/products"
+import type { Product } from "@/lib/db-products"
 
 interface ProductCardProps {
   product: Product

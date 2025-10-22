@@ -5,12 +5,14 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { ProductCard } from "@/components/product-card"
 import { ProductFilterControls, type FilterState } from "@/components/product-filter-controls"
 import { useLanguage } from "@/contexts/language-context"
-import { products } from "@/lib/products"
+import type { Product } from "@/lib/db-products"
 
 export function ProductsContent() {
   const { t } = useLanguage()
   const searchParams = useSearchParams()
   const router = useRouter()
+  const [products, setProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   const [filterState, setFilterState] = useState<FilterState>({
     category: searchParams.get("category") || "all",
@@ -21,6 +23,23 @@ export function ProductsContent() {
     colors: searchParams.get("colors")?.split(",").filter(Boolean) || [],
     materials: searchParams.get("materials")?.split(",").filter(Boolean) || [],
   })
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const res = await fetch("/api/products-public")
+        if (res.ok) {
+          const data = await res.json()
+          setProducts(data.products)
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchProducts()
+  }, [])
 
   useEffect(() => {
     const params = new URLSearchParams()
@@ -51,6 +70,14 @@ export function ProductsContent() {
     }
     return true
   })
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+      </div>
+    )
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

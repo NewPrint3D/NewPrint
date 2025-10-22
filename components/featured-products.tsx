@@ -1,15 +1,34 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { useLanguage } from "@/contexts/language-context"
 import { ProductCard } from "@/components/product-card"
-import { getFeaturedProducts } from "@/lib/products"
+import type { Product } from "@/lib/db-products"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 
 export function FeaturedProducts() {
   const { t } = useLanguage()
-  const featuredProducts = getFeaturedProducts()
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchFeaturedProducts() {
+      try {
+        const res = await fetch("/api/products-featured")
+        if (res.ok) {
+          const data = await res.json()
+          setFeaturedProducts(data.products)
+        }
+      } catch (error) {
+        console.error("Error fetching featured products:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchFeaturedProducts()
+  }, [])
 
   return (
     <section className="py-24 relative overflow-hidden">
@@ -38,17 +57,23 @@ export function FeaturedProducts() {
           <div className="w-20 h-1 bg-gradient-to-r from-primary via-accent to-chart-3 mx-auto rounded-full animate-[gradient_3s_linear_infinite] bg-[length:200%_auto]" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {featuredProducts.slice(0, 3).map((product, index) => (
-            <div
-              key={product.id}
-              className="animate-in fade-in slide-in-from-bottom-8 duration-700"
-              style={{ animationDelay: `${index * 150}ms` }}
-            >
-              <ProductCard product={product} />
-            </div>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {featuredProducts.slice(0, 3).map((product, index) => (
+              <div
+                key={product.id}
+                className="animate-in fade-in slide-in-from-bottom-8 duration-700"
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="text-center">
           <Button asChild size="lg" variant="outline" className="group bg-transparent hover:scale-105 transition-all duration-300 relative overflow-hidden">
