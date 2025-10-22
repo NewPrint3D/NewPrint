@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ImageUpload } from "@/components/image-upload"
 import { Loader2, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
@@ -212,16 +213,12 @@ export default function NewProductPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="image_url">Image URL</Label>
-                  <Input
-                    id="image_url"
-                    type="url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
+                <ImageUpload
+                  label="Product Image"
+                  value={formData.image_url}
+                  onChange={(imageData) => setFormData({ ...formData, image_url: imageData })}
+                  disabled={isLoading}
+                />
 
                 <div className="space-y-2">
                   <Label htmlFor="colors">Colors (comma separated hex codes)</Label>
