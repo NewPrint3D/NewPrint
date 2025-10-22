@@ -9,8 +9,9 @@ const PAYPAL_API_BASE =
     : "https://api-m.sandbox.paypal.com"
 
 async function getPayPalAccessToken(): Promise<string> {
-  const clientId = process.env.PAYPAL_CLIENT_ID
-  const clientSecret = process.env.PAYPAL_SECRET
+  // Usar NEXT_PUBLIC em server-side também funciona, mas prefira sem prefixo
+  const clientId = process.env.PAYPAL_CLIENT_ID || process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
+  const clientSecret = process.env.PAYPAL_CLIENT_SECRET
 
   if (!clientId || !clientSecret) {
     throw new Error("PayPal credentials not configured")
