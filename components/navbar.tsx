@@ -123,6 +123,9 @@ export function Navbar() {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
+                    <Link href="/profile">{t.auth.profile}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link href="/orders">{t.auth.myOrders}</Link>
                   </DropdownMenuItem>
                   {isAdmin && (
