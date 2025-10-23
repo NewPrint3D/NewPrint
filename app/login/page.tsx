@@ -36,7 +36,7 @@ export default function LoginPage() {
     if (result.success) {
       router.push("/")
     } else {
-      setError(result.error || "Login failed")
+      setError(result.error || t.auth.loginFailed)
     }
 
     setIsLoading(false)
@@ -65,7 +65,7 @@ export default function LoginPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="seu@email.com"
+                    placeholder={t.placeholders.email}
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required

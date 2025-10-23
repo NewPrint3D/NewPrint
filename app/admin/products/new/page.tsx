@@ -74,10 +74,10 @@ export default function NewProductPage() {
         router.push("/admin/products")
       } else {
         const data = await res.json()
-        setError(data.error || "Failed to create product")
+        setError(data.error || t.admin.failedToCreate)
       }
     } catch (error) {
-      setError("Network error")
+      setError(t.admin.networkError)
     } finally {
       setIsLoading(false)
     }

@@ -10,9 +10,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Upload, Send, Wrench, Lightbulb, Package, X, FileImage } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useLanguage } from "@/contexts/language-context"
 
 export function CustomProjectsSection() {
   const { toast } = useToast()
+  const { t } = useLanguage()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -26,8 +28,8 @@ export function CustomProjectsSection() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     toast({
-      title: "Mensagem enviada!",
-      description: "Entraremos em contato em breve.",
+      title: t.customProjects.messageSent,
+      description: t.customProjects.messageDesc,
     })
     setFormData({ name: "", email: "", phone: "", message: "", file: null })
     setPreview(null)
@@ -83,18 +85,18 @@ export function CustomProjectsSection() {
   const features = [
     {
       icon: Lightbulb,
-      title: "Projetos Personalizados",
-      description: "Transformamos sua ideia em realidade",
+      title: t.customProjects.customProjects,
+      description: t.customProjects.customProjectsDesc,
     },
     {
       icon: Wrench,
-      title: "Peças de Reposição",
-      description: "Aquela pecinha de plástico que quebrou? Fabricamos para você!",
+      title: t.customProjects.replacementParts,
+      description: t.customProjects.replacementPartsDesc,
     },
     {
       icon: Package,
-      title: "Protótipos",
-      description: "Do conceito ao produto final",
+      title: t.customProjects.prototypes,
+      description: t.customProjects.prototypesDesc,
     },
   ]
 
@@ -104,10 +106,9 @@ export function CustomProjectsSection() {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Projetos Personalizados</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">{t.customProjects.title}</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Seu carro ou bem quebrou aquela pecinha de plástico e está difícil de encontrar? Envie uma foto com
-            referências e fabricamos ela para você!
+            {t.customProjects.subtitle}
           </p>
           <div className="w-20 h-1 bg-gradient-to-r from-primary via-accent to-chart-3 mx-auto rounded-full animate-[gradient_3s_linear_infinite] bg-[length:200%_auto] mt-4" />
         </div>
@@ -136,12 +137,12 @@ export function CustomProjectsSection() {
 
         <Card className="max-w-2xl mx-auto border-border/50 bg-card/50 backdrop-blur-sm shadow-2xl">
           <CardHeader>
-            <CardTitle className="text-2xl text-center">Solicite seu Projeto</CardTitle>
+            <CardTitle className="text-2xl text-center">{t.customProjects.requestProject}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">Nome</Label>
+                <Label htmlFor="name">{t.customProjects.name}</Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -153,7 +154,7 @@ export function CustomProjectsSection() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t.customProjects.email}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -165,7 +166,7 @@ export function CustomProjectsSection() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Telefone</Label>
+                  <Label htmlFor="phone">{t.customProjects.phone}</Label>
                   <Input
                     id="phone"
                     type="tel"
@@ -177,20 +178,20 @@ export function CustomProjectsSection() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="message">Detalhes do Projeto</Label>
+                <Label htmlFor="message">{t.customProjects.projectDetails}</Label>
                 <Textarea
                   id="message"
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   required
                   rows={5}
-                  placeholder="Descreva seu projeto ou a peça que precisa..."
+                  placeholder={t.customProjects.projectPlaceholder}
                   className="bg-background/50"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Enviar Foto ou Arquivo</Label>
+                <Label>{t.customProjects.uploadFile}</Label>
 
                 {!formData.file ? (
                   <div
@@ -215,10 +216,10 @@ export function CustomProjectsSection() {
                         <Upload className="w-8 h-8 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium mb-1">Arraste e solte seu arquivo aqui</p>
-                        <p className="text-xs text-muted-foreground">ou clique para selecionar</p>
+                        <p className="text-sm font-medium mb-1">{t.customProjects.dragDropFile}</p>
+                        <p className="text-xs text-muted-foreground">{t.customProjects.clickToSelect}</p>
                       </div>
-                      <p className="text-xs text-muted-foreground">Aceita imagens, arquivos STL ou OBJ</p>
+                      <p className="text-xs text-muted-foreground">{t.customProjects.acceptedFiles}</p>
                     </div>
                   </div>
                 ) : (
@@ -249,7 +250,7 @@ export function CustomProjectsSection() {
 
               <Button type="submit" size="lg" className="w-full group">
                 <span className="flex items-center gap-2">
-                  Enviar Solicitação
+                  {t.customProjects.sendRequest}
                   <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Button>

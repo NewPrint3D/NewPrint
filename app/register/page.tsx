@@ -35,12 +35,12 @@ export default function RegisterPage() {
     setError("")
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
+      setError(t.auth.passwordsMismatch)
       return
     }
 
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters")
+    if (formData.password.length < 12) {
+      setError(t.auth.passwordTooShort)
       return
     }
 
@@ -57,7 +57,7 @@ export default function RegisterPage() {
     if (result.success) {
       router.push("/")
     } else {
-      setError(result.error || "Registration failed")
+      setError(result.error || t.auth.registrationFailed)
     }
 
     setIsLoading(false)
@@ -110,7 +110,7 @@ export default function RegisterPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="seu@email.com"
+                    placeholder={t.placeholders.email}
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required

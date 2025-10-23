@@ -55,7 +55,7 @@ export default function OrdersPage() {
                 <Card key={order.id} className="overflow-hidden">
                   <CardHeader className="bg-muted/50">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">Order #{order.id}</CardTitle>
+                      <CardTitle className="text-lg">{t.admin?.orderNumber || "Order"} #{order.id}</CardTitle>
                       <Badge variant="default">{order.status}</Badge>
                     </div>
                     <div className="flex items-center gap-6 text-sm text-muted-foreground mt-2">

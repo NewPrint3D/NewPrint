@@ -3,37 +3,40 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Home, Gamepad2, Brain, Leaf } from "lucide-react"
 import Link from "next/link"
+import { useLanguage } from "@/contexts/language-context"
 
 export function ProductCategories() {
+  const { t } = useLanguage()
+
   const categories = [
     {
       icon: Home,
-      title: "Decoração para o Lar",
-      description: "Vasos, luminárias, porta-objetos e muito mais",
+      title: t.categories.homeDecor,
+      description: t.categories.homeDecorDesc,
       color: "from-primary to-primary/50",
       gradient: "from-primary/20 via-primary/10 to-transparent",
       href: "/products?category=home",
     },
     {
       icon: Gamepad2,
-      title: "Brinquedos",
-      description: "Diversão criativa e educativa para todas as idades",
+      title: t.categories.toys,
+      description: t.categories.toysDesc,
       color: "from-accent to-accent/50",
       gradient: "from-accent/20 via-accent/10 to-transparent",
       href: "/products?category=toys",
     },
     {
       icon: Brain,
-      title: "Objetos Sensoriais",
-      description: "Estímulo tátil e desenvolvimento cognitivo",
+      title: t.categories.sensoryObjects,
+      description: t.categories.sensoryObjectsDesc,
       color: "from-chart-3 to-chart-3/50",
       gradient: "from-chart-3/20 via-chart-3/10 to-transparent",
       href: "/products?category=sensory",
     },
     {
       icon: Leaf,
-      title: "Materiais Biodegradáveis",
-      description: "Sustentabilidade em cada impressão",
+      title: t.categories.biodegradable,
+      description: t.categories.biodegradableDesc,
       color: "from-chart-5 to-chart-5/50",
       gradient: "from-chart-5/20 via-chart-5/10 to-transparent",
       href: "/about#sustainability",
@@ -46,9 +49,9 @@ export function ProductCategories() {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Nossas Categorias</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">{t.categories.title}</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Produtos sustentáveis feitos com materiais biodegradáveis
+            {t.categories.subtitle}
           </p>
           <div className="w-20 h-1 bg-gradient-to-r from-primary via-accent to-chart-3 mx-auto rounded-full animate-[gradient_3s_linear_infinite] bg-[length:200%_auto] mt-4" />
         </div>

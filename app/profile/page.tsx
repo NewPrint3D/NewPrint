@@ -73,12 +73,12 @@ export default function ProfilePage() {
     setMessage("")
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setError("New passwords do not match")
+      setError(t.profile.passwordsDoNotMatch)
       return
     }
 
     if (passwordData.newPassword.length < 12) {
-      setError("Password must be at least 12 characters long")
+      setError(t.profile.passwordMinLength)
       return
     }
 
@@ -102,17 +102,17 @@ export default function ProfilePage() {
       const data = await res.json()
 
       if (res.ok) {
-        setMessage("Password updated successfully!")
+        setMessage(t.profile.passwordUpdated)
         setPasswordData({
           currentPassword: "",
           newPassword: "",
           confirmPassword: "",
         })
       } else {
-        setError(data.error || "Failed to update password")
+        setError(data.error || t.profile.updateFailed)
       }
     } catch (error) {
-      setError("Network error")
+      setError(t.profile.networkError)
     } finally {
       setIsLoading(false)
     }
@@ -143,17 +143,17 @@ export default function ProfilePage() {
       const data = await res.json()
 
       if (res.ok) {
-        setMessage("Email updated successfully! Please login again with your new email.")
+        setMessage(t.profile.emailUpdated)
         setEmailData({ ...emailData, password: "" })
         // Refresh profile data
         setTimeout(() => {
           fetchProfile()
         }, 1000)
       } else {
-        setError(data.error || "Failed to update email")
+        setError(data.error || t.profile.updateFailed)
       }
     } catch (error) {
-      setError("Network error")
+      setError(t.profile.networkError)
     } finally {
       setIsLoading(false)
     }
@@ -173,53 +173,53 @@ export default function ProfilePage() {
       <main className="flex-1 pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h1 className="text-4xl font-bold mb-2">Profile Settings</h1>
-            <p className="text-muted-foreground">Manage your account settings and preferences</p>
+            <h1 className="text-4xl font-bold mb-2">{t.profile.title}</h1>
+            <p className="text-muted-foreground">{t.profile.subtitle}</p>
           </div>
 
           <Tabs defaultValue="info" className="space-y-4">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="info">
                 <User className="h-4 w-4 mr-2" />
-                Account Info
+                {t.profile.accountInfo}
               </TabsTrigger>
               <TabsTrigger value="password">
                 <Lock className="h-4 w-4 mr-2" />
-                Change Password
+                {t.profile.changePassword}
               </TabsTrigger>
               <TabsTrigger value="email">
                 <Mail className="h-4 w-4 mr-2" />
-                Change Email
+                {t.profile.changeEmail}
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="info">
               <Card>
                 <CardHeader>
-                  <CardTitle>Account Information</CardTitle>
-                  <CardDescription>Your account details</CardDescription>
+                  <CardTitle>{t.profile.accountInformation}</CardTitle>
+                  <CardDescription>{t.profile.accountDetails}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-muted-foreground">First Name</Label>
+                      <Label className="text-muted-foreground">{t.profile.firstName}</Label>
                       <p className="font-medium">{profileData.firstName}</p>
                     </div>
                     <div>
-                      <Label className="text-muted-foreground">Last Name</Label>
+                      <Label className="text-muted-foreground">{t.profile.lastName}</Label>
                       <p className="font-medium">{profileData.lastName}</p>
                     </div>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Email</Label>
+                    <Label className="text-muted-foreground">{t.profile.email}</Label>
                     <p className="font-medium">{profileData.email}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Role</Label>
+                    <Label className="text-muted-foreground">{t.profile.role}</Label>
                     <p className="font-medium capitalize">{profileData.role}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Member Since</Label>
+                    <Label className="text-muted-foreground">{t.profile.memberSince}</Label>
                     <p className="font-medium">
                       {new Date(profileData.createdAt).toLocaleDateString()}
                     </p>
@@ -231,10 +231,9 @@ export default function ProfilePage() {
             <TabsContent value="password">
               <Card>
                 <CardHeader>
-                  <CardTitle>Change Password</CardTitle>
+                  <CardTitle>{t.profile.passwordTitle}</CardTitle>
                   <CardDescription>
-                    Password must be at least 12 characters with uppercase, lowercase, number, and
-                    special character
+                    {t.profile.passwordDescription}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -254,7 +253,7 @@ export default function ProfilePage() {
                     )}
 
                     <div className="space-y-2">
-                      <Label htmlFor="currentPassword">Current Password</Label>
+                      <Label htmlFor="currentPassword">{t.profile.currentPassword}</Label>
                       <Input
                         id="currentPassword"
                         type="password"
@@ -267,7 +266,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
+                      <Label htmlFor="newPassword">{t.profile.newPassword}</Label>
                       <Input
                         id="newPassword"
                         type="password"
@@ -280,7 +279,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                      <Label htmlFor="confirmPassword">{t.profile.confirmNewPassword}</Label>
                       <Input
                         id="confirmPassword"
                         type="password"
@@ -296,10 +295,10 @@ export default function ProfilePage() {
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Updating...
+                          {t.profile.updating}
                         </>
                       ) : (
-                        "Update Password"
+                        t.profile.updatePassword
                       )}
                     </Button>
                   </form>
@@ -310,9 +309,9 @@ export default function ProfilePage() {
             <TabsContent value="email">
               <Card>
                 <CardHeader>
-                  <CardTitle>Change Email Address</CardTitle>
+                  <CardTitle>{t.profile.emailTitle}</CardTitle>
                   <CardDescription>
-                    Update your email address. You'll need to verify your password.
+                    {t.profile.emailDescription}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -332,7 +331,7 @@ export default function ProfilePage() {
                     )}
 
                     <div className="space-y-2">
-                      <Label htmlFor="currentEmail">Current Email</Label>
+                      <Label htmlFor="currentEmail">{t.profile.currentEmail}</Label>
                       <Input
                         id="currentEmail"
                         type="email"
@@ -343,7 +342,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="newEmail">New Email</Label>
+                      <Label htmlFor="newEmail">{t.profile.newEmail}</Label>
                       <Input
                         id="newEmail"
                         type="email"
@@ -354,7 +353,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="passwordForEmail">Confirm Password</Label>
+                      <Label htmlFor="passwordForEmail">{t.profile.confirmPassword}</Label>
                       <Input
                         id="passwordForEmail"
                         type="password"
@@ -368,10 +367,10 @@ export default function ProfilePage() {
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Updating...
+                          {t.profile.updating}
                         </>
                       ) : (
-                        "Update Email"
+                        t.profile.updateEmail
                       )}
                     </Button>
                   </form>

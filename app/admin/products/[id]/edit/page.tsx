@@ -98,10 +98,10 @@ export default function EditProductPage({ params }: PageProps) {
             active: product.active !== false,
           })
         } else {
-          setError("Failed to load product")
+          setError(t.admin.failedToLoad)
         }
       } catch (err) {
-        setError("Network error")
+        setError(t.admin.networkError)
       } finally {
         setIsFetching(false)
       }
@@ -142,10 +142,10 @@ export default function EditProductPage({ params }: PageProps) {
         router.push("/admin/products")
       } else {
         const data = await res.json()
-        setError(data.error || "Failed to update product")
+        setError(data.error || t.admin.failedToUpdate)
       }
     } catch (error) {
-      setError("Network error")
+      setError(t.admin.networkError)
     } finally {
       setIsLoading(false)
     }

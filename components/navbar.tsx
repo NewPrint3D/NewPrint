@@ -86,7 +86,7 @@ export function Navbar() {
               onClick={() => scrollToSection("custom")}
               className="text-foreground/80 hover:text-primary transition-all duration-300 font-medium relative group hover:scale-110"
             >
-              Projetos Personalizados
+              {t.customProjects.navLink}
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-accent group-hover:w-full transition-all duration-300" />
               <span className="absolute inset-0 bg-primary/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-sm" />
             </button>
@@ -193,7 +193,7 @@ export function Navbar() {
                 onClick={() => scrollToSection("custom")}
                 className="text-foreground/80 hover:text-primary transition-colors duration-200 font-medium py-2 text-left"
               >
-                Projetos Personalizados
+                {t.customProjects.navLink}
               </button>
               <Link
                 href="/about"
