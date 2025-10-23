@@ -97,21 +97,21 @@ export function HeroSection() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 hover:scale-105 transition-transform cursor-default relative overflow-hidden">
             <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             <ShoppingBag className="w-4 h-4 text-primary animate-pulse" />
-            <span className="text-sm font-medium text-primary relative z-10">Produtos Prontos para Entrega</span>
+            <span className="text-sm font-medium text-primary relative z-10">{t.hero.readyForDelivery}</span>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
             <span className="text-balance inline-block hover:scale-105 transition-transform duration-300">
-              Impressão 3D de
+              {t.hero.printing3d}
             </span>
             <br />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-[gradient_3s_linear_infinite] inline-block hover:scale-110 transition-transform duration-300">
-              Alta Qualidade
+              {t.hero.highQuality}
             </span>
           </h1>
 
           <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto text-balance animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
-            Produtos exclusivos e personalizados com materiais biodegradáveis. Do decorativo ao funcional.
+            {t.hero.exclusiveProducts}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300">
@@ -122,7 +122,7 @@ export function HeroSection() {
             >
               <Link href="/products">
                 <span className="relative z-10 flex items-center gap-2">
-                  Ver Produtos
+                  {t.hero.viewProducts}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-2 group-hover:scale-125 transition-all duration-300" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-[gradient_2s_linear_infinite]" />
@@ -136,7 +136,7 @@ export function HeroSection() {
             >
               <Link href="#custom">
                 <span className="relative z-10 flex items-center gap-2">
-                  Projetos Personalizados
+                  {t.hero.customProjects}
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform duration-300" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
