@@ -110,7 +110,7 @@ export function Footer() {
             </h3>
             <div className="flex flex-col gap-2 text-muted-foreground text-sm">
               <p className="hover:text-primary transition-colors duration-300 cursor-pointer">
-                contact@newprint3d.com
+                mkt.digitalvieiras@gmail.com
               </p>
               
               
