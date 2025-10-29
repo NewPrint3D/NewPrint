@@ -112,9 +112,9 @@ export function Footer() {
               <p className="hover:text-primary transition-colors duration-300 cursor-pointer">
                 contact@newprint3d.com
               </p>
-              <p className="hover:text-primary transition-colors duration-300 cursor-pointer">+1 (555) 123-4567</p>
-              <p className="hover:text-primary transition-colors duration-300 cursor-pointer">123 Print Street</p>
-              <p className="hover:text-primary transition-colors duration-300 cursor-pointer">Tech City, TC 12345</p>
+              
+              
+              
             </div>
           </div>
         </div>
