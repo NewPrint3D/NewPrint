@@ -51,6 +51,22 @@ export async function POST(request: Request) {
         },
       },
 
+      // CRITICAL: Disable all verification features that cause identity screens
+      phone_number_collection: {
+        enabled: false,
+      },
+      billing_address_collection: 'auto', // Keep minimal
+      shipping_address_collection: {
+        allowed_countries: [], // Empty array disables shipping collection
+      },
+      customer_creation: 'if_required', // Don't force customer creation
+      invoice_creation: {
+        enabled: false,
+      },
+      tax_id_collection: {
+        enabled: false,
+      },
+
       // Informações do cliente
       customer_email: shippingInfo?.email,
 
@@ -92,7 +108,6 @@ export async function POST(request: Request) {
 
       // Disable all optional features that could trigger verification
       allow_promotion_codes: false,
-      // billing_address_collection: 'auto',
 
       // Configurações fiscais
       automatic_tax: {
