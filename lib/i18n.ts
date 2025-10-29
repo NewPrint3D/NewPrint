@@ -49,7 +49,7 @@ export const translations = {
       },
       support: {
         title: "24/7 Support",
-        description: "mkt.digitalvieiras@gmail.com",
+        description: "Specialized assistance whenever you need it",
       },
     },
     products: {
