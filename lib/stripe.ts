@@ -17,16 +17,8 @@ export const stripe = STRIPE_SECRET_KEY
 
 // Função para criar Payment Intent
 export async function createPaymentIntent(amount: number, currency = "usd") {
-  // Modo demonstração: retornar Payment Intent simulado
-  if (isStripeDemoMode || !stripe) {
-    console.log("[DEMO MODE] Payment Intent simulado criado")
-    return {
-      id: `pi_demo_${Date.now()}`,
-      client_secret: `pi_demo_${Date.now()}_secret_demo`,
-      amount: Math.round(amount * 100),
-      currency,
-      status: "succeeded",
-    } as any
+  if (!stripe) {
+    throw new Error("Stripe not configured")
   }
 
   try {
@@ -47,15 +39,8 @@ export async function createPaymentIntent(amount: number, currency = "usd") {
 
 // Função para confirmar pagamento
 export async function confirmPayment(paymentIntentId: string) {
-  // Modo demonstração
-  if (isStripeDemoMode || !stripe) {
-    console.log("[DEMO MODE] Pagamento confirmado (simulado)")
-    return {
-      id: paymentIntentId,
-      status: "succeeded",
-      amount: 0,
-      currency: "usd",
-    } as any
+  if (!stripe) {
+    throw new Error("Stripe not configured")
   }
 
   try {
@@ -69,15 +54,8 @@ export async function confirmPayment(paymentIntentId: string) {
 
 // Função para criar reembolso
 export async function createRefund(paymentIntentId: string, amount?: number) {
-  // Modo demonstração
-  if (isStripeDemoMode || !stripe) {
-    console.log("[DEMO MODE] Reembolso criado (simulado)")
-    return {
-      id: `re_demo_${Date.now()}`,
-      payment_intent: paymentIntentId,
-      amount: amount ? Math.round(amount * 100) : 0,
-      status: "succeeded",
-    } as any
+  if (!stripe) {
+    throw new Error("Stripe not configured")
   }
 
   try {

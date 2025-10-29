@@ -155,8 +155,8 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
               description: t.checkout?.successMessage || "Your order has been confirmed.",
             })
 
-            // Redirect to orders page
-            router.push("/orders")
+            // Redirect to order success page
+            router.push(`/order-success?session_id=paypal_${result.orderId}`)
           } catch (error) {
             console.error("Error capturing PayPal payment:", error)
             toast({
@@ -194,13 +194,12 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
 
   if (error) {
     return (
-      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-        <p className="text-sm text-yellow-800 dark:text-yellow-200">
-          <strong>{t.demo?.mode || "Demo Mode"}:</strong> {error}
+      <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <p className="text-sm text-red-800 dark:text-red-200">
+          <strong>PayPal Error:</strong> {error}
         </p>
-        <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-2">
-          {t.demo?.paypalInstructions ||
-            "To enable PayPal, add NEXT_PUBLIC_PAYPAL_CLIENT_ID to your environment variables."}
+        <p className="text-xs text-red-700 dark:text-red-300 mt-2">
+          Please check your PayPal configuration or try again later.
         </p>
       </div>
     )

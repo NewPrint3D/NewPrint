@@ -1,9 +1,12 @@
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // PRODUÇÃO: Não ignorar erros - forçar qualidade de código
-  eslint: {
-    ignoreDuringBuilds: process.env.NODE_ENV === "development",
-  },
   typescript: {
     ignoreBuildErrors: process.env.NODE_ENV === "development",
   },
@@ -73,6 +76,11 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
   },
+
+  // Temporarily disable Turbopack to avoid build issues
+  // turbopack: {
+  //   root: "e:/task/20251029_workana_paypal&stripe_integration/NewPrint",
+  // },
 }
 
 export default nextConfig

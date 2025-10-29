@@ -11,19 +11,20 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Session ID required" }, { status: 400 })
     }
 
-    // Modo demonstração
-    if (isStripeDemoMode || !stripe) {
-      return NextResponse.json({
-        orderNumber: `DEMO-${sessionId.slice(-10)}`,
-        demoMode: true
-      })
+    // Validate Stripe configuration for production
+    if (!stripe) {
+      console.error("[STRIPE] Stripe not configured for session retrieval")
+      return NextResponse.json(
+        { error: "Payment system not configured" },
+        { status: 500 }
+      )
     }
 
     // Recuperar sessão do Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId)
 
     // Buscar pedido no banco de dados
-    if (!isDemoMode && session.payment_intent) {
+    if (session.payment_intent) {
       const orders = await sql!`
         SELECT order_number, id, total, status, payment_status
         FROM orders
@@ -52,7 +53,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('[CHECKOUT SESSION] Error:', error)
     return NextResponse.json(
-      { error: 'Error retrieving session' },
+      { error: 'Unable to verify payment status. Please contact support if your payment was processed.' },
       { status: 500 }
     )
   }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { stripe, isStripeDemoMode } from "@/lib/stripe"
+import { stripe } from "@/lib/stripe"
 
 export async function POST(request: Request) {
   try {
@@ -10,25 +10,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Carrinho vazio" }, { status: 400 })
     }
 
-    // Modo demonstração
-    if (isStripeDemoMode || !stripe) {
-      console.log("[DEMO MODE] Checkout Session simulada criada")
-      return NextResponse.json({
-        sessionId: `cs_demo_${Date.now()}`,
-        url: `${process.env.NEXT_PUBLIC_SITE_URL}/order-success?session_id=demo_${Date.now()}`,
-        demoMode: true,
-        message: "Checkout em modo demonstração"
-      })
+    // Validate Stripe configuration for production
+    if (!stripe) {
+      console.error("[STRIPE] Stripe not configured - check STRIPE_SECRET_KEY")
+      return NextResponse.json(
+        { error: "Payment system not configured" },
+        { status: 500 }
+      )
     }
 
     // Criar Checkout Session
     const session = await stripe.checkout.sessions.create({
       line_items: items.map((item: any) => ({
         price_data: {
-          currency: 'brl',
+          currency: 'usd',
           product_data: {
-            name: item.product.name.pt || item.product.name.en,
-            description: item.product.description?.pt || item.product.description?.en || '',
+            name: item.product.name.en || item.product.name,
+            description: item.product.description?.en || item.product.description || '',
             images: item.product.image ? [`${process.env.NEXT_PUBLIC_SITE_URL}${item.product.image}`] : [],
             metadata: {
               product_id: item.product.id,
@@ -37,7 +35,7 @@ export async function POST(request: Request) {
               material: item.selectedMaterial || '',
             }
           },
-          unit_amount: Math.round(item.price * 100), // Converter para centavos
+          unit_amount: Math.round(item.price * 100), // Convert to cents
         },
         quantity: item.quantity,
       })),
@@ -56,22 +54,22 @@ export async function POST(request: Request) {
         user_id: userId || 'guest',
       },
 
-      // Informações de envio
+      // Shipping information
       shipping_address_collection: {
         allowed_countries: ['BR', 'US'],
       },
 
-      // Dados de envio pré-preenchidos
+      // Pre-filled shipping data
       ...(shippingInfo && {
         shipping_options: [
           {
             shipping_rate_data: {
               type: 'fixed_amount',
               fixed_amount: {
-                amount: 999, // R$ 9.99 em centavos
-                currency: 'brl',
+                amount: 999, // $9.99 in cents
+                currency: 'usd',
               },
-              display_name: 'Envio Padrão',
+              display_name: 'Standard Shipping',
               delivery_estimate: {
                 minimum: {
                   unit: 'business_day',
@@ -106,7 +104,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('[STRIPE] Error creating checkout session:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Error creating checkout session' },
+      { error: 'Payment system temporarily unavailable. Please try again later.' },
       { status: 500 }
     )
   }
