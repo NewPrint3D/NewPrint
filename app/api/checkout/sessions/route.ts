@@ -43,8 +43,13 @@ export async function POST(request: Request) {
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout`,
 
-      // Formas de pagamento
+      // Payment method configuration - remove restrictions that trigger identity verification
       payment_method_types: ['card'],
+      payment_method_options: {
+        card: {
+          request_three_d_secure: 'automatic',
+        },
+      },
 
       // Informações do cliente
       customer_email: shippingInfo?.email,
@@ -54,42 +59,42 @@ export async function POST(request: Request) {
         user_id: userId || 'guest',
       },
 
-      // Shipping information
-      shipping_address_collection: {
-        allowed_countries: ['BR', 'US'],
-      },
+      // Disable shipping address collection to avoid additional verification
+      // shipping_address_collection: {
+      //   allowed_countries: ['BR', 'US'],
+      // },
 
-      // Pre-filled shipping data
-      ...(shippingInfo && {
-        shipping_options: [
-          {
-            shipping_rate_data: {
-              type: 'fixed_amount',
-              fixed_amount: {
-                amount: 999, // $9.99 in cents
-                currency: 'usd',
-              },
-              display_name: 'Standard Shipping',
-              delivery_estimate: {
-                minimum: {
-                  unit: 'business_day',
-                  value: 5,
-                },
-                maximum: {
-                  unit: 'business_day',
-                  value: 10,
-                },
-              },
-            },
-          },
-        ],
-      }),
+      // Disable shipping options to avoid additional verification steps
+      // ...(shippingInfo && {
+      //   shipping_options: [
+      //     {
+      //       shipping_rate_data: {
+      //         type: 'fixed_amount',
+      //         fixed_amount: {
+      //           amount: 999, // $9.99 in cents
+      //           currency: 'usd',
+      //         },
+      //         display_name: 'Standard Shipping',
+      //         delivery_estimate: {
+      //           minimum: {
+      //             unit: 'business_day',
+      //             value: 5,
+      //           },
+      //           maximum: {
+      //             unit: 'business_day',
+      //             value: 10,
+      //           },
+      //         },
+      //       },
+      //     },
+      //   ],
+      // }),
 
-      // Permite cupons de desconto
-      allow_promotion_codes: true,
+      // Disable promotion codes for now to avoid additional verification steps
+      allow_promotion_codes: false,
 
-      // Coleta informações de cobrança
-      billing_address_collection: 'required',
+      // Make billing address optional to reduce verification requirements
+      billing_address_collection: 'auto',
 
       // Configurações fiscais
       automatic_tax: {

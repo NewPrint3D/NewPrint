@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -187,9 +188,41 @@ export default function CheckoutPage() {
                     <CardTitle>{t.checkout.paymentInfo}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="text-center text-sm text-muted-foreground mb-4">
-                      Secure payment powered by Stripe
-                    </div>
+                    <RadioGroup
+                      value={paymentMethod}
+                      onValueChange={(value: 'stripe' | 'paypal') => setPaymentMethod(value)}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-center space-x-3 p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
+                        <RadioGroupItem value="stripe" id="stripe" />
+                        <Label htmlFor="stripe" className="flex-1 cursor-pointer">
+                          <div className="flex items-center gap-3">
+                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/>
+                            </svg>
+                            <div>
+                              <div className="font-medium">Credit/Debit Card</div>
+                              <div className="text-sm text-muted-foreground">Powered by Stripe</div>
+                            </div>
+                          </div>
+                        </Label>
+                      </div>
+
+                      <div className="flex items-center space-x-3 p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
+                        <RadioGroupItem value="paypal" id="paypal" />
+                        <Label htmlFor="paypal" className="flex-1 cursor-pointer">
+                          <div className="flex items-center gap-3">
+                            <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.276 5.12-6.514 5.12h-.5a.805.805 0 00-.794.68l-.04.22-.63 3.993-.032.17a.804.804 0 01-.794.679H7.72a.483.483 0 01-.477-.558L7.418 21h1.518l.95-6.02h1.385c4.678 0 7.75-2.203 8.796-6.502zm-2.96-2.497c-.363-.662-.746-1.055-1.178-1.056-.39 0-.754.264-1.097.789-.295.53-.493 1.113-.59 1.747H9.22c.05-.637.226-1.207.52-1.737.342-.525.706-.789 1.096-.789.432-.001.815.393 1.178 1.055.363.662.588 1.474.588 2.366v.143h1.44v-.143c0-.892-.225-1.704-.588-2.366z"/>
+                            </svg>
+                            <div>
+                              <div className="font-medium">PayPal</div>
+                              <div className="text-sm text-muted-foreground">Pay with your PayPal account</div>
+                            </div>
+                          </div>
+                        </Label>
+                      </div>
+                    </RadioGroup>
                   </CardContent>
                 </Card>
               </div>
@@ -244,35 +277,33 @@ export default function CheckoutPage() {
                     </div>
 
                     <div className="space-y-3">
-                      <Button
-                        type="submit"
-                        size="lg"
-                        className="w-full group relative overflow-hidden"
-                        disabled={isProcessing}
-                      >
-                        <span className="relative z-10 flex items-center justify-center gap-2">
-                          {isProcessing ? (
-                            <>
-                              <Loader2 className="w-5 h-5 animate-spin" />
-                              {t.checkout.processing}
-                            </>
-                          ) : (
-                            <>
-                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/>
-                              </svg>
-                              {paymentMethod === 'stripe' ? t.checkout.placeOrder : 'Continue with PayPal'}
-                            </>
-                          )}
-                        </span>
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      </Button>
-
-                      <div className="text-center">
-                        <span className="text-sm text-muted-foreground">{t.checkout.orPayWith}</span>
-                      </div>
-
-                      <PayPalButton orderData={formData} />
+                      {paymentMethod === 'stripe' ? (
+                        <Button
+                          type="submit"
+                          size="lg"
+                          className="w-full group relative overflow-hidden"
+                          disabled={isProcessing}
+                        >
+                          <span className="relative z-10 flex items-center justify-center gap-2">
+                            {isProcessing ? (
+                              <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                {t.checkout.processing}
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/>
+                                </svg>
+                                {t.checkout.placeOrder}
+                              </>
+                            )}
+                          </span>
+                          <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        </Button>
+                      ) : (
+                        <PayPalButton orderData={formData} />
+                      )}
                     </div>
                   </CardContent>
                 </Card>
