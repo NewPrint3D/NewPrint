@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       case "payment_intent.succeeded":
         const paymentIntent = event.data.object
 
-        // Buscar pedido para validar o valor
+        // Find order to validate amount
         const orders = await sql!`
           SELECT id, total, payment_status
           FROM orders
@@ -63,37 +63,37 @@ export async function POST(request: Request) {
         `
 
         if (orders.length === 0) {
-          console.error(`[STRIPE WEBHOOK] Pedido não encontrado: ${paymentIntent.id}`)
-          return NextResponse.json({ error: "Pedido não encontrado" }, { status: 404 })
+          console.error(`[STRIPE WEBHOOK] Order not found: ${paymentIntent.id}`)
+          return NextResponse.json({ error: "Order not found" }, { status: 404 })
         }
 
         const order = orders[0]
 
-        // Validar valor do pagamento (convertendo para centavos)
+        // Validate payment amount (converting to cents)
         const expectedAmount = Math.round(parseFloat(order.total) * 100)
         if (paymentIntent.amount !== expectedAmount) {
-          console.error(`[STRIPE WEBHOOK] Valor incompatível - Esperado: ${expectedAmount}, Recebido: ${paymentIntent.amount}`)
-          return NextResponse.json({ error: "Valor do pagamento incompatível" }, { status: 400 })
+          console.error(`[STRIPE WEBHOOK] Amount mismatch - Expected: ${expectedAmount}, Received: ${paymentIntent.amount}`)
+          return NextResponse.json({ error: "Payment amount mismatch" }, { status: 400 })
         }
 
-        // Verificar se já foi processado (idempotência)
+        // Check if already processed (idempotency)
         if (order.payment_status === "paid") {
-          console.log(`[STRIPE WEBHOOK] Pagamento já processado: ${paymentIntent.id}`)
-          return NextResponse.json({ received: true, message: "Já processado" })
+          console.log(`[STRIPE WEBHOOK] Payment already processed: ${paymentIntent.id}`)
+          return NextResponse.json({ received: true, message: "Already processed" })
         }
 
-        // Atualizar status do pagamento no banco
+        // Update payment status in database
         try {
           await sql!`
             UPDATE orders
             SET payment_status = 'paid', status = 'processing', updated_at = CURRENT_TIMESTAMP
             WHERE stripe_payment_intent_id = ${paymentIntent.id}
           `
-          console.log(`[STRIPE WEBHOOK] Pagamento confirmado: ${paymentIntent.id}`)
+          console.log(`[STRIPE WEBHOOK] Payment confirmed: ${paymentIntent.id}`)
         } catch (dbError) {
-          console.error(`[STRIPE WEBHOOK] Erro ao atualizar banco:`, dbError)
-          // Retornar erro 500 para que Stripe tente novamente
-          return NextResponse.json({ error: "Erro de banco de dados" }, { status: 500 })
+          console.error(`[STRIPE WEBHOOK] Database update error:`, dbError)
+          // Return 500 error so Stripe retries
+          return NextResponse.json({ error: "Database error" }, { status: 500 })
         }
         break
 
@@ -106,10 +106,10 @@ export async function POST(request: Request) {
             SET payment_status = 'failed', updated_at = CURRENT_TIMESTAMP
             WHERE stripe_payment_intent_id = ${failedPayment.id}
           `
-          console.log(`[STRIPE WEBHOOK] Pagamento falhou: ${failedPayment.id}`)
+          console.log(`[STRIPE WEBHOOK] Payment failed: ${failedPayment.id}`)
         } catch (dbError) {
-          console.error(`[STRIPE WEBHOOK] Erro ao atualizar banco:`, dbError)
-          return NextResponse.json({ error: "Erro de banco de dados" }, { status: 500 })
+          console.error(`[STRIPE WEBHOOK] Database update error:`, dbError)
+          return NextResponse.json({ error: "Database error" }, { status: 500 })
         }
         break
 
@@ -118,38 +118,32 @@ export async function POST(request: Request) {
       // ========================================
       case "charge.dispute.created":
         const dispute = event.data.object
-        console.log(`[STRIPE WEBHOOK] Disputa criada: ${dispute.id}`)
-        if (!isDemoMode) {
-          await sql!`
-            UPDATE orders
-            SET status = 'disputed', updated_at = CURRENT_TIMESTAMP
-            WHERE stripe_payment_intent_id = ${dispute.payment_intent}
-          `
-        }
+        console.log(`[STRIPE WEBHOOK] Dispute created: ${dispute.id}`)
+        await sql!`
+          UPDATE orders
+          SET status = 'disputed', updated_at = CURRENT_TIMESTAMP
+          WHERE stripe_payment_intent_id = ${dispute.payment_intent}
+        `
         break
 
       case "charge.dispute.funds_reinstated":
         const reinstated = event.data.object
-        console.log(`[STRIPE WEBHOOK] Fundos reintegrados: ${reinstated.id}`)
-        if (!isDemoMode) {
-          await sql!`
-            UPDATE orders
-            SET status = 'processing', updated_at = CURRENT_TIMESTAMP
-            WHERE stripe_payment_intent_id = ${reinstated.payment_intent}
-          `
-        }
+        console.log(`[STRIPE WEBHOOK] Funds reinstated: ${reinstated.id}`)
+        await sql!`
+          UPDATE orders
+          SET status = 'processing', updated_at = CURRENT_TIMESTAMP
+          WHERE stripe_payment_intent_id = ${reinstated.payment_intent}
+        `
         break
 
       case "charge.refunded":
         const refund = event.data.object
-        console.log(`[STRIPE WEBHOOK] Reembolso processado: ${refund.id}`)
-        if (!isDemoMode) {
-          await sql!`
-            UPDATE orders
-            SET payment_status = 'refunded', status = 'cancelled', updated_at = CURRENT_TIMESTAMP
-            WHERE stripe_payment_intent_id = ${refund.payment_intent}
-          `
-        }
+        console.log(`[STRIPE WEBHOOK] Refund processed: ${refund.id}`)
+        await sql!`
+          UPDATE orders
+          SET payment_status = 'refunded', status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+          WHERE stripe_payment_intent_id = ${refund.payment_intent}
+        `
         break
 
       case "refund.created":
@@ -191,8 +185,8 @@ export async function POST(request: Request) {
 async function fulfillCheckout(sessionId: string) {
   console.log('[STRIPE] Fulfilling checkout session:', sessionId)
 
-  if (isDemoMode || !stripe) {
-    console.log('[STRIPE] Demo mode - skipping fulfillment')
+  if (!stripe) {
+    console.error('[STRIPE] Stripe not configured - cannot fulfill checkout')
     return
   }
 
@@ -234,14 +228,14 @@ async function fulfillCheckout(sessionId: string) {
 
       console.log(`[STRIPE] Order ${order.id} fulfilled successfully`)
     } else {
-      // Criar novo pedido a partir da sessão do Checkout
+      // Create new order from Checkout session
       const lineItems = session.line_items?.data || []
       const shipping = session.shipping_cost?.amount_total || 0
       const subtotal = session.amount_subtotal || 0
       const total = session.amount_total || 0
       const tax = total - subtotal - shipping
 
-      // Extrair informações de envio
+      // Extract shipping information
       const sessionData = session as any
       const shippingName = sessionData.shipping?.name || sessionData.customer_details?.name || ''
       const nameParts = shippingName.split(' ')
@@ -295,7 +289,7 @@ async function fulfillCheckout(sessionId: string) {
 
       const orderId = newOrder[0].id
 
-      // Criar itens do pedido
+      // Create order items
       for (const item of lineItems) {
         const priceData = item.price as any
         const productData = priceData?.product as any
@@ -323,6 +317,15 @@ async function fulfillCheckout(sessionId: string) {
             ${(item.amount_total || 0) / 100}
           )
         `
+
+        // Update product stock
+        if (productData?.metadata?.product_id) {
+          await sql!`
+            UPDATE products
+            SET stock_quantity = GREATEST(0, stock_quantity - ${item.quantity || 1})
+            WHERE id = ${productData.metadata.product_id}
+          `
+        }
       }
 
       console.log(`[STRIPE] New order ${orderId} created and fulfilled`)
@@ -339,7 +342,8 @@ async function fulfillCheckout(sessionId: string) {
 async function handleFailedCheckout(sessionId: string) {
   console.log('[STRIPE] Handling failed checkout:', sessionId)
 
-  if (isDemoMode || !stripe) {
+  if (!stripe) {
+    console.error('[STRIPE] Stripe not configured - cannot handle failed checkout')
     return
   }
 

@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("[PAYPAL CREATE ORDER] Error:", error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error" },
+      { error: "Payment system temporarily unavailable. Please try again later." },
       { status: 500 },
     )
   }

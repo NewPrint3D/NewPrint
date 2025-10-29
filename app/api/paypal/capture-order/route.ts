@@ -80,8 +80,8 @@ export async function POST(request: NextRequest) {
           userId = decoded.userId
         }
       }
-    } catch {
-      console.log("[PAYPAL] Guest checkout")
+    } catch (error) {
+      console.log("[PAYPAL] Guest checkout or token error:", error)
     }
 
     // Calculate totals
@@ -90,19 +90,27 @@ export async function POST(request: NextRequest) {
     const tax = itemTotal * 0.1
     const total = itemTotal + shipping + tax
 
+    // Validate total matches PayPal order
+    const expectedTotal = parseFloat(captureData.purchase_units[0].amount.value)
+    if (Math.abs(total - expectedTotal) > 0.01) {
+      console.warn(`[PAYPAL] Total mismatch - Calculated: ${total}, PayPal: ${expectedTotal}`)
+    }
+
     // Save order to database
     try {
       const orderResult = await sql!`
         INSERT INTO orders (
-          user_id, total, status, payment_status, payment_method,
+          user_id, order_number, total, status, payment_status, payment_method,
           paypal_order_id, shipping_address, shipping_city, shipping_state,
-          shipping_zip, shipping_country, customer_email, customer_phone
+          shipping_zip_code, shipping_country, shipping_email, shipping_phone,
+          shipping_first_name, shipping_last_name
         )
         VALUES (
-          ${userId}, ${total.toFixed(2)}, 'pending', 'paid', 'paypal',
+          ${userId}, ${`PP-${orderID.slice(-10)}`}, ${total.toFixed(2)}, 'pending', 'paid', 'paypal',
           ${orderID}, ${customerData.address}, ${customerData.city},
           ${customerData.state}, ${customerData.zipCode}, ${customerData.country},
-          ${customerData.email}, ${customerData.phone}
+          ${customerData.email}, ${customerData.phone},
+          ${customerData.firstName}, ${customerData.lastName}
         )
         RETURNING id
       `
@@ -113,18 +121,21 @@ export async function POST(request: NextRequest) {
       for (const item of items) {
         await sql!`
           INSERT INTO order_items (
-            order_id, product_id, quantity, price, selected_color, selected_size
+            order_id, product_id, product_name, quantity, unit_price,
+            selected_color, selected_size, selected_material, subtotal
           )
           VALUES (
-            ${orderId}, ${item.product.id}, ${item.quantity}, ${item.price.toFixed(2)},
-            ${item.selectedColor || null}, ${item.selectedSize || null}
+            ${orderId}, ${item.product.id}, ${item.product.name.en || item.product.name},
+            ${item.quantity}, ${item.price.toFixed(2)},
+            ${item.selectedColor || null}, ${item.selectedSize || null},
+            ${item.selectedMaterial || null}, ${(item.price * item.quantity).toFixed(2)}
           )
         `
 
         // Update product stock
         await sql!`
           UPDATE products
-          SET stock = GREATEST(0, stock - ${item.quantity})
+          SET stock_quantity = GREATEST(0, stock_quantity - ${item.quantity})
           WHERE id = ${item.product.id}
         `
       }
@@ -139,10 +150,13 @@ export async function POST(request: NextRequest) {
       })
     } catch (dbError) {
       console.error("[PAYPAL] Database error:", dbError)
+      // Payment was successful, but database save failed
+      // This is a critical error - we should alert admin
       return NextResponse.json(
         {
-          error: "Payment successful but failed to save order",
+          error: "Payment successful but failed to save order. Please contact support.",
           orderID: captureData.id,
+          databaseError: true,
         },
         { status: 500 },
       )
@@ -150,7 +164,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("[PAYPAL CAPTURE ORDER] Error:", error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error" },
+      { error: "Payment processing failed. Please contact support if your payment was charged." },
       { status: 500 },
     )
   }

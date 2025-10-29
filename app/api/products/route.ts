@@ -5,53 +5,6 @@ import productsData from "@/data/products.json"
 
 // GET - Listar todos os produtos
 export async function GET(request: Request) {
-  // Modo demonstração: retornar produtos do arquivo JSON
-  if (isDemoMode) {
-    console.log("[DEMO MODE] GET /api/products - retornando produtos do arquivo JSON")
-    const { searchParams } = new URL(request.url)
-    const category = searchParams.get("category")
-    const featured = searchParams.get("featured")
-
-    let filteredProducts = productsData
-
-    if (category) {
-      filteredProducts = filteredProducts.filter(p => p.category === category)
-    }
-
-    if (featured === "true") {
-      filteredProducts = filteredProducts.filter(p => p.featured === true)
-    }
-
-    const normalizedProducts = filteredProducts.map((product: any) => ({
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      name_en: product.name?.en ?? product.name_en,
-      name_pt: product.name?.pt ?? product.name_pt,
-      name_es: product.name?.es ?? product.name_es,
-      description_en: product.description?.en ?? product.description_en,
-      description_pt: product.description?.pt ?? product.description_pt,
-      description_es: product.description?.es ?? product.description_es,
-      category: product.category,
-      base_price: product.base_price ?? product.basePrice ?? 0,
-      basePrice: product.base_price ?? product.basePrice ?? 0,
-      image_url: product.image_url ?? product.image ?? null,
-      image: product.image ?? product.image_url ?? null,
-      colors: product.colors ?? [],
-      sizes: product.sizes ?? [],
-      materials: product.materials ?? [],
-      featured: Boolean(product.featured),
-      active: true,
-      stock_quantity: product.stock_quantity ?? 0,
-    }))
-
-    return NextResponse.json({
-      products: normalizedProducts,
-      demoMode: true,
-      message: "Produtos carregados do arquivo local (data/products.json)"
-    })
-  }
-
   try {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get("category")
@@ -98,15 +51,6 @@ export async function GET(request: Request) {
 
 // POST - Criar novo produto (apenas admin)
 export async function POST(request: Request) {
-  // Modo demonstração: não permite criar produtos
-  if (isDemoMode) {
-    console.log("[DEMO MODE] POST /api/products - operação não permitida em modo demo")
-    return NextResponse.json({
-      error: "Modo demonstração: Para criar produtos, configure o banco de dados (DATABASE_URL)",
-      demoMode: true
-    }, { status: 403 })
-  }
-
   const authResult = await requireAdmin(request)
 
   if ("error" in authResult) {

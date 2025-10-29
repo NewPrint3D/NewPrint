@@ -51,8 +51,7 @@ export function OrderSuccessContent() {
   useEffect(() => {
     async function fulfillOrder() {
       if (!sessionId) {
-        // Modo demo ou link direto
-        setOrderNumber(`NP3D-${Math.random().toString(36).substring(2, 10).toUpperCase()}`)
+        setError('No session ID provided')
         setLoading(false)
         return
       }
@@ -62,7 +61,8 @@ export function OrderSuccessContent() {
         const response = await fetch(`/api/checkout/session?session_id=${sessionId}`)
 
         if (!response.ok) {
-          throw new Error('Failed to retrieve session')
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to retrieve session')
         }
 
         const data = await response.json()
@@ -74,8 +74,8 @@ export function OrderSuccessContent() {
         }
       } catch (err) {
         console.error('Error fulfilling order:', err)
-        setError(t.error)
-        setOrderNumber(`NP3D-${Math.random().toString(36).substring(2, 10).toUpperCase()}`)
+        setError(err instanceof Error ? err.message : t.error)
+        // Don't generate fake order numbers in production
       } finally {
         setLoading(false)
       }
@@ -89,6 +89,34 @@ export function OrderSuccessContent() {
       <div className="max-w-2xl mx-auto text-center py-16">
         <Loader2 className="w-16 h-16 animate-spin mx-auto mb-4 text-accent" />
         <p className="text-lg text-muted-foreground">{t.loading}</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto text-center py-16">
+        <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg className="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+        </div>
+        <h1 className="text-4xl font-bold mb-4 text-red-600">Payment Error</h1>
+        <p className="text-lg text-muted-foreground mb-8">{error}</p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button
+            onClick={() => window.location.href = '/checkout'}
+            className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Try Again
+          </button>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="px-6 py-3 border border-border rounded-lg hover:bg-muted transition-colors"
+          >
+            Back to Home
+          </button>
+        </div>
       </div>
     )
   }

@@ -25,7 +25,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isProcessing, setIsProcessing] = useState(false)
-  const [showPayPal, setShowPayPal] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal'>('stripe')
 
   // Form state
   const [formData, setFormData] = useState({
@@ -49,34 +49,52 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, [id]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleCheckout = async () => {
     setIsProcessing(true)
 
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      if (paymentMethod === 'stripe') {
+        const response = await fetch('/api/checkout/sessions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            items: items.map(item => ({
+              product: item.product,
+              price: item.price,
+              quantity: item.quantity,
+              selectedColor: item.selectedColor,
+              selectedSize: item.selectedSize,
+              selectedMaterial: item.selectedMaterial,
+            })),
+            userId: null, // Guest checkout
+            shippingInfo: formData,
+          }),
+        })
 
-    const order = {
-      id: `ORDER-${Date.now()}`,
-      items: items,
-      subtotal: totalPrice,
-      shipping: shipping,
-      tax: tax,
-      total: orderTotal,
-      date: new Date().toISOString(),
-      status: "Paid",
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create checkout session')
+        }
+
+        // Redirect to Stripe Checkout
+        window.location.href = data.url
+      } else {
+        // PayPal will handle its own flow
+        return
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      toast({
+        title: t.errors?.paymentFailed || "Payment Failed",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      })
+    } finally {
+      setIsProcessing(false)
     }
-
-    const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]")
-    localStorage.setItem("orders", JSON.stringify([order, ...existingOrders]))
-
-    clearCart()
-
-    toast({
-      title: t.checkout.success || "Order placed successfully!",
-      description: t.checkout.successMessage || "Your order has been confirmed.",
-    })
-
-    router.push("/orders")
   }
 
   useEffect(() => {
@@ -99,13 +117,7 @@ export default function CheckoutPage() {
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-8">{t.checkout.title}</h1>
 
-          <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
-            <p className="text-sm text-center">
-              <strong>{t.demo.mode}:</strong> {t.demo.checkoutMessage}
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={(e) => { e.preventDefault(); handleCheckout(); }}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-6">
                 <Card>
@@ -175,60 +187,9 @@ export default function CheckoutPage() {
                     <CardTitle>{t.checkout.paymentInfo}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {!showPayPal ? (
-                      <>
-                        <div>
-                          <Label htmlFor="cardNumber">{t.checkout.cardNumber}</Label>
-                          <Input id="cardNumber" placeholder={t.placeholders.cardNumber} required />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="expiryDate">{t.checkout.expiryDate}</Label>
-                            <Input id="expiryDate" placeholder={t.placeholders.expiryDate} required />
-                          </div>
-                          <div>
-                            <Label htmlFor="cvv">{t.checkout.cvv}</Label>
-                            <Input id="cvv" placeholder={t.placeholders.cvv} required />
-                          </div>
-                        </div>
-
-                        <div className="relative">
-                          <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t" />
-                          </div>
-                          <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">
-                              {t.checkout.orPayWith}
-                            </span>
-                          </div>
-                        </div>
-
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setShowPayPal(true)}
-                          className="w-full"
-                        >
-                          <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.276 5.12-6.514 5.12h-.5a.805.805 0 00-.794.68l-.04.22-.63 3.993-.032.17a.804.804 0 01-.794.679H7.72a.483.483 0 01-.477-.558L7.418 21h1.518l.95-6.02h1.385c4.678 0 7.75-2.203 8.796-6.502z" />
-                            <path d="M2.379 0h5.791c1.666 0 2.983.414 3.832 1.197.405.374.7.817.91 1.325.224.533.354 1.15.39 1.862.004.052.007.104.011.157a5.622 5.622 0 01-.043 1.162 8.669 8.669 0 01-.36 1.537c-.734 2.543-2.574 3.713-5.49 3.713H5.446a.807.807 0 00-.795.68l-.844 5.345a.483.483 0 01-.477.415H.483a.484.484 0 01-.477-.558L2.379 0z" />
-                          </svg>
-                          PayPal
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => setShowPayPal(false)}
-                          className="mb-4"
-                        >
-                          ← {t.checkout.creditCard}
-                        </Button>
-                        <PayPalButton orderData={formData} />
-                      </>
-                    )}
+                    <div className="text-center text-sm text-muted-foreground mb-4">
+                      Secure payment powered by Stripe
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -282,24 +243,37 @@ export default function CheckoutPage() {
                       </div>
                     </div>
 
-                    <Button
-                      type="submit"
-                      size="lg"
-                      className="w-full group relative overflow-hidden"
-                      disabled={isProcessing}
-                    >
-                      <span className="relative z-10 flex items-center justify-center gap-2">
-                        {isProcessing ? (
-                          <>
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            {t.checkout.processing}
-                          </>
-                        ) : (
-                          t.checkout.placeOrder
-                        )}
-                      </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    </Button>
+                    <div className="space-y-3">
+                      <Button
+                        type="submit"
+                        size="lg"
+                        className="w-full group relative overflow-hidden"
+                        disabled={isProcessing}
+                      >
+                        <span className="relative z-10 flex items-center justify-center gap-2">
+                          {isProcessing ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              {t.checkout.processing}
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/>
+                              </svg>
+                              {paymentMethod === 'stripe' ? t.checkout.placeOrder : 'Continue with PayPal'}
+                            </>
+                          )}
+                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </Button>
+
+                      <div className="text-center">
+                        <span className="text-sm text-muted-foreground">{t.checkout.orPayWith}</span>
+                      </div>
+
+                      <PayPalButton orderData={formData} />
+                    </div>
                   </CardContent>
                 </Card>
               </div>
