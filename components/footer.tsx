@@ -109,9 +109,9 @@ export function Footer() {
               {t.footer.contact}
             </h3>
             <div className="flex flex-col gap-2 text-muted-foreground text-sm">
-              <p className="hover:text-primary transition-colors duration-300 cursor-pointer">
+              <a href="mailto:mkt.digitalvieiras@gmail.com" className="hover:text-primary transition-colors duration-300 cursor-pointer">
                 mkt.digitalvieiras@gmail.com
-              </p>
+              </a>
               
               
               
