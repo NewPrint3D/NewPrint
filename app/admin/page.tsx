@@ -145,6 +145,20 @@ export default function AdminDashboard() {
                   <div className="font-medium">{t.admin.manageProducts}</div>
                   <div className="text-sm text-muted-foreground">{t.admin.manageProductsHelper}</div>
                 </button>
+                <button
+                  onClick={() => router.push("/admin/orders")}
+                  className="w-full p-4 text-left rounded-lg border border-border hover:bg-accent transition-colors duration-200"
+                >
+                  <div className="font-medium">Manage Orders</div>
+                  <div className="text-sm text-muted-foreground">View and process customer orders</div>
+                </button>
+                <button
+                  onClick={() => router.push("/admin/settings")}
+                  className="w-full p-4 text-left rounded-lg border border-border hover:bg-accent transition-colors duration-200"
+                >
+                  <div className="font-medium">Site Settings</div>
+                  <div className="text-sm text-muted-foreground">Configure site appearance and settings</div>
+                </button>
               </CardContent>
             </Card>
 

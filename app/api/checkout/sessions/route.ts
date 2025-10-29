@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout`,
 
-      // Payment method configuration - remove restrictions that trigger identity verification
+      // Payment method configuration - minimal setup to avoid verification
       payment_method_types: ['card'],
       payment_method_options: {
         card: {
@@ -90,11 +90,9 @@ export async function POST(request: Request) {
       //   ],
       // }),
 
-      // Disable promotion codes for now to avoid additional verification steps
+      // Disable all optional features that could trigger verification
       allow_promotion_codes: false,
-
-      // Make billing address optional to reduce verification requirements
-      billing_address_collection: 'auto',
+      // billing_address_collection: 'auto',
 
       // Configurações fiscais
       automatic_tax: {
