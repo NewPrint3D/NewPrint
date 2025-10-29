@@ -44,7 +44,7 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
     const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
 
     if (!clientId || clientId.trim() === "") {
-      setError(t.demo?.paypalNotConfigured || "PayPal not configured")
+      setError("PayPal client ID not configured. Please check your environment variables.")
       setIsLoading(false)
       return
     }
@@ -55,24 +55,26 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
       return
     }
 
-    // Load PayPal script
+    // Load PayPal script with proper configuration
     const script = document.createElement("script")
-    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&locale=${locale}_${locale.toUpperCase()}`
+    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&locale=en_US`
     script.async = true
     script.onload = () => {
+      console.log("[PAYPAL] SDK loaded successfully")
       renderPayPalButton()
     }
-    script.onerror = () => {
-      setError(t.demo?.paypalLoadError || "Failed to load PayPal")
+    script.onerror = (e) => {
+      console.error("[PAYPAL] Failed to load SDK:", e)
+      setError("Failed to load PayPal payment system. Please try again later.")
       setIsLoading(false)
     }
 
-    document.body.appendChild(script)
+    document.head.appendChild(script)
 
     return () => {
       // Cleanup script on unmount
-      if (document.body.contains(script)) {
-        document.body.removeChild(script)
+      if (document.head.contains(script)) {
+        document.head.removeChild(script)
       }
     }
   }, [])
@@ -128,6 +130,8 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
         },
         onApprove: async (data: any) => {
           try {
+            console.log("[PAYPAL] Payment approved, capturing order:", data.orderID)
+
             const response = await fetch("/api/paypal/capture-order", {
               method: "POST",
               headers: {
@@ -143,8 +147,11 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
             const result = await response.json()
 
             if (!response.ok) {
+              console.error("[PAYPAL] Capture failed:", result)
               throw new Error(result.error || "Failed to capture payment")
             }
+
+            console.log("[PAYPAL] Payment captured successfully:", result)
 
             // Clear cart
             clearCart()
@@ -155,8 +162,8 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
               description: t.checkout?.successMessage || "Your order has been confirmed.",
             })
 
-            // Redirect to order success page
-            router.push(`/order-success?session_id=paypal_${result.orderId}`)
+            // Redirect to order success page with proper session ID
+            router.push(`/order-success?session_id=${data.orderID}`)
           } catch (error) {
             console.error("Error capturing PayPal payment:", error)
             toast({

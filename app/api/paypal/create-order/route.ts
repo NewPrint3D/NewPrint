@@ -108,10 +108,12 @@ export async function POST(request: NextRequest) {
       ],
       application_context: {
         brand_name: "NewPrint3D",
-        locale: "en-US",
+        locale: "en_US",
         landing_page: "BILLING",
         shipping_preference: "SET_PROVIDED_ADDRESS",
         user_action: "PAY_NOW",
+        return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order-success`,
+        cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout`,
       },
     }
 
