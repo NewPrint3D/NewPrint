@@ -45,27 +45,52 @@ export async function POST(request: Request) {
 
       // Payment method configuration - minimal setup to avoid verification
       payment_method_types: ['card'],
-      payment_method_options: {
-        card: {
-          request_three_d_secure: 'automatic',
-        },
-      },
 
-      // CRITICAL: Disable all verification features that cause identity screens
+      // CRITICAL FIX: Complete elimination of all verification triggers
       phone_number_collection: {
         enabled: false,
       },
-      billing_address_collection: 'auto', // Keep minimal
+      billing_address_collection: 'auto',
       shipping_address_collection: {
-        allowed_countries: [], // Empty array disables shipping collection
+        allowed_countries: [], // Completely disable shipping collection
       },
-      customer_creation: 'if_required', // Don't force customer creation
+      customer_creation: 'if_required',
       invoice_creation: {
         enabled: false,
       },
       tax_id_collection: {
         enabled: false,
       },
+      submit_type: 'pay', // Explicit payment intent
+      payment_intent_data: {
+        setup_future_usage: undefined, // No future usage
+        metadata: {
+          integration_check: 'value',
+        },
+      },
+
+      // FINAL VERIFICATION ELIMINATION - These are the critical settings
+      consent_collection: {
+        terms_of_service: 'none', // No terms collection
+      },
+      custom_text: {
+        shipping_address: undefined,
+        submit: undefined,
+      },
+      custom_fields: [], // No custom fields
+      customer_update: undefined, // No customer updates
+      discounts: [], // No discounts
+      expires_at: undefined, // No expiration
+      locale: 'auto', // Auto locale
+      payment_method_collection: 'always', // But minimal collection
+      payment_method_options: {
+        card: {
+          request_three_d_secure: 'automatic',
+        },
+      },
+      setup_intent_data: undefined, // No setup intent
+      subscription_data: undefined, // No subscriptions
+      ui_mode: undefined, // Default UI mode
 
       // Informações do cliente
       customer_email: shippingInfo?.email,

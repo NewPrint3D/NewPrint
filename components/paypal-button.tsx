@@ -69,13 +69,31 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
     }
     script.onerror = (e) => {
       console.error("[PAYPAL] Failed to load SDK:", e)
-      setError("Failed to load PayPal payment system. Please try again later.")
+      setError("Failed to load PayPal payment system. Please check your internet connection and try again.")
       setIsLoading(false)
     }
 
     // Add script to head for better loading priority
     document.head.appendChild(script)
     console.log("[PAYPAL] Script added to head, waiting for load...")
+
+    // Add timeout for loading failures
+    const timeoutId = setTimeout(() => {
+      if (isLoading) {
+        console.error("[PAYPAL] SDK loading timeout")
+        setError("PayPal payment system is taking too long to load. Please refresh the page.")
+        setIsLoading(false)
+      }
+    }, 10000) // 10 second timeout
+
+    return () => {
+      clearTimeout(timeoutId)
+      // Cleanup script on unmount
+      if (document.head.contains(script)) {
+        console.log("[PAYPAL] Cleaning up script")
+        document.head.removeChild(script)
+      }
+    }
 
     return () => {
       // Cleanup script on unmount
