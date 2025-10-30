@@ -6,12 +6,16 @@ const PAYPAL_API_BASE =
     : "https://api-m.sandbox.paypal.com"
 
 async function getPayPalAccessToken(): Promise<string> {
-  // Usar NEXT_PUBLIC em server-side também funciona, mas prefira sem prefixo
+  // Check for PayPal credentials - prioritize production environment variables
   const clientId = process.env.PAYPAL_CLIENT_ID || process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
   const clientSecret = process.env.PAYPAL_CLIENT_SECRET
 
+  console.log("[PAYPAL] Checking credentials - Client ID:", clientId ? "Present" : "Missing")
+  console.log("[PAYPAL] Checking credentials - Client Secret:", clientSecret ? "Present" : "Missing")
+
   if (!clientId || !clientSecret) {
-    throw new Error("PayPal credentials not configured")
+    console.error("[PAYPAL] PayPal credentials not configured properly")
+    throw new Error("PayPal credentials not configured. Please check PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET environment variables.")
   }
 
   const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64")
