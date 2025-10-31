@@ -301,24 +301,36 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
     // Create and load PayPal SDK script
     const script = document.createElement("script")
     script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&locale=en_US&components=buttons&enable-funding=paypal&disable-funding=card`
-    script.async = true
+    script.async = false // CRITICAL: Change to sync loading to prevent race conditions
+    script.defer = true // But defer execution until DOM is ready
     script.id = "paypal-sdk-script" // Add ID for easier tracking
+    script.setAttribute('data-sdk-integration-source', 'button-factory') // PayPal recommended attribute
 
     script.onload = () => {
-      console.log("[PAYPAL] SDK loaded successfully")
+      console.log("[PAYPAL] SDK script loaded, waiting for initialization...")
 
-      // Verify Buttons component is available after load
-      if (typeof window.paypal?.Buttons !== 'function') {
-        console.error("[PAYPAL] SDK loaded but Buttons is not a function. Available methods:", Object.keys(window.paypal || {}))
-        setError("PayPal SDK loaded incorrectly. Please refresh the page.")
-        return
+      // CRITICAL: Wait for PayPal SDK to fully initialize
+      // The SDK takes time to set up the Buttons component after script load
+      const checkPayPalReady = (attempts = 0) => {
+        if (typeof window.paypal?.Buttons === 'function') {
+          console.log("[PAYPAL] ✅ SDK fully initialized with Buttons component, version:", window.paypal?.version)
+          // Use double requestAnimationFrame for maximum safety
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              renderPayPalButtonRef.current?.()
+            })
+          })
+        } else if (attempts < 50) {
+          // Check again in 100ms (max 5 seconds)
+          console.log(`[PAYPAL] Waiting for Buttons initialization... attempt ${attempts + 1}/50`)
+          setTimeout(() => checkPayPalReady(attempts + 1), 100)
+        } else {
+          console.error("[PAYPAL] SDK loaded but Buttons never initialized. window.paypal:", window.paypal)
+          setError("PayPal SDK failed to initialize. Please refresh the page.")
+        }
       }
 
-      console.log("[PAYPAL] Buttons component verified, version:", window.paypal?.version)
-      // Use requestAnimationFrame to ensure DOM is ready
-      requestAnimationFrame(() => {
-        renderPayPalButtonRef.current?.()
-      })
+      checkPayPalReady()
     }
 
     script.onerror = (e) => {
