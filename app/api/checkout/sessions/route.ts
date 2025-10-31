@@ -25,28 +25,33 @@ export async function POST(request: Request) {
     const tax = itemTotal * 0.1
     const total = itemTotal + shipping + tax
 
-    // Criar Checkout Session
+    // CRITICAL FIX: Minimal Stripe Checkout configuration to prevent SMS/phone verification
+    // Key strategy: Omit all optional parameters that could trigger verification
     const session = await stripe.checkout.sessions.create({
+      // Required parameters only
+      mode: 'payment',
+
+      // Line items - products + shipping + tax
       line_items: [
         // Product line items
         ...items.map((item: any) => ({
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: item.product.name.en || item.product.name,
-            description: item.product.description?.en || item.product.description || '',
-            images: item.product.image ? [`${process.env.NEXT_PUBLIC_SITE_URL}${item.product.image}`] : [],
-            metadata: {
-              product_id: item.product.id,
-              color: item.selectedColor || '',
-              size: item.selectedSize || '',
-              material: item.selectedMaterial || '',
-            }
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: item.product.name.en || item.product.name,
+              description: item.product.description?.en || item.product.description || '',
+              images: item.product.image ? [`${process.env.NEXT_PUBLIC_SITE_URL}${item.product.image}`] : [],
+              metadata: {
+                product_id: item.product.id,
+                color: item.selectedColor || '',
+                size: item.selectedSize || '',
+                material: item.selectedMaterial || '',
+              }
+            },
+            unit_amount: Math.round(item.price * 100),
           },
-          unit_amount: Math.round(item.price * 100), // Convert to cents
-        },
-        quantity: item.quantity,
-      })),
+          quantity: item.quantity,
+        })),
         // Shipping line item
         {
           price_data: {
@@ -72,109 +77,83 @@ export async function POST(request: Request) {
           quantity: 1,
         },
       ],
-      mode: 'payment',
+
+      // Success/cancel URLs
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout`,
 
-      // Payment method configuration - minimal setup to avoid verification
+      // CRITICAL: Only accept cards (no wallets that might require verification)
       payment_method_types: ['card'],
 
-      // CRITICAL FIX: Complete elimination of all verification triggers
-      phone_number_collection: {
-        enabled: false,
-      },
-      billing_address_collection: 'auto',
-      shipping_address_collection: {
-        allowed_countries: [], // Completely disable shipping collection
-      },
-      customer_creation: 'if_required',
-      invoice_creation: {
-        enabled: false,
-      },
-      tax_id_collection: {
-        enabled: false,
-      },
-      submit_type: 'pay', // Explicit payment intent
-      payment_intent_data: {
-        setup_future_usage: undefined, // No future usage
-        metadata: {
-          integration_check: 'value',
-        },
-      },
+      // CRITICAL: Never create a Customer object (prevents verification triggers)
+      customer_creation: undefined,
 
-      // FINAL VERIFICATION ELIMINATION - These are the critical settings
-      consent_collection: {
-        terms_of_service: 'none', // No terms collection
-      },
-      custom_text: {
-        shipping_address: undefined,
-        submit: undefined,
-      },
-      custom_fields: [], // No custom fields
-      customer_update: undefined, // No customer updates
-      discounts: [], // No discounts
-      expires_at: undefined, // No expiration
-      locale: 'auto', // Auto locale
-      payment_method_collection: 'always', // But minimal collection
-      payment_method_options: {
-        card: {
-          request_three_d_secure: 'automatic',
-        },
-      },
-      setup_intent_data: undefined, // No setup intent
-      subscription_data: undefined, // No subscriptions
-      ui_mode: undefined, // Default UI mode
+      // CRITICAL: Do NOT collect phone numbers (completely omit the parameter)
+      // phone_number_collection: undefined, // Omitted - not even set to false
 
-      // Informações do cliente
+      // CRITICAL: Minimal billing address collection
+      billing_address_collection: undefined, // Omitted to prevent any address-based verification
+
+      // CRITICAL: Do NOT collect shipping address (completely omit the parameter)
+      // shipping_address_collection: undefined, // Omitted
+
+      // Optional customer email for receipt (safe - doesn't trigger verification)
       customer_email: shippingInfo?.email,
 
-      // Metadata para rastreamento - CRITICAL: Include totals for webhook
+      // Metadata for webhook processing
       metadata: {
         user_id: userId || 'guest',
         subtotal: itemTotal.toFixed(2),
         shipping: shipping.toFixed(2),
         tax: tax.toFixed(2),
         total: total.toFixed(2),
+        // Store shipping info in metadata instead of using shipping_address_collection
+        shipping_first_name: shippingInfo?.firstName || '',
+        shipping_last_name: shippingInfo?.lastName || '',
+        shipping_email: shippingInfo?.email || '',
+        shipping_phone: shippingInfo?.phone || '',
+        shipping_address: shippingInfo?.address || '',
+        shipping_city: shippingInfo?.city || '',
+        shipping_state: shippingInfo?.state || '',
+        shipping_zip_code: shippingInfo?.zipCode || '',
+        shipping_country: shippingInfo?.country || '',
       },
 
-      // Disable shipping address collection to avoid additional verification
-      // shipping_address_collection: {
-      //   allowed_countries: ['BR', 'US'],
-      // },
-
-      // Disable shipping options to avoid additional verification steps
-      // ...(shippingInfo && {
-      //   shipping_options: [
-      //     {
-      //       shipping_rate_data: {
-      //         type: 'fixed_amount',
-      //         fixed_amount: {
-      //           amount: 999, // $9.99 in cents
-      //           currency: 'usd',
-      //         },
-      //         display_name: 'Standard Shipping',
-      //         delivery_estimate: {
-      //           minimum: {
-      //             unit: 'business_day',
-      //             value: 5,
-      //           },
-      //           maximum: {
-      //             unit: 'business_day',
-      //             value: 10,
-      //           },
-      //         },
-      //       },
-      //     },
-      //   ],
-      // }),
-
-      // Disable all optional features that could trigger verification
+      // CRITICAL: Disable all verification-triggering features
       allow_promotion_codes: false,
 
-      // Configurações fiscais
-      automatic_tax: {
-        enabled: false, // Ative se tiver Stripe Tax configurado
+      // Payment intent configuration - minimal to prevent verification
+      payment_intent_data: {
+        // CRITICAL: Disable setup for future usage (prevents Customer creation)
+        setup_future_usage: undefined,
+
+        // Capture method - immediate capture
+        capture_method: 'automatic',
+
+        // Basic metadata
+        metadata: {
+          order_type: 'ecommerce_purchase',
+        },
       },
+
+      // CRITICAL: Disable 3D Secure unless absolutely required by card issuer
+      payment_method_options: {
+        card: {
+          // Only request 3DS when REQUIRED by card issuer (not for Radar rules)
+          request_three_d_secure: 'if_required',
+        },
+      },
+
+      // Disable automatic tax calculation
+      automatic_tax: {
+        enabled: false,
+      },
+
+      // Submit type
+      submit_type: 'pay',
+
+      // Locale
+      locale: 'auto',
     })
 
     return NextResponse.json({

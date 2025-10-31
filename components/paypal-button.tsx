@@ -65,14 +65,17 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
     setComponentState('ready')
   }, [])
 
-  // Robust container checking with proper timing
+  // CRITICAL FIX: Ensure container exists before rendering
   const waitForContainer = useCallback((callback: () => void, attempts = 0): void => {
-    if (!paypalRef.current) {
-      if (attempts < 50) { // Max 50 attempts (5 seconds at 100ms intervals)
+    // Check if container ref exists AND is mounted in DOM
+    if (!paypalRef.current || !document.contains(paypalRef.current)) {
+      if (attempts < 100) { // Increased to 100 attempts (10 seconds at 100ms intervals)
+        console.log(`[PAYPAL] Waiting for container... attempt ${attempts + 1}/100`)
         containerCheckTimeoutRef.current = setTimeout(() => {
           waitForContainer(callback, attempts + 1)
         }, 100)
       } else {
+        console.error("[PAYPAL] Container check timeout after 10 seconds")
         setError("PayPal button container failed to initialize. Please refresh the page.")
       }
       return
@@ -84,6 +87,7 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
       containerCheckTimeoutRef.current = null
     }
 
+    console.log("[PAYPAL] Container verified, proceeding with button render")
     callback()
   }, [setError])
 
@@ -95,9 +99,20 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
     }
 
     waitForContainer(() => {
-      if (!paypalRef.current) return
+      // Double-check container exists and is in DOM
+      if (!paypalRef.current) {
+        console.error("[PAYPAL] Container ref is null after waitForContainer succeeded")
+        setError("PayPal button container error. Please refresh the page.")
+        return
+      }
 
-      console.log("[PAYPAL] Rendering button to container")
+      if (!document.contains(paypalRef.current)) {
+        console.error("[PAYPAL] Container not in DOM after waitForContainer succeeded")
+        setError("PayPal button container not mounted. Please refresh the page.")
+        return
+      }
+
+      console.log("[PAYPAL] Rendering button to container", paypalRef.current)
 
       // Clear any existing content
       paypalRef.current.innerHTML = ""
@@ -211,15 +226,28 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
         },
       })
 
-      console.log("[PAYPAL] Calling buttons.render()...")
+      // Final safety check before render
+      if (!paypalRef.current) {
+        console.error("[PAYPAL] CRITICAL: Container became null before render call")
+        setError("PayPal container error. Please refresh the page.")
+        return
+      }
+
+      console.log("[PAYPAL] Calling buttons.render() on container:", paypalRef.current)
+
       buttons.render(paypalRef.current)
         .then(() => {
-          console.log("[PAYPAL] Button rendered successfully")
+          console.log("[PAYPAL] ✅ Button rendered successfully")
           setReady()
         })
         .catch((err: any) => {
-          console.error("Error rendering PayPal button:", err)
-          setError("Failed to render PayPal button. Please try again.")
+          console.error("[PAYPAL] ❌ Error rendering PayPal button:", err)
+          // Provide detailed error message based on error type
+          if (err && err.message && err.message.includes('container')) {
+            setError("PayPal button container error. The payment container could not be initialized. Please refresh the page.")
+          } else {
+            setError("Failed to render PayPal button. Please refresh the page and try again.")
+          }
         })
     })
   }, [items, orderTotal, shipping, tax, orderData, clearCart, router, toast, t, waitForContainer, setError, setReady])
@@ -291,27 +319,35 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
   }, [isHydrated, setError]) // Only depend on hydration status
 
 
-  // Render based on component state
-  if (!isHydrated || componentState === 'loading') {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-      </div>
-    )
-  }
+  // CRITICAL FIX: Always render container div to prevent race condition
+  // The PayPal SDK needs the container to exist in DOM before buttons.render() is called
+  return (
+    <div className="relative">
+      {/* Loading overlay - shows on top of container while loading */}
+      {(!isHydrated || componentState === 'loading') && (
+        <div className="absolute inset-0 flex items-center justify-center p-8 bg-background/80 backdrop-blur-sm z-10">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      )}
 
-  if (componentState === 'error') {
-    return (
-      <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-        <p className="text-sm text-red-800 dark:text-red-200">
-          <strong>PayPal Error:</strong> {errorMessage}
-        </p>
-        <p className="text-xs text-red-700 dark:text-red-300 mt-2">
-          Please check your PayPal configuration or try again later.
-        </p>
-      </div>
-    )
-  }
+      {/* Error overlay - shows on top of container if error occurs */}
+      {componentState === 'error' && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-sm text-red-800 dark:text-red-200">
+            <strong>PayPal Error:</strong> {errorMessage}
+          </p>
+          <p className="text-xs text-red-700 dark:text-red-300 mt-2">
+            Please check your PayPal configuration or try again later.
+          </p>
+        </div>
+      )}
 
-  return <div ref={paypalRef} />
+      {/* PayPal button container - ALWAYS rendered to avoid "container not found" error */}
+      <div
+        ref={paypalRef}
+        className={componentState === 'error' ? 'hidden' : 'min-h-[50px]'}
+        data-paypal-container="true"
+      />
+    </div>
+  )
 }

@@ -280,12 +280,32 @@ async function fulfillCheckout(sessionId: string) {
         throw new Error(`Total mismatch: metadata=${total}, stripe=${stripeTotal}`)
       }
 
-      // Extract shipping information
+      // CRITICAL FIX: Extract shipping information from metadata (not from session.shipping)
+      // This prevents Stripe from requiring shipping address collection which triggers verification
       const sessionData = session as any
-      const shippingName = sessionData.shipping?.name || sessionData.customer_details?.name || ''
-      const nameParts = shippingName.split(' ')
-      const firstName = nameParts[0] || ''
-      const lastName = nameParts.slice(1).join(' ') || ''
+
+      // Read shipping info from metadata (stored by checkout session creation)
+      const firstName = session.metadata?.shipping_first_name || ''
+      const lastName = session.metadata?.shipping_last_name || ''
+      const shippingEmail = session.metadata?.shipping_email || sessionData.customer_email || sessionData.customer_details?.email || ''
+      const shippingPhone = session.metadata?.shipping_phone || ''
+      const shippingAddress = session.metadata?.shipping_address || ''
+      const shippingCity = session.metadata?.shipping_city || ''
+      const shippingState = session.metadata?.shipping_state || ''
+      const shippingZipCode = session.metadata?.shipping_zip_code || ''
+      const shippingCountry = session.metadata?.shipping_country || ''
+
+      console.log('[STRIPE] Creating order with shipping info from metadata:', {
+        firstName,
+        lastName,
+        email: shippingEmail,
+        phone: shippingPhone,
+        address: shippingAddress,
+        city: shippingCity,
+        state: shippingState,
+        zipCode: shippingZipCode,
+        country: shippingCountry
+      })
 
       const newOrder = await sql`
         INSERT INTO orders (
@@ -321,13 +341,13 @@ async function fulfillCheckout(sessionId: string) {
           ${session.payment_intent},
           ${firstName},
           ${lastName},
-          ${sessionData.customer_email || sessionData.customer_details?.email || ''},
-          ${sessionData.shipping?.phone || sessionData.customer_details?.phone || ''},
-          ${sessionData.shipping?.address?.line1 || ''},
-          ${sessionData.shipping?.address?.city || ''},
-          ${sessionData.shipping?.address?.state || ''},
-          ${sessionData.shipping?.address?.postal_code || ''},
-          ${sessionData.shipping?.address?.country || ''}
+          ${shippingEmail},
+          ${shippingPhone},
+          ${shippingAddress},
+          ${shippingCity},
+          ${shippingState},
+          ${shippingZipCode},
+          ${shippingCountry}
         )
         RETURNING id
       `
