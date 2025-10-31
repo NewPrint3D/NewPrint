@@ -55,8 +55,14 @@ export async function POST(request: Request) {
       case "payment_intent.succeeded":
         const paymentIntent = event.data.object
 
+        // CRITICAL: Validate database connection
+        if (!sql) {
+          console.error("[STRIPE WEBHOOK] Database not configured")
+          return NextResponse.json({ error: "Database error" }, { status: 500 })
+        }
+
         // Find order to validate amount
-        const orders = await sql!`
+        const orders = await sql`
           SELECT id, total, payment_status
           FROM orders
           WHERE stripe_payment_intent_id = ${paymentIntent.id}
@@ -64,7 +70,8 @@ export async function POST(request: Request) {
 
         if (orders.length === 0) {
           console.error(`[STRIPE WEBHOOK] Order not found: ${paymentIntent.id}`)
-          return NextResponse.json({ error: "Order not found" }, { status: 404 })
+          // Return 500 so Stripe retries (order might be created later)
+          return NextResponse.json({ error: "Order not found" }, { status: 500 })
         }
 
         const order = orders[0]
@@ -84,7 +91,7 @@ export async function POST(request: Request) {
 
         // Update payment status in database
         try {
-          await sql!`
+          await sql`
             UPDATE orders
             SET payment_status = 'paid', status = 'processing', updated_at = CURRENT_TIMESTAMP
             WHERE stripe_payment_intent_id = ${paymentIntent.id}
@@ -100,8 +107,13 @@ export async function POST(request: Request) {
       case "payment_intent.payment_failed":
         const failedPayment = event.data.object
 
+        if (!sql) {
+          console.error("[STRIPE WEBHOOK] Database not configured")
+          return NextResponse.json({ error: "Database error" }, { status: 500 })
+        }
+
         try {
-          await sql!`
+          await sql`
             UPDATE orders
             SET payment_status = 'failed', updated_at = CURRENT_TIMESTAMP
             WHERE stripe_payment_intent_id = ${failedPayment.id}
@@ -119,7 +131,13 @@ export async function POST(request: Request) {
       case "charge.dispute.created":
         const dispute = event.data.object
         console.log(`[STRIPE WEBHOOK] Dispute created: ${dispute.id}`)
-        await sql!`
+
+        if (!sql) {
+          console.error("[STRIPE WEBHOOK] Database not configured")
+          return NextResponse.json({ error: "Database error" }, { status: 500 })
+        }
+
+        await sql`
           UPDATE orders
           SET status = 'disputed', updated_at = CURRENT_TIMESTAMP
           WHERE stripe_payment_intent_id = ${dispute.payment_intent}
@@ -129,7 +147,13 @@ export async function POST(request: Request) {
       case "charge.dispute.funds_reinstated":
         const reinstated = event.data.object
         console.log(`[STRIPE WEBHOOK] Funds reinstated: ${reinstated.id}`)
-        await sql!`
+
+        if (!sql) {
+          console.error("[STRIPE WEBHOOK] Database not configured")
+          return NextResponse.json({ error: "Database error" }, { status: 500 })
+        }
+
+        await sql`
           UPDATE orders
           SET status = 'processing', updated_at = CURRENT_TIMESTAMP
           WHERE stripe_payment_intent_id = ${reinstated.payment_intent}
@@ -139,7 +163,13 @@ export async function POST(request: Request) {
       case "charge.refunded":
         const refund = event.data.object
         console.log(`[STRIPE WEBHOOK] Refund processed: ${refund.id}`)
-        await sql!`
+
+        if (!sql) {
+          console.error("[STRIPE WEBHOOK] Database not configured")
+          return NextResponse.json({ error: "Database error" }, { status: 500 })
+        }
+
+        await sql`
           UPDATE orders
           SET payment_status = 'refunded', status = 'cancelled', updated_at = CURRENT_TIMESTAMP
           WHERE stripe_payment_intent_id = ${refund.payment_intent}
@@ -190,6 +220,11 @@ async function fulfillCheckout(sessionId: string) {
     return
   }
 
+  if (!sql) {
+    console.error('[STRIPE] Database not configured - cannot fulfill checkout')
+    return
+  }
+
   try {
     // Recuperar a sessão com line_items expandidos
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
@@ -203,7 +238,7 @@ async function fulfillCheckout(sessionId: string) {
     }
 
     // Buscar pedido existente ou criar novo
-    const existingOrders = await sql!`
+    const existingOrders = await sql`
       SELECT id, payment_status
       FROM orders
       WHERE stripe_payment_intent_id = ${session.payment_intent}
@@ -220,7 +255,7 @@ async function fulfillCheckout(sessionId: string) {
       }
 
       // Atualizar pedido existente
-      await sql!`
+      await sql`
         UPDATE orders
         SET payment_status = 'paid', status = 'processing', updated_at = CURRENT_TIMESTAMP
         WHERE id = ${order.id}
@@ -230,10 +265,20 @@ async function fulfillCheckout(sessionId: string) {
     } else {
       // Create new order from Checkout session
       const lineItems = session.line_items?.data || []
-      const shipping = session.shipping_cost?.amount_total || 0
-      const subtotal = session.amount_subtotal || 0
-      const total = session.amount_total || 0
-      const tax = total - subtotal - shipping
+
+      // CRITICAL FIX: Read totals from metadata (not from shipping_cost)
+      const subtotal = parseFloat(session.metadata?.subtotal || '0')
+      const shipping = parseFloat(session.metadata?.shipping || '0')
+      const tax = parseFloat(session.metadata?.tax || '0')
+      const total = parseFloat(session.metadata?.total || '0')
+
+      // CRITICAL: Validate against Stripe's total - REJECT if mismatch
+      const stripeTotal = session.amount_total ? session.amount_total / 100 : 0
+      if (Math.abs(total - stripeTotal) > 0.01) {
+        console.error(`[STRIPE WEBHOOK] SECURITY: Total mismatch - Metadata: ${total}, Stripe: ${stripeTotal}`)
+        // Don't create order - data integrity issue
+        throw new Error(`Total mismatch: metadata=${total}, stripe=${stripeTotal}`)
+      }
 
       // Extract shipping information
       const sessionData = session as any
@@ -242,7 +287,7 @@ async function fulfillCheckout(sessionId: string) {
       const firstName = nameParts[0] || ''
       const lastName = nameParts.slice(1).join(' ') || ''
 
-      const newOrder = await sql!`
+      const newOrder = await sql`
         INSERT INTO orders (
           user_id,
           order_number,
@@ -266,10 +311,10 @@ async function fulfillCheckout(sessionId: string) {
         ) VALUES (
           ${session.metadata?.user_id || null},
           ${`CS-${sessionId.slice(-10)}`},
-          ${subtotal / 100},
-          ${shipping / 100},
-          ${tax / 100},
-          ${total / 100},
+          ${subtotal},
+          ${shipping},
+          ${tax},
+          ${total},
           'processing',
           'paid',
           'stripe',
@@ -294,7 +339,7 @@ async function fulfillCheckout(sessionId: string) {
         const priceData = item.price as any
         const productData = priceData?.product as any
 
-        await sql!`
+        await sql`
           INSERT INTO order_items (
             order_id,
             product_id,
@@ -318,13 +363,20 @@ async function fulfillCheckout(sessionId: string) {
           )
         `
 
-        // Update product stock
+        // Update product stock - with availability check
         if (productData?.metadata?.product_id) {
-          await sql!`
+          const stockUpdate = await sql`
             UPDATE products
-            SET stock_quantity = GREATEST(0, stock_quantity - ${item.quantity || 1})
+            SET stock_quantity = stock_quantity - ${item.quantity || 1}
             WHERE id = ${productData.metadata.product_id}
+            AND stock_quantity >= ${item.quantity || 1}
+            RETURNING stock_quantity
           `
+
+          if (stockUpdate.length === 0) {
+            console.warn(`[STRIPE] Insufficient stock for product ${productData.metadata.product_id} - order processed but stock at 0`)
+            // Payment already captured - we accept the order but log the issue
+          }
         }
       }
 
@@ -347,11 +399,16 @@ async function handleFailedCheckout(sessionId: string) {
     return
   }
 
+  if (!sql) {
+    console.error('[STRIPE] Database not configured - cannot handle failed checkout')
+    return
+  }
+
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId)
 
     if (session.payment_intent) {
-      await sql!`
+      await sql`
         UPDATE orders
         SET payment_status = 'failed', updated_at = CURRENT_TIMESTAMP
         WHERE stripe_payment_intent_id = ${session.payment_intent}

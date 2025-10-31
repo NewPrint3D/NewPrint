@@ -90,24 +90,52 @@ export async function POST(request: NextRequest) {
     const tax = itemTotal * 0.1
     const total = itemTotal + shipping + tax
 
-    // Validate total matches PayPal order
+    // CRITICAL: Validate total matches PayPal order - REJECT if mismatch
     const expectedTotal = parseFloat(captureData.purchase_units[0].amount.value)
     if (Math.abs(total - expectedTotal) > 0.01) {
-      console.warn(`[PAYPAL] Total mismatch - Calculated: ${total}, PayPal: ${expectedTotal}`)
+      console.error(`[PAYPAL] SECURITY: Total mismatch detected - Calculated: ${total}, PayPal: ${expectedTotal}`)
+      return NextResponse.json(
+        {
+          error: "Payment amount mismatch. Transaction rejected for security reasons.",
+          orderID: captureData.id,
+          calculated: total,
+          received: expectedTotal
+        },
+        { status: 400 }
+      )
     }
 
     // Save order to database
     try {
-      const orderResult = await sql!`
+      // CRITICAL: Validate database connection before operations
+      if (!sql) {
+        console.error("[PAYPAL] Database not configured")
+        return NextResponse.json(
+          {
+            error: "Database error. Please contact support.",
+            orderID: captureData.id,
+            databaseError: true
+          },
+          { status: 500 }
+        )
+      }
+
+      const orderResult = await sql`
         INSERT INTO orders (
-          user_id, order_number, total, status, payment_status, payment_method,
-          paypal_order_id, shipping_address, shipping_city, shipping_state,
+          user_id, order_number,
+          subtotal, shipping, tax, total,
+          status, payment_status, payment_method,
+          paypal_order_id,
+          shipping_address, shipping_city, shipping_state,
           shipping_zip_code, shipping_country, shipping_email, shipping_phone,
           shipping_first_name, shipping_last_name
         )
         VALUES (
-          ${userId}, ${`PP-${orderID.slice(-10)}`}, ${total.toFixed(2)}, 'pending', 'paid', 'paypal',
-          ${orderID}, ${customerData.address}, ${customerData.city},
+          ${userId}, ${`PP-${orderID.slice(-10)}`},
+          ${itemTotal.toFixed(2)}, ${shipping.toFixed(2)}, ${tax.toFixed(2)}, ${total.toFixed(2)},
+          'processing', 'paid', 'paypal',
+          ${orderID},
+          ${customerData.address}, ${customerData.city},
           ${customerData.state}, ${customerData.zipCode}, ${customerData.country},
           ${customerData.email}, ${customerData.phone},
           ${customerData.firstName}, ${customerData.lastName}
@@ -119,7 +147,7 @@ export async function POST(request: NextRequest) {
 
       // Insert order items
       for (const item of items) {
-        await sql!`
+        await sql`
           INSERT INTO order_items (
             order_id, product_id, product_name, quantity, unit_price,
             selected_color, selected_size, selected_material, subtotal
@@ -132,12 +160,19 @@ export async function POST(request: NextRequest) {
           )
         `
 
-        // Update product stock
-        await sql!`
+        // Update product stock - with availability check
+        const stockUpdate = await sql`
           UPDATE products
-          SET stock_quantity = GREATEST(0, stock_quantity - ${item.quantity})
+          SET stock_quantity = stock_quantity - ${item.quantity}
           WHERE id = ${item.product.id}
+          AND stock_quantity >= ${item.quantity}
+          RETURNING stock_quantity
         `
+
+        if (stockUpdate.length === 0) {
+          console.warn(`[PAYPAL] Insufficient stock for product ${item.product.id} - order processed but stock at 0`)
+          // Payment already captured - we accept the order but log the issue
+        }
       }
 
       console.log(`[PAYPAL] Order saved to database: ${orderId}`)

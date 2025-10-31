@@ -4,10 +4,34 @@ import { neon } from "@neondatabase/serverless"
 const DATABASE_URL = process.env.DATABASE_URL
 
 // Criar cliente SQL do Neon apenas se DATABASE_URL estiver configurada
-export const sql = DATABASE_URL ? neon(DATABASE_URL) : null
+export const sql = DATABASE_URL
+  ? (() => {
+      try {
+        const client = neon(DATABASE_URL)
+        console.log("[DATABASE] Neon client initialized successfully")
+        return client
+      } catch (error) {
+        console.error("[DATABASE] Failed to initialize Neon client:", error)
+        if (process.env.NODE_ENV === "production") {
+          throw new Error(
+            "Database connection failed. Please check DATABASE_URL environment variable."
+          )
+        }
+        return null
+      }
+    })()
+  : null
 
 // Flag para verificar se está em modo demonstração
 export const isDemoMode = !DATABASE_URL
+
+// Validation: In production, DATABASE_URL must be set
+if (process.env.NODE_ENV === "production" && !DATABASE_URL) {
+  console.error(
+    "[DATABASE] CRITICAL: DATABASE_URL not configured in production environment!"
+  )
+  throw new Error("DATABASE_URL is required in production")
+}
 
 // Função auxiliar para log em modo demo
 export function logDemoMode(operation: string) {
@@ -80,9 +104,10 @@ export interface Order {
   shipping_state: string
   shipping_zip_code: string
   shipping_country: string
-  payment_method: string
+  payment_method: "stripe" | "paypal"
   payment_status: "pending" | "paid" | "failed" | "refunded"
   stripe_payment_intent_id?: string
+  paypal_order_id?: string
   created_at: Date
   updated_at: Date
 }

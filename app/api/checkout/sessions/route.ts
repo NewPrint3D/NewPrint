@@ -19,9 +19,17 @@ export async function POST(request: Request) {
       )
     }
 
+    // Calculate totals
+    const itemTotal = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
+    const shipping = 9.99
+    const tax = itemTotal * 0.1
+    const total = itemTotal + shipping + tax
+
     // Criar Checkout Session
     const session = await stripe.checkout.sessions.create({
-      line_items: items.map((item: any) => ({
+      line_items: [
+        // Product line items
+        ...items.map((item: any) => ({
         price_data: {
           currency: 'usd',
           product_data: {
@@ -39,6 +47,31 @@ export async function POST(request: Request) {
         },
         quantity: item.quantity,
       })),
+        // Shipping line item
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Standard Shipping',
+              description: '5-10 business days delivery',
+            },
+            unit_amount: 999, // $9.99
+          },
+          quantity: 1,
+        },
+        // Tax line item
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Sales Tax',
+              description: '10% tax',
+            },
+            unit_amount: Math.round(tax * 100),
+          },
+          quantity: 1,
+        },
+      ],
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout`,
@@ -95,9 +128,13 @@ export async function POST(request: Request) {
       // Informações do cliente
       customer_email: shippingInfo?.email,
 
-      // Metadata para rastreamento
+      // Metadata para rastreamento - CRITICAL: Include totals for webhook
       metadata: {
         user_id: userId || 'guest',
+        subtotal: itemTotal.toFixed(2),
+        shipping: shipping.toFixed(2),
+        tax: tax.toFixed(2),
+        total: total.toFixed(2),
       },
 
       // Disable shipping address collection to avoid additional verification
