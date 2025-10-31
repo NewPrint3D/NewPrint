@@ -10,7 +10,7 @@ export const isStripeDemoMode = !STRIPE_SECRET_KEY
 // Criar cliente Stripe apenas se as chaves estiverem configuradas
 export const stripe = STRIPE_SECRET_KEY
   ? new Stripe(STRIPE_SECRET_KEY, {
-      apiVersion: "2025-09-30.clover",
+      apiVersion: "2024-06-20", // ✅ SENIOR FIX: Use latest stable API version
       typescript: true,
     })
   : null
