@@ -98,6 +98,13 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
       return
     }
 
+    // CRITICAL: Verify Buttons component is available
+    if (typeof window.paypal.Buttons !== 'function') {
+      console.error("[PAYPAL] PayPal SDK loaded but Buttons component is not available")
+      setError("PayPal Buttons component not available. Please refresh the page.")
+      return
+    }
+
     waitForContainer(() => {
       // Double-check container exists and is in DOM
       if (!paypalRef.current) {
@@ -268,20 +275,46 @@ export function PayPalButton({ orderData }: PayPalButtonProps) {
 
     console.log("[PAYPAL] Initializing with client ID:", clientId.substring(0, 10) + "...")
 
-    // Check if SDK is already loaded
-    if (window.paypal) {
-      console.log("[PAYPAL] SDK already available, rendering button")
+    // Check if SDK is already loaded AND Buttons component is available
+    if (window.paypal && typeof window.paypal.Buttons === 'function') {
+      console.log("[PAYPAL] SDK already available with Buttons component, rendering button")
       renderPayPalButtonRef.current?.()
       return
+    }
+
+    // If paypal exists but Buttons is not a function, SDK is incomplete - reload it
+    if (window.paypal && typeof window.paypal.Buttons !== 'function') {
+      console.warn("[PAYPAL] SDK exists but Buttons component not available - will reload SDK")
+      // Remove incomplete SDK
+      delete (window as any).paypal
+    }
+
+    // Check if script already exists in DOM
+    const existingScript = document.querySelector('script[src*="paypal.com/sdk/js"]')
+    if (existingScript) {
+      console.log("[PAYPAL] Script already in DOM, removing old script first")
+      existingScript.remove()
+      // Also clear window.paypal to force reload
+      delete (window as any).paypal
     }
 
     // Create and load PayPal SDK script
     const script = document.createElement("script")
     script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&locale=en_US&components=buttons&enable-funding=paypal&disable-funding=card`
     script.async = true
+    script.id = "paypal-sdk-script" // Add ID for easier tracking
 
     script.onload = () => {
-      console.log("[PAYPAL] SDK loaded successfully, version:", window.paypal?.version)
+      console.log("[PAYPAL] SDK loaded successfully")
+
+      // Verify Buttons component is available after load
+      if (typeof window.paypal?.Buttons !== 'function') {
+        console.error("[PAYPAL] SDK loaded but Buttons is not a function. Available methods:", Object.keys(window.paypal || {}))
+        setError("PayPal SDK loaded incorrectly. Please refresh the page.")
+        return
+      }
+
+      console.log("[PAYPAL] Buttons component verified, version:", window.paypal?.version)
       // Use requestAnimationFrame to ensure DOM is ready
       requestAnimationFrame(() => {
         renderPayPalButtonRef.current?.()
