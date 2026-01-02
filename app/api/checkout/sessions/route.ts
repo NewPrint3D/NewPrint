@@ -7,12 +7,13 @@ export async function POST(request: Request) {
   try {
     const { items, userId, shippingInfo } = await request.json()
 
-    // Validar dados
-    if (!items || items.length === 0) {
+    // =============================
+    // Validações iniciais
+    // =============================
+    if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "Carrinho vazio" }, { status: 400 })
     }
 
-    // Validate Stripe configuration
     if (!stripe) {
       console.error("[STRIPE] Stripe not configured")
       return NextResponse.json(
@@ -21,15 +22,41 @@ export async function POST(request: Request) {
       )
     }
 
-    // Calculate totals
+    // =============================
+    // Validação de preços (CRÍTICO)
+    // =============================
+    items.forEach((item: any) => {
+      const price = Number(item.price)
+
+      if (!price || price <= 0) {
+        throw new Error(
+          `Preço inválido para o produto: ${item.product?.name || "sem nome"}`
+        )
+      }
+
+      if (!item.quantity || item.quantity <= 0) {
+        throw new Error(
+          `Quantidade inválida para o produto: ${item.product?.name || "sem nome"}`
+        )
+      }
+    })
+
+    // =============================
+    // Cálculos
+    // =============================
     const itemTotal = items.reduce(
-      (sum: number, item: any) => sum + item.price * item.quantity,
+      (sum: number, item: any) =>
+        sum + Number(item.price) * item.quantity,
       0
     )
+
     const shipping = 9.99
     const tax = itemTotal * 0.1
     const total = itemTotal + shipping + tax
 
+    // =============================
+    // Criação da sessão Stripe
+    // =============================
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
 
@@ -39,43 +66,45 @@ export async function POST(request: Request) {
             currency: "usd",
             product_data: {
               name:
-                typeof item.product.name === "string"
+                typeof item.product?.name === "string"
                   ? item.product.name
-                  : item.product.name?.en || "Produto",
+                  : item.product?.name?.en || "Produto",
 
               description:
-                typeof item.product.description === "string"
+                typeof item.product?.description === "string"
                   ? item.product.description
-                  : item.product.description?.en || "",
+                  : item.product?.description?.en || "",
 
-              images: item.product.image
+              images: item.product?.image
                 ? [`${process.env.NEXT_PUBLIC_SITE_URL}${item.product.image}`]
                 : [],
 
               metadata: {
-                product_id: String(item.product.id || ""),
+                product_id: String(item.product?.id || ""),
                 color: item.selectedColor || "",
                 size: item.selectedSize || "",
                 material: item.selectedMaterial || "",
               },
             },
-            unit_amount: Math.round(item.price * 100),
+            unit_amount: Math.round(Number(item.price) * 100),
           },
           quantity: item.quantity,
         })),
 
+        // Frete
         {
           price_data: {
             currency: "usd",
             product_data: {
               name: "Standard Shipping",
-              description: "5-10 business days delivery",
+              description: "5–10 business days delivery",
             },
             unit_amount: 999,
           },
           quantity: 1,
         },
 
+        // Taxa
         {
           price_data: {
             currency: "usd",
@@ -118,10 +147,15 @@ export async function POST(request: Request) {
       sessionId: session.id,
       url: session.url,
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error("[STRIPE] Error creating checkout session:", error)
+
     return NextResponse.json(
-      { error: "Payment system temporarily unavailable." },
+      {
+        error:
+          error?.message ||
+          "Payment system temporarily unavailable.",
+      },
       { status: 500 }
     )
   }
