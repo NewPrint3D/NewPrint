@@ -38,7 +38,7 @@ export default function CheckoutPage() {
     country: "",
   })
 
-  const shipping = 9.99
+  const shipping = 5.99
   const tax = totalPrice * 0.1
   const orderTotal = totalPrice + shipping + tax
 
