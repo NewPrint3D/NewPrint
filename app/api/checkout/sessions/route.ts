@@ -60,70 +60,44 @@ export async function POST(request: Request) {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
 
-      line_items: [
-       ...items.map((item: any) => {
+   line_items: items.map((item: any) => {
   const rawImage = item?.product?.image
+
   const images =
-    typeof rawImage === "string" && rawImage.startsWith("http") && rawImage.length < 2000
+    typeof rawImage === "string" &&
+    rawImage.startsWith("http") &&
+    rawImage.length < 2000
       ? [rawImage]
       : undefined
 
-  return ({
+  return {
+    price_data: {
+      currency: "usd",
+      product_data: {
+        name:
+          typeof item.product?.name === "string"
+            ? item.product.name
+            : item.product?.name?.en || "Produto",
 
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name:
-                typeof item.product?.name === "string"
-                  ? item.product.name
-                  : item.product?.name?.en || "Produto",
+        description:
+          typeof item.product?.description === "string"
+            ? item.product.description
+            : item.product?.description?.en || "",
 
-              description:
-                typeof item.product?.description === "string"
-                  ? item.product.description
-                  : item.product?.description?.en || "",
+        ...(images ? { images } : {}),
 
-           ...(images ? { images } : {}),
-
-
-              metadata: {
-                product_id: String(item.product?.id || ""),
-                color: item.selectedColor || "",
-                size: item.selectedSize || "",
-                material: item.selectedMaterial || "",
-              },
-            },
-            unit_amount: Math.round(Number(item.price) * 100),
-          },
-          quantity: item.quantity,
-        })),
-
-        // Frete
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "Standard Shipping",
-              description: "5–10 business days delivery",
-            },
-            unit_amount: 999,
-          },
-          quantity: 1,
+        metadata: {
+          product_id: String(item.product?.id || ""),
+          color: item.selectedColor || "",
+          size: item.selectedSize || "",
+          material: item.selectedMaterial || "",
         },
-
-        // Taxa
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "Sales Tax",
-              description: "10% tax",
-            },
-            unit_amount: Math.round(tax * 100),
-          },
-          quantity: 1,
-        },
-      ],
+      },
+      unit_amount: Math.round(Number(item.price) * 100),
+    },
+    quantity: item.quantity,
+  }
+}),
 
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout`,
