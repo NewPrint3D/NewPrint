@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       0
     )
 
-    const shipping = 9.99
+    const shipping = 5.99
     const tax = itemTotal * 0.1
     const total = itemTotal + shipping + tax
 
@@ -61,7 +61,15 @@ export async function POST(request: Request) {
       mode: "payment",
 
       line_items: [
-        ...items.map((item: any) => ({
+       ...items.map((item: any) => {
+  const rawImage = item?.product?.image
+  const images =
+    typeof rawImage === "string" && rawImage.startsWith("http") && rawImage.length < 2000
+      ? [rawImage]
+      : undefined
+
+  return ({
+
           price_data: {
             currency: "usd",
             product_data: {
@@ -75,9 +83,8 @@ export async function POST(request: Request) {
                   ? item.product.description
                   : item.product?.description?.en || "",
 
-              images: item.product?.image
-                ? [`${process.env.NEXT_PUBLIC_SITE_URL}${item.product.image}`]
-                : [],
+           ...(images ? { images } : {}),
+
 
               metadata: {
                 product_id: String(item.product?.id || ""),
