@@ -60,44 +60,72 @@ export async function POST(request: Request) {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
 
-   line_items: items.map((item: any) => {
-  const rawImage = item?.product?.image
+  line_items: [
+  // PRODUTOS
+  ...items.map((item: any) => {
+    const rawImage = item?.product?.image
 
-  const images =
-    typeof rawImage === "string" &&
-    rawImage.startsWith("http") &&
-    rawImage.length < 2000
-      ? [rawImage]
-      : undefined
+    const images =
+      typeof rawImage === "string" &&
+      rawImage.startsWith("http") &&
+      rawImage.length < 2000
+        ? [rawImage]
+        : undefined
 
-  return {
-    price_data: {
-      currency: "usd",
-      product_data: {
-        name:
-          typeof item.product?.name === "string"
-            ? item.product.name
-            : item.product?.name?.en || "Produto",
+    return {
+      price_data: {
+        currency: "eur",
+        product_data: {
+          name:
+            typeof item.product?.name === "string"
+              ? item.product.name
+              : item.product?.name?.en || "Produto",
 
-        description:
-          typeof item.product?.description === "string"
-            ? item.product.description
-            : item.product?.description?.en || "",
+          description:
+            typeof item.product?.description === "string"
+              ? item.product.description
+              : item.product?.description?.en || "",
 
-        ...(images ? { images } : {}),
+          ...(images ? { images } : {}),
 
-        metadata: {
-          product_id: String(item.product?.id || ""),
-          color: item.selectedColor || "",
-          size: item.selectedSize || "",
-          material: item.selectedMaterial || "",
+          metadata: {
+            product_id: String(item.product?.id || ""),
+            color: item.selectedColor || "",
+            size: item.selectedSize || "",
+            material: item.selectedMaterial || "",
+          },
         },
+        unit_amount: Math.round(Number(item.price) * 100),
       },
-      unit_amount: Math.round(Number(item.price) * 100),
+      quantity: item.quantity,
+    }
+  }),
+
+  // 🚚 ENVIO
+  {
+    price_data: {
+      currency: "eur",
+      product_data: {
+        name: "Envio",
+      },
+      unit_amount: Math.round(shipping * 100),
     },
-    quantity: item.quantity,
-  }
-}),
+    quantity: 1,
+  },
+
+  // 🧾 IMPOSTOS
+  {
+    price_data: {
+      currency: "eur",
+      product_data: {
+        name: "Impostos",
+      },
+      unit_amount: Math.round(tax * 100),
+    },
+    quantity: 1,
+  },
+],
+
 
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout`,
