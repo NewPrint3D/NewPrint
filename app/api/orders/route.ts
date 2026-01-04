@@ -93,7 +93,7 @@ export async function POST(request: Request) {
 
     // Calcular totais
     const subtotal = items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0)
-    const shipping = 9.99
+    const shipping = 5.99
     const tax = subtotal * 0.1
     const total = subtotal + shipping + tax
 
