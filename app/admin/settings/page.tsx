@@ -29,7 +29,7 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState({
     siteName: "NewPrint3D",
     siteDescription: "Premium 3D printing with full customization",
-    contactEmail: "contact@newprint3d.com",
+    contactEmail: "contacto@newprint3d.com",
     maintenanceMode: false,
     allowGuestCheckout: true,
     maxOrderValue: 1000,
