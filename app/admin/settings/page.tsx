@@ -33,7 +33,7 @@ export default function AdminSettingsPage() {
     maintenanceMode: false,
     allowGuestCheckout: true,
     maxOrderValue: 1000,
-    currency: "USD",
+    currency: "eur",
     timezone: "UTC",
     smtpEnabled: false,
     smtpHost: "",
