@@ -16,7 +16,7 @@ export default function CartPage() {
   const { t, locale } = useLanguage()
   const { items, removeItem, updateQuantity, totalPrice } = useCart()
 
-  const shipping = 9.99
+  const shipping = 5.99
   const tax = totalPrice * 0.1
   const orderTotal = totalPrice + shipping + tax
 
