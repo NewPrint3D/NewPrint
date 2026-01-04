@@ -16,7 +16,7 @@ export const stripe = STRIPE_SECRET_KEY
   : null
 
 // Função para criar Payment Intent
-export async function createPaymentIntent(amount: number, currency = "usd") {
+export async function createPaymentIntent(amount: number, currency = "eur") {
   if (!stripe) {
     throw new Error("Stripe not configured")
   }

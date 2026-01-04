@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       name: item.product.name.en || item.product.name,
       description: item.product.description?.en?.substring(0, 127) || "3D Printed Product",
       unit_amount: {
-        currency_code: "USD",
+        currency_code: "eur",
         value: item.price.toFixed(2),
       },
       quantity: item.quantity.toString(),
@@ -78,19 +78,19 @@ export async function POST(request: NextRequest) {
         {
           description: "NewPrint3D Order",
           amount: {
-            currency_code: "USD",
+            currency_code: "eur",
             value: total.toFixed(2),
             breakdown: {
               item_total: {
-                currency_code: "USD",
+                currency_code: "eur",
                 value: itemTotal.toFixed(2),
               },
               shipping: {
-                currency_code: "USD",
+                currency_code: "eur",
                 value: shipping.toFixed(2),
               },
               tax_total: {
-                currency_code: "USD",
+                currency_code: "eur",
                 value: tax.toFixed(2),
               },
             },

@@ -120,11 +120,11 @@ This report details the comprehensive analysis and systematic fixes performed to
 - **Code Changes:**
   ```javascript
   // BEFORE
-  script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&locale=${locale}_${locale.toUpperCase()}`
+  script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=eur&locale=${locale}_${locale.toUpperCase()}`
   document.body.appendChild(script)
 
   // AFTER
-  script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&locale=en_US`
+  script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=eur&intent=capture&locale=en_US`
   document.head.appendChild(script)
   ```
 - **Impact:** PayPal SDK loads correctly without infinite loops
@@ -437,10 +437,10 @@ This report details the comprehensive analysis and systematic fixes performed to
 - **Code Changes:**
   ```javascript
   // BEFORE: Basic configuration
-  script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&locale=en_US&components=buttons`
+  script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=eur&intent=capture&locale=en_US&components=buttons`
 
   // AFTER: Production-optimized configuration
-  script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&locale=en_US&components=buttons&enable-funding=paypal&disable-funding=card`
+  script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=eur&intent=capture&locale=en_US&components=buttons&enable-funding=paypal&disable-funding=card`
   ```
 - **Impact:** PayPal buttons load instantly and reliably
 

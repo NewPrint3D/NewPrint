@@ -9,10 +9,10 @@ export const formatCurrency = (value: number, locale: SupportedLocale): string =
       maximumFractionDigits: 2,
     }).format(value)
   } catch (error) {
-    // Fallback para USD se houver erro
+    // Fallback para eur se houver erro
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'eur',
       minimumFractionDigits: 2,
     }).format(value)
   }

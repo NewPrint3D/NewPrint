@@ -56,7 +56,7 @@ export default async function ProductDetailPage({ params }: Props) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://newprint3d.com"
 
   // JSON-LD structured data for Product
-  // Using USD as canonical currency for schema.org (international SEO best practice)
+  // Using eur as canonical currency for schema.org (international SEO best practice)
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -71,7 +71,7 @@ export default async function ProductDetailPage({ params }: Props) {
     offers: {
       "@type": "Offer",
       url: `${baseUrl}/products/${product.id}`,
-      priceCurrency: "USD",
+      priceCurrency: "eur",
       price: product.basePrice.toFixed(2),
       availability: "https://schema.org/InStock",
       itemCondition: "https://schema.org/NewCondition",

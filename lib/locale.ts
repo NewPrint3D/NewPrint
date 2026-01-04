@@ -1,8 +1,8 @@
 export type SupportedLocale = 'pt' | 'en' | 'es'
 
 export const currencyByLocale: Record<SupportedLocale, string> = {
-  pt: 'BRL',
-  en: 'USD',
+  pt: 'eur',
+  en: 'eur',
   es: 'EUR',
 }
 
