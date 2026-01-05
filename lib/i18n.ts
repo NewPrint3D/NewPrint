@@ -821,7 +821,7 @@ export const translations = {
     },
     customProjects: {
       title: "Projetos Personalizados",
-      subtitle: "Seu carro ou bem quebrou aquela pecinha de plástico e está difícil de encontrar? Envie uma foto com referências e fabricamos ela para você!",
+      subtitle: "Precisa de uma peça plástica difícil de encontrar? Envie referências e fabricamos sob medida em impressão 3D",
       navLink: "Projetos Personalizados",
       customProjects: "Projetos Personalizados",
       customProjectsDesc: "Transformamos sua ideia em realidade",
