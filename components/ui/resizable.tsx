@@ -1,74 +1,77 @@
-'use client'
+"use client"
 
-import * as React from 'react'
-import { GripVerticalIcon } from 'lucide-react'
-import {
-  PanelGroup,
-  Panel,
-  PanelResizeHandle,
-} from 'react-resizable-panels'
+import * as React from "react"
+import { GripVerticalIcon } from "lucide-react"
+import { Group, Panel, Separator } from "react-resizable-panels"
 
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils"
 
-/* ================================
-   Panel Group
-================================ */
+/**
+ * This wrapper keeps the same API that shadcn/ui uses:
+ * - ResizablePanelGroup (accepts `direction`)
+ * - ResizablePanel
+ * - ResizableHandle (with optional `withHandle`)
+ *
+ * Under the hood it uses react-resizable-panels v4.x:
+ * - Group / Panel / Separator
+ */
 
-const ResizablePanelGroup = ({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<typeof PanelGroup>) => {
-  return (
-    <PanelGroup
-      className={cn(
-        'flex h-full w-full data-[panel-group-direction=vertical]:flex-col',
-        className
-      )}
-      {...props}
-    />
-  )
+type ResizablePanelGroupProps = React.ComponentPropsWithoutRef<typeof Group> & {
+  direction?: "horizontal" | "vertical"
 }
 
-/* ================================
-   Panel
-================================ */
+const ResizablePanelGroup = React.forwardRef<HTMLDivElement, ResizablePanelGroupProps>(
+  ({ className, direction = "horizontal", orientation, elementRef, ...props }, ref) => {
+    return (
+      <Group
+        {...props}
+        orientation={orientation ?? direction}
+        className={cn("flex h-full w-full", className)}
+        elementRef={(ref ?? elementRef) as any}
+      />
+    )
+  }
+)
+ResizablePanelGroup.displayName = "ResizablePanelGroup"
 
-const ResizablePanel = (
-  props: React.ComponentPropsWithoutRef<typeof Panel>
-) => {
-  return <Panel {...props} />
-}
+type ResizablePanelProps = React.ComponentPropsWithoutRef<typeof Panel>
 
-/* ================================
-   Resize Handle
-================================ */
+const ResizablePanel = React.forwardRef<HTMLDivElement, ResizablePanelProps>(
+  ({ className, elementRef, ...props }, ref) => {
+    return <Panel {...props} className={className} elementRef={(ref ?? elementRef) as any} />
+  }
+)
+ResizablePanel.displayName = "ResizablePanel"
 
-const ResizableHandle = ({
-  withHandle,
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<typeof PanelResizeHandle> & {
+type ResizableHandleProps = React.ComponentPropsWithoutRef<typeof Separator> & {
   withHandle?: boolean
-}) => {
-  return (
-    <PanelResizeHandle
-      className={cn(
-        'relative flex w-px items-center justify-center bg-border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-        className
-      )}
-      {...props}
-    >
-      {withHandle && (
-        <div className="z-10 flex h-4 w-3 items-center justify-center rounded-sm border bg-background">
-          <GripVerticalIcon className="h-2.5 w-2.5" />
-        </div>
-      )}
-    </PanelResizeHandle>
-  )
 }
 
-export {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-}
+const ResizableHandle = React.forwardRef<HTMLDivElement, ResizableHandleProps>(
+  ({ className, withHandle, elementRef, ...props }, ref) => {
+    return (
+      <Separator
+        {...props}
+        elementRef={(ref ?? elementRef) as any}
+        className={cn(
+          // default: vertical separator for horizontal groups
+          "relative flex w-px h-full items-center justify-center bg-border",
+          // if the separator is horizontal (group is vertical), swap sizes
+          "aria-[orientation=horizontal]:h-px aria-[orientation=horizontal]:w-full",
+          // make it easier to grab
+          "data-[separator]:cursor-col-resize aria-[orientation=horizontal]:data-[separator]:cursor-row-resize",
+          className
+        )}
+      >
+        {withHandle ? (
+          <div className="z-10 flex h-4 w-3 items-center justify-center rounded-sm border bg-background">
+            <GripVerticalIcon className="h-2.5 w-2.5" />
+          </div>
+        ) : null}
+      </Separator>
+    )
+  }
+)
+ResizableHandle.displayName = "ResizableHandle"
+
+export { ResizablePanelGroup, ResizablePanel, ResizableHandle }
