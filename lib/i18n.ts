@@ -309,8 +309,8 @@ export const translations = {
       },
       shippingHighlights: {
         fast: {
-          title: "Fast Shipping",
-          description: "3-5 business days delivery",
+          title: "Fast shipping within 48 hours",
+          description: "Delivery in 5-8 business days.",
         },
         quality: {
           title: "Quality Guarantee",
@@ -398,7 +398,7 @@ export const translations = {
     },
     customProjects: {
       title: "Custom Projects",
-      subtitle: "Your car or property broke that plastic part and it's hard to find? Send a photo with references and we'll make it for you!",
+      subtitle: "Do you need a hard-to-find plastic part? Send us references and we will manufacture it to measure using 3D printing",
       navLink: "Custom Projects",
       customProjects: "Custom Projects",
       customProjectsDesc: "We transform your idea into reality",
@@ -1244,7 +1244,7 @@ export const translations = {
     },
     customProjects: {
       title: "Proyectos Personalizados",
-      subtitle: "Precisión, personalización y materiales adecuados para cada tipo de aplicación",
+      subtitle: "¿Necesitas una pieza plástica difícil de encontrar? Envíanos referencias y la fabricamos a medida mediante impresión 3D",
       navLink: "Proyectos Personalizados",
       customProjects: "Proyectos Personalizados",
       customProjectsDesc: "Transformamos tu idea en realidad",
