@@ -170,10 +170,8 @@ export const translations = {
       },
       info: {
         title: "Contact Information",
-        address: "123 Innovation Street, Tech City, TC 12345",
-        email: "hello@newprint3d.com",
-        phone: "+1 (555) 123-4567",
-        hours: "Mon - Fri: 9:00 AM - 6:00 PM",
+                email: "contacto@newprint3d.com",
+               hours: "Mon - Fri: 9:00 AM - 6:00 PM",
       },
       quickResponse: {
         title: "Quick Response",
@@ -593,10 +591,8 @@ export const translations = {
       },
       info: {
         title: "Informações de Contato",
-        address: "Rua da Inovação 123, Cidade Tech, CT 12345",
-        email: "ola@newprint3d.com",
-        phone: "+55 (11) 1234-5678",
-        hours: "Seg - Sex: 9:00 - 18:00",
+                email: "contacto@newprint3d.com",
+              hours: "Seg - Sex: 9:00 - 18:00",
       },
       quickResponse: {
         title: "Resposta Rápida",
@@ -1016,10 +1012,8 @@ export const translations = {
       },
       info: {
         title: "Información de Contacto",
-        address: "Calle Innovación 123, Ciudad Tech, CT 12345",
-        email: "hola@newprint3d.com",
-        phone: "+34 912 345 678",
-        hours: "Lun - Vie: 9:00 - 18:00",
+                email: "contacto@newprint3d.com",
+               hours: "Lun - Vie: 9:00 - 18:00",
       },
       quickResponse: {
         title: "Respuesta Rápida",
