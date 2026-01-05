@@ -471,7 +471,7 @@ export const translations = {
         description: "Prazos rápidos sem comprometer a qualidade",
       },
       support: {
-        title: "Suporte 24/7",
+        title: "Suporte especializado",
         description: "Assistência especializada sempre que precisar",
       },
     },
@@ -732,8 +732,8 @@ export const translations = {
       },
       shippingHighlights: {
         fast: {
-          title: "Envio Rápido",
-          description: "Entrega em 3-5 dias úteis",
+          title: "Envio Rápido em até 48 horas",
+          description: "Entrega em 5-8 dias úteis",
         },
         quality: {
           title: "Garantia de Qualidade",
@@ -826,7 +826,7 @@ export const translations = {
       customProjects: "Projetos Personalizados",
       customProjectsDesc: "Transformamos sua ideia em realidade",
       replacementParts: "Peças de Reposição",
-      replacementPartsDesc: "Aquela pecinha de plástico que quebrou? Fabricamos para você!",
+      replacementPartsDesc: "Precisão, personalização e materiais adequados para cada aplicação!",
       prototypes: "Protótipos",
       prototypesDesc: "Do conceito ao produto final",
       requestProject: "Solicite seu Projeto",
@@ -894,7 +894,7 @@ export const translations = {
         description: "Tiempos de entrega rápidos sin comprometer la calidad",
       },
       support: {
-        title: "Soporte 24/7",
+        title: "Soporte especializado",
         description: "Asistencia experta cuando la necesites",
       },
     },
@@ -1155,8 +1155,8 @@ export const translations = {
       },
       shippingHighlights: {
         fast: {
-          title: "Envío Rápido",
-          description: "Entrega en 3-5 días hábiles",
+          title: "Envío en 48 horas",
+          description: "Entrega en 5-8 días hábiles",
         },
         quality: {
           title: "Garantía de Calidad",
@@ -1244,7 +1244,7 @@ export const translations = {
     },
     customProjects: {
       title: "Proyectos Personalizados",
-      subtitle: "¿Tu coche o propiedad se rompió esa pieza de plástico y es difícil de encontrar? ¡Envía una foto con referencias y la fabricamos para ti!",
+      subtitle: "Precisión, personalización y materiales adecuados para cada tipo de aplicación",
       navLink: "Proyectos Personalizados",
       customProjects: "Proyectos Personalizados",
       customProjectsDesc: "Transformamos tu idea en realidad",
