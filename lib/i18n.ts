@@ -48,8 +48,8 @@ export const translations = {
         description: "Quick turnaround times without compromising quality",
       },
       support: {
-        title: "24/7 Support",
-        description: "Specialized assistance whenever you need it",
+        title: "Personalized Support",
+        description: "Monday to Friday · Business hours",
       },
     },
     products: {
