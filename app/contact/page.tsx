@@ -31,21 +31,13 @@ export default function ContactPage() {
   }
 
   const contactInfo = [
-    {
-      icon: MapPin,
-      label: t.contact.info.address,
-      color: "from-primary to-primary/50",
-    },
+     
     {
       icon: Mail,
       label: t.contact.info.email,
       color: "from-accent to-accent/50",
     },
-    {
-      icon: Phone,
-      label: t.contact.info.phone,
-      color: "from-chart-3 to-chart-3/50",
-    },
+   
     {
       icon: Clock,
       label: t.contact.info.hours,
