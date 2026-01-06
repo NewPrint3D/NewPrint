@@ -87,6 +87,46 @@ export default function CheckoutPage() {
       setIsProcessing(false)
     }
   }
+const handlePayPalCheckout = async () => {
+  setIsProcessing(true)
+
+  try {
+    const response = await fetch("/api/paypal/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items: items.map((item) => ({
+          product: item.product,
+          price: item.price,
+          quantity: item.quantity,
+          selectedColor: item.selectedColor,
+          selectedSize: item.selectedSize,
+          selectedMaterial: item.selectedMaterial,
+        })),
+        userId: null,
+        shippingInfo: formData,
+      }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to create PayPal order")
+    }
+
+    // Redirect to PayPal
+    window.location.href = data.approvalUrl
+  } catch (error) {
+    console.error("PayPal checkout error:", error)
+    toast({
+      title: t.errors?.paymentFailed || "Payment Failed",
+      description: error instanceof Error ? error.message : "Please try again",
+      variant: "destructive",
+    })
+  } finally {
+    setIsProcessing(false)
+  }
+}
 
   useEffect(() => {
     if (typeof window === "undefined") return
