@@ -193,6 +193,9 @@ export async function POST(req: Request) {
     const approveLink = Array.isArray(createData?.links)
       ? createData.links.find((l: any) => l.rel === "approve")?.href
       : null;
+console.log("==== PAYPAL CREATE ORDER RESULT ====")
+console.log("createData:", JSON.stringify(createData, null, 2))
+console.log("approveLink:", approveLink)
 
     return NextResponse.json(
       {
