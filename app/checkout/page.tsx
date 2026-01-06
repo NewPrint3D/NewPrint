@@ -130,10 +130,14 @@ try {
   })
 }
 
-    console.error("PayPal checkout error:", error)
-    toast({
-      title: t.errors?.paymentFailed || "Payment Failed",
-      description: error instanceof Error ? error.message : "Please try again",
+   console.error("Erro de checkout do PayPal:", error)
+
+toast({
+  title: t.errors?.paymentFailed || "Pagamento Falhado",
+  description: error instanceof Error ? error.message : "Por favor, tente novamente",
+  variant: "destructive",
+})
+
       variant: "destructive",
     })
   } finally {
