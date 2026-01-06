@@ -107,20 +107,20 @@ const handlePayPalCheckout = async () => {
         shippingInfo: formData,
       }),
     })
-
+try {
    const data = await response.json()
 
 if (!response.ok) {
   throw new Error(data.error || "Failed to create PayPal order")
 }
 
-if (!data.approvalUrl) {
-  console.error("PayPal response:", data)
-  throw new Error("Missing PayPal approval URL")
+if (!data?.approveUrl) {
+  console.log("PayPal response:", data)
+  throw new Error("approveUrl didn't come from the backend")
 }
 
 // Redirect to PayPal
-window.location.href = data.approvalUrl
+window.location.href = data.approveUrl
   } catch (error) {
     console.error("PayPal checkout error:", error)
     toast({
