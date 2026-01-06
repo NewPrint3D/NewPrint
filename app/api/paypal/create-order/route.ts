@@ -109,8 +109,8 @@ const orderPayload = {
           tax_total: {
             currency_code: "EUR",
             value: tax.toFixed(2),
+          
           },
-        },
       },
       items: paypalItems,
     
