@@ -140,7 +140,7 @@ toast({
 
       variant: "destructive",
     })
-  } finally {
+} finally {
     setIsProcessing(false)
   }
 }
