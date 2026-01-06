@@ -57,7 +57,10 @@ export async function POST(request: NextRequest) {
     const accessToken = await getPayPalAccessToken()
 
     // Calculate item total
-    const itemTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+   const itemTotal = items.reduce(
+  (sum, item) => sum + Number(item.price) * Number(item.quantity),
+  0
+)
 
     // Prepare PayPal order items
     const paypalItems = items.map((item: any) => ({
@@ -65,8 +68,8 @@ export async function POST(request: NextRequest) {
       description: item.product.description?.en?.substring(0, 127) || "3D Printed Product",
       unit_amount: {
         currency_code: "EUR",
-        value: item.price.toFixed(2),
-      },
+       value: Number(item.price).toFixed(2),
+       },
       quantity: item.quantity.toString(),
       category: "PHYSICAL_GOODS",
     }))
