@@ -113,6 +113,7 @@ const orderPayload = {
         },
       },
       items: paypalItems,
+    
     },
   ],
   application_context: {
