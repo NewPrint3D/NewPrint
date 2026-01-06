@@ -108,17 +108,19 @@ const handlePayPalCheckout = async () => {
       }),
     })
 
-    const data = await response.json()
+   const data = await response.json()
 
-    if (!response.ok) {
-      throw new Error(data.error || "Failed to create PayPal order")
-    }
-if (!data?.approvalUrl) {
-  console.error("PayPal create-order response:", data)
-  throw new Error(data?.error || "PayPal não retornou approvalUrl")
+if (!response.ok) {
+  throw new Error(data.error || "Failed to create PayPal order")
 }
-    // Redirect to PayPal
-   window.location.href = data.approveUrl
+
+if (!data.approvalUrl) {
+  console.error("PayPal response:", data)
+  throw new Error("Missing PayPal approval URL")
+}
+
+// Redirect to PayPal
+window.location.href = data.approvalUrl
   } catch (error) {
     console.error("PayPal checkout error:", error)
     toast({
