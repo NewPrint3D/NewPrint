@@ -144,43 +144,32 @@ export async function POST(req: Request) {
 
     const { accessToken, base } = await getPayPalAccessToken();
 
-    const orderPayload = {
-      intent: "CAPTURE",
-      purchase_units: [
-        {
-          description: "NewPrint3D Order",
-          amount: {
+   const orderPayload = {
+  intent: "CAPTURE",
+  purchase_units: [
+    {
+      amount: {
+        currency_code: "EUR",
+        value: to2(total),
+        breakdown: {
+          item_total: {
             currency_code: "EUR",
-            value: to2(total),
-            breakdown: {
-              item_total: { currency_code: "EUR", value: to2(itemTotal) },
-              shipping: { currency_code: "EUR", value: to2(shippingCost) },
-              tax_total: { currency_code: "EUR", value: to2(tax) },
-            },
-          },
-          items: paypalItems,
-          shipping: {
-            name: {
-              full_name: `${customerData.firstName || ""} ${customerData.lastName || ""}`.trim() || "Customer",
-            },
-            address: {
-              address_line_1: customerData.address || "Address",
-              admin_area_2: customerData.city || "City",
-              admin_area_1: customerData.state || "State",
-              postal_code: customerData.zipCode || "00000",
-              country_code: countryToCode(customerData.country),
-            },
+            value: to2(itemTotal),
           },
         },
-      ],
-      application_context: {
-        brand_name: "NewPrint3D",
-        landing_page: "BILLING",
-        user_action: "PAY_NOW",
-        return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order-success`,
-        cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout`,
       },
-    };
+      items: paypalItems,
+    },
+  ],
+  application_context: {
+    brand_name: "NewPrint3D",
+    locale: "en-US",
+    landing_page: "BILLING",
+    user_action: "PAY_NOW",
+    return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order-success`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout`,
+  },
+};
 
     const createRes = await fetch(`${base}/v2/checkout/orders`, {
       method: "POST",
