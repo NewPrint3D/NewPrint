@@ -69,7 +69,7 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "latest",
     "zod": "3.25.76",
-    "nodemailer": "^6.9.8"
+    "nodemailer": "^6.9.8",
     "resend": "^4.0.0"
   },
   "devDependencies": {
