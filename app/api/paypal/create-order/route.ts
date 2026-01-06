@@ -56,82 +56,72 @@ export async function POST(request: NextRequest) {
     // Get PayPal access token
     const accessToken = await getPayPalAccessToken()
 
-    // Calculate item total
-   const itemTotal = items.reduce(
-  (sum, item) => sum + Number(item.price) * Number(item.quantity),
-  0
-)
+   // Calculate totals safely
+const itemTotal = items.reduce((sum: number, item: any) => {
+  const price = Number(item?.price ?? 0)
+  const qty = Number(item?.quantity ?? 0)
+  return sum + price * qty
+}, 0)
 
-    // Prepare PayPal order items
-    const paypalItems = items.map((item: any) => ({
-      name: item.product.name.en || item.product.name,
-      description: item.product.description?.en?.substring(0, 127) || "3D Printed Product",
-      unit_amount: {
+const shipping = 0
+const tax = 0
+const total = itemTotal + shipping + tax
+
+if (!Number.isFinite(total) || total <= 0) {
+  return NextResponse.json({ error: "Invalid total amount" }, { status: 400 })
+}
+
+// Prepare PayPal order items
+const paypalItems = items.map((item: any) => ({
+  name: item?.product?.name?.en || item?.product?.name || "3D Printed Product",
+  description:
+    item?.product?.description?.en?.substring(0, 127) ||
+    item?.product?.description?.substring?.(0, 127) ||
+    "3D Printed Product",
+  unit_amount: {
+    currency_code: "EUR",
+    value: Number(item?.price ?? 0).toFixed(2),
+  },
+  quantity: String(item?.quantity ?? 1),
+  category: "PHYSICAL_GOODS",
+}))
+
+// Create PayPal order
+const orderPayload = {
+  intent: "CAPTURE",
+  purchase_units: [
+    {
+      description: "NewPrint3D Order",
+      amount: {
         currency_code: "EUR",
-       value: Number(item.price).toFixed(2),
-       },
-      quantity: item.quantity.toString(),
-      category: "PHYSICAL_GOODS",
-    }))
-
-    // Create PayPal order
-    const orderPayload = {
-      intent: "CAPTURE",
-      purchase_units: [
-        {
-          description: "NewPrint3D Order",
-          amount: {
+        value: total.toFixed(2),
+        breakdown: {
+          item_total: {
             currency_code: "EUR",
-            value: total.toFixed(2),
-            breakdown: {
-              item_total: {
-                currency_code: "EUR",
-                value: itemTotal.toFixed(2),
-              },
-              shipping: {
-                currency_code: "EUR",
-                value: shipping.toFixed(2),
-              },
-              tax_total: {
-                currency_code: "EUR",
-                value: tax.toFixed(2),
-              },
-            },
+            value: itemTotal.toFixed(2),
           },
-          items: paypalItems,
           shipping: {
-            name: {
-              full_name: `${customerData.firstName} ${customerData.lastName}`,
-            },
-            address: {
-              address_line_1: customerData.address,
-              admin_area_2: customerData.city,
-              admin_area_1: customerData.state,
-              postal_code: customerData.zipCode,
-              country_code: customerData.country === "United States" ? "US" : "BR",
-            },
+            currency_code: "EUR",
+            value: shipping.toFixed(2),
+          },
+          tax_total: {
+            currency_code: "EUR",
+            value: tax.toFixed(2),
           },
         },
-      ],
-      application_context: {
-        brand_name: "NewPrint3D",
-        locale: "en_US",
-        landing_page: "BILLING",
-        shipping_preference: "SET_PROVIDED_ADDRESS",
-        user_action: "PAY_NOW",
-        return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order-success`,
-        cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout`,
       },
-    }
-
-    const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(orderPayload),
-    })
+      items: paypalItems,
+    },
+  ],
+  application_context: {
+    brand_name: "NewPrint3D",
+    locale: "en_US",
+    landing_page: "BILLING",
+    user_action: "PAY_NOW",
+    return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order-success`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/checkout`,
+  },
+}
 
     if (!response.ok) {
       const error = await response.json()
