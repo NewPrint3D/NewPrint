@@ -282,8 +282,31 @@ const handlePayPalCheckout = async () => {
                         </span>
                         <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </Button>
+                      <Button
+                    type="button"
+               onClick={handlePayPalCheckout}
+               size="lg"
+              className="w-full group relative overflow-hidden"
+              disabled={isProcessing}
+              >
+                        <span className="relative z-10 flex items-center justify-center gap-2">
+                          {isProcessing ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              {t.checkout.processing}
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/>
+                              </svg>
+                             Pay with PayPal 
+                            </>
+                          )}
+                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </Button> 
                     </div>
-
                   </CardContent>
                 </Card>
               </div>
