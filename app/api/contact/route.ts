@@ -1,23 +1,28 @@
-export const runtime = "nodejs";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => ({}));
+  try {
+    const { name, email, subject, message } = await req.json();
 
-  const name = String(body?.name || "").trim();
-  const email = String(body?.email || "").trim();
-  const subject = String(body?.subject || "").trim();
-  const message = String(body?.message || "").trim();
+    await resend.emails.send({
+      from: "NewPrint3D <no-reply@newprint3d.com>",
+      to: ["contacto@newprint3d.com"],
+      replyTo: email,
+      subject: `[Contato Site] ${subject}`,
+      html: `
+        <h2>Novo contato pelo site</h2>
+        <p><strong>Nome:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Mensagem:</strong></p>
+        <p>${message}</p>
+      `,
+    });
 
-  if (!name || !email || !message) {
-    return Response.json(
-      { ok: false, error: "Missing required fields: name, email, message" },
-      { status: 400 }
-    );
+    return Response.json({ ok: true });
+  } catch (error) {
+    console.error("Erro ao enviar email:", error);
+    return new Response("Erro ao enviar email", { status: 500 });
   }
-
-  // Por enquanto: só confirma que recebeu (no próximo passo a gente manda o e-mail)
-  return Response.json(
-    { ok: true, received: { name, email, subject, message } },
-    { status: 200 }
-  );
 }
