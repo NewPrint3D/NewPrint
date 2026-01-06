@@ -18,17 +18,48 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault()
+  setIsSubmitting(true)
+  setIsSuccess(false)
 
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+  try {
+    const form = e.currentTarget
+    const fd = new FormData(form)
 
-    setIsSubmitting(false)
+    const payload = {
+      name: String(fd.get("name") || "").trim(),
+      email: String(fd.get("email") || "").trim(),
+      subject: String(fd.get("subject") || "").trim(),
+      message: String(fd.get("message") || "").trim(),
+    }
+
+    const r = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+
+    const data = await r.json().catch(() => null)
+
+    if (!r.ok) {
+      const msg =
+        (data && (data.error || data.message)) ||
+        `Erro ao enviar (status ${r.status})`
+      alert(msg)
+      return
+    }
+
     setIsSuccess(true)
+    form.reset()
 
     setTimeout(() => setIsSuccess(false), 3000)
+  } catch (err: any) {
+    alert("Falha ao enviar. Tente novamente.")
+  } finally {
+    setIsSubmitting(false)
   }
+}
 
   const contactInfo = [
      
@@ -86,6 +117,7 @@ export default function ContactPage() {
                         </Label>
                         <Input
                           id="name"
+                         name="name" 
                           required
                           className="transition-all duration-300 focus:scale-[1.02] focus:shadow-lg"
                         />
@@ -99,6 +131,7 @@ export default function ContactPage() {
                         </Label>
                         <Input
                           id="email"
+                          name="email"
                           type="email"
                           required
                           className="transition-all duration-300 focus:scale-[1.02] focus:shadow-lg"
@@ -115,6 +148,7 @@ export default function ContactPage() {
                       </Label>
                       <Input
                         id="subject"
+                        name="subject" 
                         required
                         className="transition-all duration-300 focus:scale-[1.02] focus:shadow-lg"
                       />
@@ -129,6 +163,7 @@ export default function ContactPage() {
                       </Label>
                       <Textarea
                         id="message"
+                       name="message" 
                         required
                         rows={6}
                         className="transition-all duration-300 focus:scale-[1.02] focus:shadow-lg resize-none"
