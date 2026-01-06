@@ -108,20 +108,28 @@ const handlePayPalCheckout = async () => {
       }),
     })
 try {
-   const data = await response.json()
+  const data = await response.json()
 
-if (!response.ok) {
-  throw new Error(data.error || "Failed to create PayPal order")
+  if (!response.ok) {
+    throw new Error(data?.error || "Failed to create PayPal order")
+  }
+
+  if (!data?.approveUrl) {
+    console.log("PayPal response:", data)
+    throw new Error("approveUrl não veio do backend")
+  }
+
+  // Redirect to PayPal
+  window.location.href = data.approveUrl
+} catch (error) {
+  console.error("PayPal checkout error:", error)
+  toast({
+    title: t.errors?.paymentFailed || "Payment Failed",
+    description: error instanceof Error ? error.message : "Please try again",
+    variant: "destructive",
+  })
 }
 
-if (!data?.approveUrl) {
-  console.log("PayPal response:", data)
-  throw new Error("approveUrl didn't come from the backend")
-}
-
-// Redirect to PayPal
-window.location.href = data.approveUrl
-  } catch (error) {
     console.error("PayPal checkout error:", error)
     toast({
       title: t.errors?.paymentFailed || "Payment Failed",
