@@ -113,9 +113,12 @@ const handlePayPalCheckout = async () => {
     if (!response.ok) {
       throw new Error(data.error || "Failed to create PayPal order")
     }
-
+if (!data?.approvalUrl) {
+  console.error("PayPal create-order response:", data)
+  throw new Error(data?.error || "PayPal não retornou approvalUrl")
+}
     // Redirect to PayPal
-    window.location.href = data.approvalUrl
+   window.location.href = data.approveUrl
   } catch (error) {
     console.error("PayPal checkout error:", error)
     toast({
