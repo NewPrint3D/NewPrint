@@ -63,9 +63,9 @@ const itemTotal = items.reduce((sum: number, item: any) => {
   return sum + price * qty
 }, 0)
 
-const shipping = 0
+const shippingCost = 0
 const tax = 0
-const total = itemTotal + shipping + tax
+const total = itemTotal + shippingCost + tax
 
 if (!Number.isFinite(total) || total <= 0) {
   return NextResponse.json({ error: "Invalid total amount" }, { status: 400 })
@@ -100,10 +100,12 @@ const orderPayload = {
             currency_code: "EUR",
             value: itemTotal.toFixed(2),
           },
-          shipping: {
-            currency_code: "EUR",
-            value: shipping.toFixed(2),
-          },
+        shipping: {
+  currency_code: "EUR",
+  value: shippingCost.toFixed(2),
+},
+
+        },
           tax_total: {
             currency_code: "EUR",
             value: tax.toFixed(2),
