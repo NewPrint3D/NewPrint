@@ -84,8 +84,7 @@ export default function CheckoutPage() {
   }, [items])
 
    const shipping = 5.99
-  const tax = 1.1
-  const total = useMemo(() => subtotal + shipping + tax, [subtotal])
+    const total = useMemo(() => subtotal + shipping, [subtotal])
 
   const canSubmit = useMemo(() => {
     return (
