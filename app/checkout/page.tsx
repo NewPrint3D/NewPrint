@@ -204,7 +204,7 @@ export default function CheckoutPage() {
 
            if (!data?.approveUrl) {
         console.log("PayPal response:", data)
-        throw new Error(¨approveUrl did not come from the backend.")
+       throw new Error("approveUrl did not come from the backend.")
       }
 
       // Redirect to PayPal
