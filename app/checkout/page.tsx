@@ -3,8 +3,8 @@
 import React, { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 
-import Navbar from "@/components/navbar"
-import Footer from "@/components/footer"
+import { Navbar } from "@/components/navbar"
+import { Footer } from "@/components/footer"
 
 // shadcn/ui (Adjust if your paths are different.)
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
