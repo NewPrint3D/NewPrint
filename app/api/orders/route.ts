@@ -94,8 +94,7 @@ export async function POST(request: Request) {
     // Calcular totais
     const subtotal = items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0)
     const shipping = 5.99
-    const tax = subtotal * 0.1
-    const total = subtotal + shipping + tax
+    const total = subtotal + shipping 
 
     // Gerar número do pedido
     const orderNumber = `NP3D-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
@@ -112,7 +111,6 @@ export async function POST(request: Request) {
         status: "pending",
         subtotal,
         shipping,
-        tax,
         total,
         created_at: new Date().toISOString(),
         payment_status: "pending",
@@ -130,13 +128,13 @@ export async function POST(request: Request) {
     // Criar pedido no banco
     const newOrders = await sql!`
       INSERT INTO orders (
-        user_id, order_number, status, subtotal, shipping, tax, total,
+        user_id, order_number, status, subtotal, shipping, total,
         shipping_first_name, shipping_last_name, shipping_email, shipping_phone,
         shipping_address, shipping_city, shipping_state, shipping_zip_code, shipping_country,
         payment_method, payment_status, stripe_payment_intent_id
       )
       VALUES (
-        ${userId || null}, ${orderNumber}, 'pending', ${subtotal}, ${shipping}, ${tax}, ${total},
+        ${userId || null}, ${orderNumber}, 'pending', ${subtotal}, ${shipping}, ${total},
         ${shippingInfo.firstName}, ${shippingInfo.lastName}, ${shippingInfo.email}, ${shippingInfo.phone},
         ${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.state}, ${shippingInfo.zipCode}, ${shippingInfo.country},
         'stripe', 'pending', ${paymentIntent.id}
