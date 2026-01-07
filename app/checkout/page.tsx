@@ -370,11 +370,11 @@ export default function CheckoutPage() {
                       <span>€ {to2(subtotal)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Envio</span>
+                      <span>shipping</span>
                       <span>€ {to2(shipping)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Impostos</span>
+                      <span>Taxes</span>
                       <span>€ {to2(tax)}</span>
                     </div>
                   </div>
