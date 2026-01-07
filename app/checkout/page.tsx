@@ -373,8 +373,7 @@ export default function CheckoutPage() {
                       <span>€ {to2(shipping)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Taxes</span>
-                      <span>€ {to2(tax)}</span>
+                      
                     </div>
                   </div>
 
