@@ -51,8 +51,7 @@ export async function POST(request: Request) {
     )
 
     const shipping = 5.99
-    const tax = itemTotal * 0.1
-    const total = itemTotal + shipping + tax
+       const total = itemTotal + shipping 
 
     // =============================
     // Criação da sessão Stripe
@@ -113,17 +112,7 @@ export async function POST(request: Request) {
     quantity: 1,
   },
 
-  // 🧾 IMPOSTOS
-  {
-    price_data: {
-      currency: "eur",
-      product_data: {
-        name: "Impostos",
-      },
-      unit_amount: Math.round(tax * 100),
-    },
-    quantity: 1,
-  },
+  
 ],
 
 
@@ -137,8 +126,7 @@ export async function POST(request: Request) {
         user_id: userId || "guest",
         subtotal: itemTotal.toFixed(2),
         shipping: shipping.toFixed(2),
-        tax: tax.toFixed(2),
-        total: total.toFixed(2),
+               total: total.toFixed(2),
       },
 
       allow_promotion_codes: false,
@@ -146,10 +134,7 @@ export async function POST(request: Request) {
       payment_intent_data: {
         capture_method: "automatic",
       },
-
-      automatic_tax: {
-        enabled: false,
-      },
+     
     })
 
     return NextResponse.json({
