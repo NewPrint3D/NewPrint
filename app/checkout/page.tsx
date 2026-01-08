@@ -150,17 +150,17 @@ const { t, locale } = useLanguage()
 
       // Redirect to Stripe Checkout
       window.location.href = data.url
-    } catch (error) {
-      console.error("Checkout error:", error)
-     toast({
-  title: t.checkout.pagamentoFalhado,
-  description: error instanceof Error ? error.message : t.checkout.porFavorTenteDeNovo,
-  variant: "destructive",
-})
-      })
-    } finally {
-      setIsProcessing(false)
-    }
+   } catch (error) {
+  console.error("Checkout error:", error)
+  toast({
+    title: t.checkout.pagamentoFalhado,
+    description: error instanceof Error ? error.message : t.checkout.porFavorTenteDeNovo,
+    variant: "destructive",
+  })
+} finally {
+  setIsProcessing(false)
+}
+
   }
 
   // =========================
