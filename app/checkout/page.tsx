@@ -18,8 +18,8 @@ import { useLanguage } from "@/contexts/language-context"
 
 type CartItem = {
   product?: {
-    name?: { en?: string; pt?: string; es?: string } | string
-    description?: { en?: string; pt?: string; es?: string } | string
+    name?: { en?: string } | string
+    description?: { en?: string } | string
     imageUrl?: string
   }
   price: number | string
@@ -53,7 +53,7 @@ function to2(n: number) {
 export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { t, locale } = useLanguage()
+  const { t } = useLanguage()
 
   const { items } = useCart() as { items: CartItem[] }
   const [isProcessing, setIsProcessing] = useState(false)
@@ -84,7 +84,6 @@ export default function CheckoutPage() {
   }, [items])
 
   const shipping = subtotal >= 50 ? 0 : 5.99
-  const isFreeShipping = subtotal >= 50
   const total = useMemo(() => subtotal + shipping, [subtotal, shipping])
 
   const canSubmit = useMemo(() => {
@@ -108,7 +107,7 @@ export default function CheckoutPage() {
   }
 
   // =========================
-  // STRIPE
+  // STRIPE (NÃO MEXER NA API)
   // =========================
   const handleCheckout = async () => {
     if (!canSubmit) {
@@ -136,7 +135,6 @@ export default function CheckoutPage() {
           })),
           userId: null,
           shippingInfo: formData,
-          locale, // ajuda no back se você quiser usar depois
         }),
       })
 
@@ -166,7 +164,7 @@ export default function CheckoutPage() {
   }
 
   // =========================
-  // PAYPAL
+  // PAYPAL (NÃO MEXER NA API)
   // =========================
   const handlePayPalCheckout = async () => {
     if (!canSubmit) {
@@ -194,7 +192,6 @@ export default function CheckoutPage() {
           })),
           userId: null,
           shippingInfo: formData,
-          locale,
         }),
       })
 
@@ -304,6 +301,7 @@ export default function CheckoutPage() {
                         required
                       />
                     </div>
+
                     <div>
                       <Label htmlFor="state">{t.checkout.state}</Label>
                       <Input
@@ -325,6 +323,7 @@ export default function CheckoutPage() {
                         required
                       />
                     </div>
+
                     <div>
                       <Label htmlFor="country">{t.checkout.country}</Label>
                       <Input
@@ -347,4 +346,80 @@ export default function CheckoutPage() {
 
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
-                   
+                   {items.map((it, idx) => {
+                   const name =
+                   typeof it.product?.name === "object"
+                   ? it.product?.name?.en
+                   : it.product?.name;
+
+                   const qty = safeNumber(it.quantity);
+                   const price = safeNumber(it.price);
+ 
+                      return (
+                        <div key={idx} className="flex items-center justify-between gap-3">
+                          <div className="text-sm">
+                            <div className="font-medium">
+                              {name || t.checkout.productFallback}
+                            </div>
+                            <div className="opacity-70">
+                              {t.checkout.qtyLabel} {qty} × € {to2(price)}
+                            </div>
+                          </div>
+                          <div className="font-medium">€ {to2(price * qty)}</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  <div className="border-t pt-4 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>{t.checkout.subtotal}</span>
+                      <span>€ {to2(subtotal)}</span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span>{t.checkout.shipping}</span>
+                      <span>€ {to2(shipping)}</span>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4 flex justify-between items-center">
+                    <span className="text-lg font-semibold">{t.checkout.total}</span>
+                    <span className="text-xl font-bold">€ {to2(total)}</span>
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    <Button
+                      type="button"
+                      className="w-full"
+                      disabled={isProcessing || !canSubmit}
+                      onClick={handleCheckout}
+                    >
+                      {t.checkout.placeOrder}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      className="w-full"
+                      variant="secondary"
+                      disabled={isProcessing || !canSubmit}
+                      onClick={handlePayPalCheckout}
+                    >
+                      {t.checkout.payWithPayPal}
+                    </Button>
+                  </div>
+
+                  {!canSubmit && (
+                    <p className="text-xs opacity-70">{t.checkout.fillAllFieldsHint}</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Footer />
+    </main>
+  )
+}
