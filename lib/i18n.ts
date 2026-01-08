@@ -117,6 +117,8 @@ export const translations = {
       paymentMethod: "Payment Method",
       creditCard: "Credit Card",
       orPayWith: "Or pay with",
+      fillDetailsTitle: "Fill in the details",
+      fillDetailsDescription: "Complete the form before paying",
     },
     orders: {
       title: "My Orders",
@@ -541,6 +543,8 @@ export const translations = {
       paymentMethod: "Método de Pagamento",
       creditCard: "Cartão de Crédito",
       orPayWith: "Ou pague com",
+      fillDetailsTitle: "Preencha os dados",
+      fillDetailsDescription: "Complete o formulário antes de pagar",
     },
     orders: {
       title: "Meus Pedidos",
@@ -965,6 +969,8 @@ export const translations = {
       paymentMethod: "Método de Pago",
       creditCard: "Tarjeta de Crédito",
       orPayWith: "O paga con",
+      fillDetailsTitle: "Rellena los datos",
+      fillDetailsDescription: "Completa el formulario antes de pagar",
     },
     orders: {
       title: "Mis Pedidos",
