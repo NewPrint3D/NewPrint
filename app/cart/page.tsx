@@ -17,8 +17,7 @@ export default function CartPage() {
   const { items, removeItem, updateQuantity, totalPrice } = useCart()
 
   const shipping = 5.99
-  const tax = totalPrice * 0.1
-  const orderTotal = totalPrice + shipping + tax
+  const orderTotal = totalPrice + shipping 
 
   if (items.length === 0) {
     return (
