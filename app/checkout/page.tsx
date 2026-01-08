@@ -198,7 +198,7 @@ export default function CheckoutPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data?.error || t.checkout.failedToCreatePayPalOrder)
+        throw new Error(data?.error || t.checkout.title)
       }
 
       if (!data?.approveUrl) {
