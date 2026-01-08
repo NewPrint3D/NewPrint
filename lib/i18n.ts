@@ -153,9 +153,11 @@ export const translations = {
         title: "Our Values",
         innovation: "Innovation",
         innovationDesc: "Constantly pushing boundaries",
-        quality: "Quality",
-        qualityDesc: "Excellence in every print",
-        sustainability: "Sustainability",
+       toast({
+      title: t.checkout.pagamentoFalhado,
+      description: error instanceof Error ? error.message : t.checkout.porFavorTenteDeNovo,
+      variant: "destructive",
+})
         sustainabilityDesc: "Eco-friendly materials",
         customer: "Customer First",
         customerDesc: "Your success is our priority",
