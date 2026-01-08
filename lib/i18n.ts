@@ -121,6 +121,10 @@ export const translations = {
       fillDetailsDescription: "Complete the form before paying",
       failedToCreateStripeCheckout: "Failed to create Stripe checkout.",
       missingStripeUrlFromBackend: "The URL did not come from the backend. (Stripe)",
+      paymentFailed: "Payment Failed",
+      pleaseTryAgain: "Please try again",
+      pagamentoFalhado: "Payment Failed",
+      porFavorTenteDeNovo: "Please try again",
     },
     orders: {
       title: "My Orders",
@@ -549,6 +553,8 @@ export const translations = {
       fillDetailsDescription: "Complete o formulário antes de pagar",
       failedToCreateStripeCheckout: "Falha ao criar o checkout do Stripe.",
       missingStripeUrlFromBackend: "A URL não veio do backend. (Stripe)",
+      pagamentoFalhado: "Pagamento Falhou",
+      porFavorTenteDeNovo: "Por favor tente de novo",
     },
     orders: {
       title: "Meus Pedidos",
@@ -977,6 +983,10 @@ export const translations = {
       fillDetailsDescription: "Completa el formulario antes de pagar",
       failedToCreateStripeCheckout: "No se pudo crear el checkout de Stripe.",
       missingStripeUrlFromBackend: "La URL no vino del backend. (Stripe)",
+      pagoFallido: "Pago fallido",
+      porFavorIntentaDeNuevo: "Por favor, inténtalo de nuevo",
+      pagamentoFalhado: "Pago fallido",
+      porFavorTenteDeNovo: "Por favor, inténtalo de nuevo",
     },
     orders: {
       title: "Mis Pedidos",
