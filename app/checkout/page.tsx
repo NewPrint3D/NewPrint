@@ -14,7 +14,6 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 
 import { useCart } from "@/contexts/cart-context"
-import { useLanguage } from "@/contexts/language-context"
 
 type CartItem = {
   product?: {
@@ -53,7 +52,6 @@ function to2(n: number) {
 export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { t } = useLanguage()
 
   const { items } = useCart() as { items: CartItem[] }
   const [isProcessing, setIsProcessing] = useState(false)
@@ -107,13 +105,13 @@ export default function CheckoutPage() {
   }
 
   // =========================
-  // STRIPE (NÃO MEXER NA API)
+  // STRIPE (DO NOT TOUCH API)
   // =========================
   const handleCheckout = async () => {
     if (!canSubmit) {
       toast({
-        title: t.checkout.fillDetailsTitle,
-        description: t.checkout.fillDetailsDescription,
+        title: "Missing information",
+        description: "Please fill in all fields before paying.",
         variant: "destructive",
       })
       return
@@ -141,21 +139,20 @@ export default function CheckoutPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data?.error || t.checkout.failedToCreateStripeCheckout)
+        throw new Error(data?.error || "Failed to create Stripe checkout.")
       }
 
       if (!data?.url) {
         console.log("Stripe response:", data)
-        throw new Error(t.checkout.missingStripeUrlFromBackend)
+        throw new Error("Stripe checkout URL is missing.")
       }
 
       window.location.href = data.url
     } catch (error) {
       console.error("Checkout error:", error)
       toast({
-        title: t.checkout.title,
-        description:
-          error instanceof Error ? error.message : t.checkout.title,
+        title: "Payment failed",
+        description: error instanceof Error ? error.message : "Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -164,13 +161,13 @@ export default function CheckoutPage() {
   }
 
   // =========================
-  // PAYPAL (NÃO MEXER NA API)
+  // PAYPAL (DO NOT TOUCH API)
   // =========================
   const handlePayPalCheckout = async () => {
     if (!canSubmit) {
       toast({
-        title: t.checkout.fillDetailsTitle,
-        description: t.checkout.fillDetailsDescription,
+        title: "Missing information",
+        description: "Please fill in all fields before paying.",
         variant: "destructive",
       })
       return
@@ -198,21 +195,20 @@ export default function CheckoutPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data?.error || t.checkout.title)
+        throw new Error(data?.error || "Failed to create PayPal order.")
       }
 
       if (!data?.approveUrl) {
         console.log("PayPal response:", data)
-        throw new Error(t.checkout.paypalApproveUrlMissing)
+        throw new Error("PayPal approval URL is missing.")
       }
 
       window.location.href = data.approveUrl
     } catch (error) {
       console.error("PayPal checkout error:", error)
       toast({
-        title: t.checkout.paymentFailed,
-        description:
-          error instanceof Error ? error.message : t.checkout.pleaseTryAgain,
+        title: "Payment failed",
+        description: error instanceof Error ? error.message : "Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -228,19 +224,19 @@ export default function CheckoutPage() {
 
       <div className="pt-24 pb-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-8">{t.checkout.title}</h1>
+          <h1 className="text-4xl font-bold mb-8">Checkout</h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t.checkout.shippingInfo}</CardTitle>
+                  <CardTitle>Shipping Information</CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName">{t.checkout.firstName}</Label>
+                      <Label htmlFor="firstName">First name</Label>
                       <Input
                         id="firstName"
                         value={formData.firstName}
@@ -250,7 +246,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="lastName">{t.checkout.lastName}</Label>
+                      <Label htmlFor="lastName">Last name</Label>
                       <Input
                         id="lastName"
                         value={formData.lastName}
@@ -261,7 +257,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="email">{t.checkout.email}</Label>
+                    <Label htmlFor="email">Email</Label>
                     <Input
                       id="email"
                       type="email"
@@ -272,7 +268,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="phone">{t.checkout.phone}</Label>
+                    <Label htmlFor="phone">Phone</Label>
                     <Input
                       id="phone"
                       value={formData.phone}
@@ -282,7 +278,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="address">{t.checkout.address}</Label>
+                    <Label htmlFor="address">Address</Label>
                     <Input
                       id="address"
                       value={formData.address}
@@ -293,7 +289,7 @@ export default function CheckoutPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="city">{t.checkout.city}</Label>
+                      <Label htmlFor="city">City</Label>
                       <Input
                         id="city"
                         value={formData.city}
@@ -303,7 +299,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="state">{t.checkout.state}</Label>
+                      <Label htmlFor="state">State</Label>
                       <Input
                         id="state"
                         value={formData.state}
@@ -315,7 +311,7 @@ export default function CheckoutPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="zipCode">{t.checkout.zipCode}</Label>
+                      <Label htmlFor="zipCode">ZIP / Postal code</Label>
                       <Input
                         id="zipCode"
                         value={formData.zipCode}
@@ -325,7 +321,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="country">{t.checkout.country}</Label>
+                      <Label htmlFor="country">Country</Label>
                       <Input
                         id="country"
                         value={formData.country}
@@ -341,28 +337,29 @@ export default function CheckoutPage() {
             <div>
               <Card>
                 <CardHeader>
-                  <CardTitle>{t.checkout.summaryTitle}</CardTitle>
+                  <CardTitle>Order Summary</CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
-                   {items.map((it, idx) => {
-                   const name =
-                   typeof it.product?.name === "object"
-                   ? it.product?.name?.en
-                   : it.product?.name;
+                    {items.map((it, idx) => {
+                      const name =
+                        typeof it.product?.name === "object"
+                          ? it.product?.name?.en
+                          : it.product?.name
 
-                   const qty = safeNumber(it.quantity);
-                   const price = safeNumber(it.price);
- 
+                      const qty = safeNumber(it.quantity)
+                      const price = safeNumber(it.price)
+
                       return (
-                        <div key={idx} className="flex items-center justify-between gap-3">
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between gap-3"
+                        >
                           <div className="text-sm">
-                            <div className="font-medium">
-                              {name || t.checkout.productFallback}
-                            </div>
+                            <div className="font-medium">{name || "Product"}</div>
                             <div className="opacity-70">
-                              {t.checkout.qtyLabel} {qty} × € {to2(price)}
+                              Qty: {qty} × € {to2(price)}
                             </div>
                           </div>
                           <div className="font-medium">€ {to2(price * qty)}</div>
@@ -373,18 +370,18 @@ export default function CheckoutPage() {
 
                   <div className="border-t pt-4 space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span>{t.checkout.subtotal}</span>
+                      <span>Subtotal</span>
                       <span>€ {to2(subtotal)}</span>
                     </div>
 
                     <div className="flex justify-between">
-                      <span>{t.checkout.shipping}</span>
+                      <span>Shipping</span>
                       <span>€ {to2(shipping)}</span>
                     </div>
                   </div>
 
                   <div className="border-t pt-4 flex justify-between items-center">
-                    <span className="text-lg font-semibold">{t.checkout.total}</span>
+                    <span className="text-lg font-semibold">Total</span>
                     <span className="text-xl font-bold">€ {to2(total)}</span>
                   </div>
 
@@ -395,7 +392,7 @@ export default function CheckoutPage() {
                       disabled={isProcessing || !canSubmit}
                       onClick={handleCheckout}
                     >
-                      {t.checkout.placeOrder}
+                      Place Order
                     </Button>
 
                     <Button
@@ -405,12 +402,14 @@ export default function CheckoutPage() {
                       disabled={isProcessing || !canSubmit}
                       onClick={handlePayPalCheckout}
                     >
-                      {t.checkout.payWithPayPal}
+                      Pay with PayPal
                     </Button>
                   </div>
 
                   {!canSubmit && (
-                    <p className="text-xs opacity-70">{t.checkout.fillAllFieldsHint}</p>
+                    <p className="text-xs opacity-70">
+                      Fill in all fields to enable payment.
+                    </p>
                   )}
                 </CardContent>
               </Card>
