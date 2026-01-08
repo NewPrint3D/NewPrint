@@ -120,6 +120,7 @@ export const translations = {
       fillDetailsTitle: "Fill in the details",
       fillDetailsDescription: "Complete the form before paying",
       failedToCreateStripeCheckout: "Failed to create Stripe checkout.",
+      missingStripeUrlFromBackend: "The URL did not come from the backend. (Stripe)",
     },
     orders: {
       title: "My Orders",
@@ -547,6 +548,7 @@ export const translations = {
       fillDetailsTitle: "Preencha os dados",
       fillDetailsDescription: "Complete o formulário antes de pagar",
       failedToCreateStripeCheckout: "Falha ao criar o checkout do Stripe.",
+      missingStripeUrlFromBackend: "A URL não veio do backend. (Stripe)",
     },
     orders: {
       title: "Meus Pedidos",
@@ -974,6 +976,7 @@ export const translations = {
       fillDetailsTitle: "Rellena los datos",
       fillDetailsDescription: "Completa el formulario antes de pagar",
       failedToCreateStripeCheckout: "No se pudo crear el checkout de Stripe.",
+      missingStripeUrlFromBackend: "La URL no vino del backend. (Stripe)",
     },
     orders: {
       title: "Mis Pedidos",
