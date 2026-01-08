@@ -153,7 +153,7 @@ export default function CheckoutPage() {
     } catch (error) {
       console.error("Checkout error:", error)
       toast({
-        title: t.checkout.paymentFailed,
+        title: t.checkout.title,
         description:
           error instanceof Error ? error.message : t.checkout.pleaseTryAgain,
         variant: "destructive",
