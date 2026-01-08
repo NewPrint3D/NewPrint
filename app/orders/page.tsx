@@ -102,12 +102,8 @@ export default function OrdersPage() {
                         <span className="text-muted-foreground">{t.cart.shipping}</span>
                         <span>{formatCurrency(order.shipping, locale)}</span>
                       </div>
-                     {(order?.tax ?? 0) > 0 && (
-  <div className="flex justify-between text-sm">
-    <span className="text-muted-foreground">{t.cart.tax}</span>
-    <span>{formatCurrency(order.tax, locale)}</span>
-  </div>
-)}
+                    <div className="flex justify-between text-sm">
+                      </div>
                      <div className="flex justify-between text-lg font-bold pt-2 border-t border-border">
                         <span>{t.cart.total}</span>
                         <span className="text-primary">{formatCurrency(order.total, locale)}</span>
