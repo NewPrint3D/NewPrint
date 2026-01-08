@@ -6,20 +6,20 @@ import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 
-// shadcn/ui (Adjust if your paths are different.)
+// shadcn/ui
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 
-// Ex: import { useCart } from "@/contexts/cart-context"
 import { useCart } from "@/contexts/cart-context"
 import { useLanguage } from "@/contexts/language-context"
+
 type CartItem = {
   product?: {
-    name?: { en?: string } | string
-    description?: { en?: string } | string
+    name?: { en?: string; pt?: string; es?: string } | string
+    description?: { en?: string; pt?: string; es?: string } | string
     imageUrl?: string
   }
   price: number | string
@@ -53,11 +53,12 @@ function to2(n: number) {
 export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
-const { t, locale } = useLanguage()
- 
-  const { items } = useCart() as { items: CartItem[] } //Adjust if your hook returns more data. 
+  const { t, locale } = useLanguage()
+
+  const { items } = useCart() as { items: CartItem[] }
   const [isProcessing, setIsProcessing] = useState(false)
-   const [formData, setFormData] = useState<ShippingInfo>({
+
+  const [formData, setFormData] = useState<ShippingInfo>({
     firstName: "",
     lastName: "",
     email: "",
@@ -66,10 +67,10 @@ const { t, locale } = useLanguage()
     city: "",
     state: "",
     zipCode: "",
-  country: "Spain",
+    country: "Spain",
   })
 
-   useEffect(() => {
+  useEffect(() => {
     if (typeof window === "undefined") return
     if (!items || items.length === 0) router.replace("/cart")
   }, [items, router])
@@ -82,10 +83,11 @@ const { t, locale } = useLanguage()
     }, 0)
   }, [items])
 
-   const shipping = subtotal >= 50 ? 0 : 5.99
-   const isFreeShipping = subtotal >= 50
-   const total = useMemo(() => subtotal + shipping, [subtotal, shipping])
-   const canSubmit = useMemo(() => {
+  const shipping = subtotal >= 50 ? 0 : 5.99
+  const isFreeShipping = subtotal >= 50
+  const total = useMemo(() => subtotal + shipping, [subtotal, shipping])
+
+  const canSubmit = useMemo(() => {
     return (
       (items?.length ?? 0) > 0 &&
       formData.firstName.trim() &&
@@ -106,7 +108,7 @@ const { t, locale } = useLanguage()
   }
 
   // =========================
-  // STRIPE 
+  // STRIPE
   // =========================
   const handleCheckout = async () => {
     if (!canSubmit) {
@@ -134,13 +136,14 @@ const { t, locale } = useLanguage()
           })),
           userId: null,
           shippingInfo: formData,
+          locale, // ajuda no back se você quiser usar depois
         }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-       throw new Error(data?.error || t.checkout.failedToCreateStripeCheckout)
+        throw new Error(data?.error || t.checkout.failedToCreateStripeCheckout)
       }
 
       if (!data?.url) {
@@ -148,19 +151,18 @@ const { t, locale } = useLanguage()
         throw new Error(t.checkout.missingStripeUrlFromBackend)
       }
 
-      // Redirect to Stripe Checkout
       window.location.href = data.url
-   } catch (error) {
-  console.error("Checkout error:", error)
-  toast({
-    title: t.checkout.pagamentoFalhado,
-    description: error instanceof Error ? error.message : t.checkout.porFavorTenteDeNovo,
-    variant: "destructive",
-  })
-} finally {
-  setIsProcessing(false)
-}
-
+    } catch (error) {
+      console.error("Checkout error:", error)
+      toast({
+        title: t.checkout.paymentFailed,
+        description:
+          error instanceof Error ? error.message : t.checkout.pleaseTryAgain,
+        variant: "destructive",
+      })
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   // =========================
@@ -169,8 +171,8 @@ const { t, locale } = useLanguage()
   const handlePayPalCheckout = async () => {
     if (!canSubmit) {
       toast({
-        title: "Fill in the details.",
-        description: "Complete the form before paying",
+        title: t.checkout.fillDetailsTitle,
+        description: t.checkout.fillDetailsDescription,
         variant: "destructive",
       })
       return
@@ -192,6 +194,7 @@ const { t, locale } = useLanguage()
           })),
           userId: null,
           shippingInfo: formData,
+          locale,
         }),
       })
 
@@ -201,18 +204,18 @@ const { t, locale } = useLanguage()
         throw new Error(data?.error || t.checkout.failedToCreatePayPalOrder)
       }
 
-           if (!data?.approveUrl) {
+      if (!data?.approveUrl) {
         console.log("PayPal response:", data)
-      throw new Error(t.checkout.paypalApproveUrlMissing)
+        throw new Error(t.checkout.paypalApproveUrlMissing)
       }
 
-      // Redirect to PayPal
       window.location.href = data.approveUrl
     } catch (error) {
       console.error("PayPal checkout error:", error)
       toast({
-       title: t.checkout.paymentFailed,
-       description: error instanceof Error ? error.message : t.checkout.pleaseTryAgain,
+        title: t.checkout.paymentFailed,
+        description:
+          error instanceof Error ? error.message : t.checkout.pleaseTryAgain,
         variant: "destructive",
       })
     } finally {
@@ -220,7 +223,7 @@ const { t, locale } = useLanguage()
     }
   }
 
-    if (!items || items.length === 0) return null
+  if (!items || items.length === 0) return null
 
   return (
     <main className="min-h-screen">
@@ -250,7 +253,7 @@ const { t, locale } = useLanguage()
                     </div>
 
                     <div>
-                      <Label htmlFor="lastName">lastName</Label>
+                      <Label htmlFor="lastName">{t.checkout.lastName}</Label>
                       <Input
                         id="lastName"
                         value={formData.lastName}
@@ -261,7 +264,7 @@ const { t, locale } = useLanguage()
                   </div>
 
                   <div>
-                    <Label htmlFor="email">email</Label>
+                    <Label htmlFor="email">{t.checkout.email}</Label>
                     <Input
                       id="email"
                       type="email"
@@ -272,7 +275,7 @@ const { t, locale } = useLanguage()
                   </div>
 
                   <div>
-                    <Label htmlFor="phone">phone</Label>
+                    <Label htmlFor="phone">{t.checkout.phone}</Label>
                     <Input
                       id="phone"
                       value={formData.phone}
@@ -282,7 +285,7 @@ const { t, locale } = useLanguage()
                   </div>
 
                   <div>
-                    <Label htmlFor="address">address</Label>
+                    <Label htmlFor="address">{t.checkout.address}</Label>
                     <Input
                       id="address"
                       value={formData.address}
@@ -293,7 +296,7 @@ const { t, locale } = useLanguage()
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="city">city</Label>
+                      <Label htmlFor="city">{t.checkout.city}</Label>
                       <Input
                         id="city"
                         value={formData.city}
@@ -302,7 +305,7 @@ const { t, locale } = useLanguage()
                       />
                     </div>
                     <div>
-                      <Label htmlFor="state">state</Label>
+                      <Label htmlFor="state">{t.checkout.state}</Label>
                       <Input
                         id="state"
                         value={formData.state}
@@ -314,7 +317,7 @@ const { t, locale } = useLanguage()
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="zipCode">CEP</Label>
+                      <Label htmlFor="zipCode">{t.checkout.zipCode}</Label>
                       <Input
                         id="zipCode"
                         value={formData.zipCode}
@@ -323,7 +326,7 @@ const { t, locale } = useLanguage()
                       />
                     </div>
                     <div>
-                      <Label htmlFor="country">Country</Label>
+                      <Label htmlFor="country">{t.checkout.country}</Label>
                       <Input
                         id="country"
                         value={formData.country}
@@ -339,83 +342,9 @@ const { t, locale } = useLanguage()
             <div>
               <Card>
                 <CardHeader>
-                  <CardTitle>summary of the request</CardTitle>
+                  <CardTitle>{t.checkout.summaryTitle}</CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
-                    {(items || []).map((it, idx) => {
-                      const name =
-                        typeof it.product?.name === "object"
-                          ? it.product?.name?.en
-                          : it.product?.name
-                      const qty = safeNumber(it.quantity)
-                      const price = safeNumber(it.price)
-                      return (
-                        <div key={idx} className="flex items-center justify-between gap-3">
-                          <div className="text-sm">
-                            <div className="font-medium">{name || "Product"}</div>
-                            <div className="opacity-70">Qtd.: {qty} × € {to2(price)}</div>
-                          </div>
-                          <div className="font-medium">€ {to2(price * qty)}</div>
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  <div className="border-t pt-4 space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Subtotal</span>
-                      <span>€ {to2(subtotal)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>shipping</span>
-                      <span>€ {to2(shipping)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      
-                    </div>
-                  </div>
-
-                  <div className="border-t pt-4 flex justify-between items-center">
-                    <span className="text-lg font-semibold">Total</span>
-                    <span className="text-xl font-bold">€ {to2(total)}</span>
-                  </div>
-
-                  <div className="space-y-3 pt-2">
-                    <Button
-                      type="button"
-                      className="w-full"
-                      disabled={isProcessing || !canSubmit}
-                      onClick={handleCheckout}
-                    >
-                      Place Order
-                    </Button>
-
-                    <Button
-                      type="button"
-                      className="w-full"
-                      variant="secondary"
-                      disabled={isProcessing || !canSubmit}
-                      onClick={handlePayPalCheckout}
-                    >
-                      Pay with PayPal
-                    </Button>
-                  </div>
-
-                  {!canSubmit && (
-                    <p className="text-xs opacity-70">
-                      Fill in all the fields to enable payment.
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <Footer />
-    </main>
-  )
-}
+                   
