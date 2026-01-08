@@ -22,6 +22,24 @@ export async function POST(req: Request) {
       },
       quantity: item.quantity,
     }))
+const subtotal = items.reduce(
+  (sum: number, item: any) => sum + item.price * item.quantity,
+  0
+)
+
+const shippingAmount = subtotal >= 50 ? 0 : 5.99
+
+// Só adiciona a linha de frete se for maior que 0 (ou seja, se NÃO for grátis)
+if (shippingAmount > 0) {
+  line_items.push({
+    price_data: {
+      currency: "eur",
+      product_data: { name: "Shipping" },
+      unit_amount: Math.round(shippingAmount * 100),
+    },
+    quantity: 1,
+  })
+}
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
