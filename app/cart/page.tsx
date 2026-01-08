@@ -16,8 +16,10 @@ export default function CartPage() {
   const { t, locale } = useLanguage()
   const { items, removeItem, updateQuantity, totalPrice } = useCart()
 
-  const shipping = totalPrice >= 50 ? 0 : 5.99
- const orderTotal = totalPrice + shipping
+ const freeShippingThreshold = 50
+const shipping = totalPrice >= freeShippingThreshold ? 0 : 5.99
+const missingForFreeShipping = Math.max(0, freeShippingThreshold - totalPrice)
+const orderTotal = totalPrice + shipping
 
   if (items.length === 0) {
     return (
@@ -160,6 +162,20 @@ export default function CartPage() {
               <Card className="sticky top-24">
                 <CardContent className="p-6 space-y-4">
                   <h2 className="text-2xl font-bold mb-6">{t.cart.orderSummary ?? t.checkout.orderSummary}</h2>
+                  <div className="mb-4 rounded-lg border p-3 text-sm">
+                  <div className="font-medium">
+                  🚚 Frete grátis em compras acima de €50
+            </div>
+             {missingForFreeShipping > 0 ? (
+            <div className="text-muted-foreground mt-1">
+          💡 Faltam {formatCurrency(missingForFreeShipping, locale)} para ganhar frete grátis
+          </div>
+          ) : (
+         <div className="text-muted-foreground mt-1">
+          ✅ Frete grátis aplicado 🎉
+          </div>
+            )}
+            </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
