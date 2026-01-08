@@ -166,10 +166,12 @@ export default function CartPage() {
                       <span className="text-muted-foreground">{t.cart.subtotal}</span>
                       <span className="font-medium">{formatCurrency(totalPrice, locale)}</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{t.cart.shipping}</span>
-                      <span className="font-medium">{formatCurrency(shipping, locale)}</span>
-                    </div>
+                    {shipping > 0 && (
+                      <div className="flex items-center justify-between">
+                       <span className="text-muted-foreground">{t.cart.shipping}</span>
+                       <span className="font-medium">{formatCurrency(shipping, locale)}</span>
+                      </div>
+                     )}
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">{t.cart.tax}</span>                      
                     </div>
