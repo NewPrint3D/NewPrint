@@ -16,8 +16,8 @@ export default function CartPage() {
   const { t, locale } = useLanguage()
   const { items, removeItem, updateQuantity, totalPrice } = useCart()
 
-  const shipping = 5.99
-  const orderTotal = totalPrice + shipping 
+  const shipping = totalPrice >= 50 ? 0 : 5.99
+ const orderTotal = totalPrice + shipping
 
   if (items.length === 0) {
     return (
