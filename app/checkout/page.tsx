@@ -15,7 +15,7 @@ import { useToast } from "@/components/ui/use-toast"
 
 // Ex: import { useCart } from "@/contexts/cart-context"
 import { useCart } from "@/contexts/cart-context"
-
+import { useLanguage } from "@/contexts/language-context"
 type CartItem = {
   product?: {
     name?: { en?: string } | string
@@ -53,11 +53,10 @@ function to2(n: number) {
 export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
-
+const { t, locale } = useLanguage()
+ 
   const { items } = useCart() as { items: CartItem[] } //Adjust if your hook returns more data. 
-
   const [isProcessing, setIsProcessing] = useState(false)
-
    const [formData, setFormData] = useState<ShippingInfo>({
     firstName: "",
     lastName: "",
@@ -67,7 +66,7 @@ export default function CheckoutPage() {
     city: "",
     state: "",
     zipCode: "",
-    country: "España",
+  country: "Spain",
   })
 
    useEffect(() => {
@@ -112,8 +111,8 @@ export default function CheckoutPage() {
   const handleCheckout = async () => {
     if (!canSubmit) {
       toast({
-        title: "Fill in the details",
-        description: "Complete the form before paying",
+        title: t.checkout.fillDetailsTitle,
+        description: t.checkout.fillDetailsDescription,
         variant: "destructive",
       })
       return
@@ -141,12 +140,12 @@ export default function CheckoutPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data?.error || "Failed to create Stripe checkout.")
+       throw new Error(data?.error || t.checkout.failedToCreateStripeCheckout)
       }
 
       if (!data?.url) {
         console.log("Stripe response:", data)
-        throw new Error("The URL did not come from the backend.(Stripe)")
+        throw new Error(t.checkout.missingStripeUrlFromBackend)
       }
 
       // Redirect to Stripe Checkout
@@ -154,8 +153,8 @@ export default function CheckoutPage() {
     } catch (error) {
       console.error("Checkout error:", error)
       toast({
-        title: "Payment Failed",
-        description: error instanceof Error ? error.message : "Please try again",
+       title: t.checkout.paymentFailed,
+       description: error instanceof Error ? error.message : t.checkout.pleaseTryAgain,
         variant: "destructive",
       })
     } finally {
@@ -198,12 +197,12 @@ export default function CheckoutPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data?.error || "Failed to create PayPal order")
+        throw new Error(data?.error || t.checkout.failedToCreatePayPalOrder)
       }
 
            if (!data?.approveUrl) {
         console.log("PayPal response:", data)
-       throw new Error("approveUrl did not come from the backend.")
+      throw new Error(t.checkout.paypalApproveUrlMissing)
       }
 
       // Redirect to PayPal
@@ -211,8 +210,8 @@ export default function CheckoutPage() {
     } catch (error) {
       console.error("PayPal checkout error:", error)
       toast({
-        title: "Payment Failed",
-        description: error instanceof Error ? error.message : "Please try again",
+       title: t.checkout.paymentFailed,
+       description: error instanceof Error ? error.message : t.checkout.pleaseTryAgain,
         variant: "destructive",
       })
     } finally {
@@ -228,19 +227,19 @@ export default function CheckoutPage() {
 
       <div className="pt-24 pb-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-8">Complete Purchase</h1>
+          <h1 className="text-4xl font-bold mb-8">{t.checkout.title}</h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Shipping Information</CardTitle>
+                  <CardTitle>{t.checkout.shippingInfo}</CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName">Name</Label>
+                      <Label htmlFor="firstName">{t.checkout.firstName}</Label>
                       <Input
                         id="firstName"
                         value={formData.firstName}
