@@ -164,15 +164,15 @@ const orderTotal = totalPrice + shipping
                   <h2 className="text-2xl font-bold mb-6">{t.cart.orderSummary ?? t.checkout.orderSummary}</h2>
                   <div className="mb-4 rounded-lg border p-3 text-sm">
                   <div className="font-medium">
-                  🚚 Frete grátis em compras acima de €50
+                 🚚 {t.cart.freeShippingAbove50}
             </div>
              {missingForFreeShipping > 0 ? (
             <div className="text-muted-foreground mt-1">
-          💡 Faltam {formatCurrency(missingForFreeShipping, locale)} para ganhar frete grátis
+          💡 {t.cart.missingForFreeShipping} {formatCurrency(missingForFreeShipping, locale)}
           </div>
           ) : (
          <div className="text-muted-foreground mt-1">
-          ✅ Frete grátis aplicado 🎉
+         ✅ {t.cart.freeShippingApplied}
           </div>
             )}
             </div>
