@@ -171,8 +171,7 @@ export default function CartPage() {
                       <span className="font-medium">{formatCurrency(shipping, locale)}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{t.cart.tax}</span>
-                      <span className="font-medium">{formatCurrency(tax, locale)}</span>
+                      <span className="text-muted-foreground">{t.cart.tax}</span>                      
                     </div>
                     <div className="border-t border-border pt-3">
                       <div className="flex items-center justify-between">
