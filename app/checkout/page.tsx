@@ -83,10 +83,10 @@ export default function CheckoutPage() {
     }, 0)
   }, [items])
 
-   const shipping = 5.99
-    const total = useMemo(() => subtotal + shipping, [subtotal])
-
-  const canSubmit = useMemo(() => {
+   const shipping = subtotal >= 50 ? 0 : 5.99
+   const isFreeShipping = subtotal >= 50
+   const total = useMemo(() => subtotal + shipping, [subtotal, shipping])
+   const canSubmit = useMemo(() => {
     return (
       (items?.length ?? 0) > 0 &&
       formData.firstName.trim() &&
