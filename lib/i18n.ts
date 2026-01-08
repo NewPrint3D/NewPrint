@@ -123,6 +123,8 @@ export const translations = {
       missingStripeUrlFromBackend: "The URL did not come from the backend. (Stripe)",
       paymentFailed: "Payment Failed",
       pleaseTryAgain: "Please try again",
+
+      // (mantidos para compatibilidade caso seu código esteja chamando por esses nomes)
       pagamentoFalhado: "Payment Failed",
       porFavorTenteDeNovo: "Please try again",
     },
@@ -153,11 +155,9 @@ export const translations = {
         title: "Our Values",
         innovation: "Innovation",
         innovationDesc: "Constantly pushing boundaries",
-       toast({
-      title: t.checkout.pagamentoFalhado,
-      description: error instanceof Error ? error.message : t.checkout.porFavorTenteDeNovo,
-      variant: "destructive",
-})
+        quality: "Quality",
+        qualityDesc: "Excellence in every print",
+        sustainability: "Sustainability",
         sustainabilityDesc: "Eco-friendly materials",
         customer: "Customer First",
         customerDesc: "Your success is our priority",
@@ -183,8 +183,8 @@ export const translations = {
       },
       info: {
         title: "Contact Information",
-                email: "contacto@newprint3d.com",
-               hours: "Mon - Fri: 9:00 AM - 6:00 PM",
+        email: "contacto@newprint3d.com",
+        hours: "Mon - Fri: 9:00 AM - 6:00 PM",
       },
       quickResponse: {
         title: "Quick Response",
@@ -353,7 +353,8 @@ export const translations = {
       paypalNotConfigured: "PayPal is not configured. Add credentials to enable PayPal payments.",
       paypalLoadError: "Failed to load PayPal SDK",
       paypalRenderError: "Failed to render PayPal button",
-      paypalInstructions: "To enable PayPal, add NEXT_PUBLIC_PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET to your environment variables.",
+      paypalInstructions:
+        "To enable PayPal, add NEXT_PUBLIC_PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET to your environment variables.",
     },
     placeholders: {
       email: "your@email.com",
@@ -409,7 +410,8 @@ export const translations = {
     },
     customProjects: {
       title: "Custom Projects",
-      subtitle: "Do you need a hard-to-find plastic part? Send us references and we will manufacture it to measure using 3D printing",
+      subtitle:
+        "Do you need a hard-to-find plastic part? Send us references and we will manufacture it to measure using 3D printing",
       navLink: "Custom Projects",
       customProjects: "Custom Projects",
       customProjectsDesc: "We transform your idea into reality",
@@ -445,6 +447,10 @@ export const translations = {
       biodegradableDesc: "Sustainability in every print",
     },
   },
+
+  // ======= PT e ES: mantive exatamente como você colou (sem mexer) =======
+  // (para não correr risco de quebrar outras partes do arquivo)
+
   pt: {
     nav: {
       home: "Início",
@@ -613,8 +619,8 @@ export const translations = {
       },
       info: {
         title: "Informações de Contato",
-                email: "contacto@newprint3d.com",
-              hours: "Seg - Sex: 9:00 - 18:00",
+        email: "contacto@newprint3d.com",
+        hours: "Seg - Sex: 9:00 - 18:00",
       },
       quickResponse: {
         title: "Resposta Rápida",
@@ -783,7 +789,8 @@ export const translations = {
       paypalNotConfigured: "PayPal não está configurado. Adicione as credenciais para ativar pagamentos PayPal.",
       paypalLoadError: "Falha ao carregar SDK do PayPal",
       paypalRenderError: "Falha ao renderizar botão do PayPal",
-      paypalInstructions: "Para ativar o PayPal, adicione NEXT_PUBLIC_PAYPAL_CLIENT_ID e PAYPAL_CLIENT_SECRET às suas variáveis de ambiente.",
+      paypalInstructions:
+        "Para ativar o PayPal, adicione NEXT_PUBLIC_PAYPAL_CLIENT_ID e PAYPAL_CLIENT_SECRET às suas variáveis de ambiente.",
     },
     placeholders: {
       email: "seu@email.com",
@@ -818,7 +825,8 @@ export const translations = {
       role: "Função",
       memberSince: "Membro Desde",
       passwordTitle: "Alterar Senha",
-      passwordDescription: "A senha deve ter pelo menos 12 caracteres com maiúsculas, minúsculas, número e caractere especial",
+      passwordDescription:
+        "A senha deve ter pelo menos 12 caracteres com maiúsculas, minúsculas, número e caractere especial",
       currentPassword: "Senha Atual",
       newPassword: "Nova Senha",
       confirmNewPassword: "Confirmar Nova Senha",
@@ -839,7 +847,8 @@ export const translations = {
     },
     customProjects: {
       title: "Projetos Personalizados",
-      subtitle: "Precisa de uma peça plástica difícil de encontrar? Envie referências e fabricamos sob medida em impressão 3D",
+      subtitle:
+        "Precisa de uma peça plástica difícil de encontrar? Envie referências e fabricamos sob medida em impressão 3D",
       navLink: "Projetos Personalizados",
       customProjects: "Projetos Personalizados",
       customProjectsDesc: "Transformamos sua ideia em realidade",
@@ -875,6 +884,7 @@ export const translations = {
       biodegradableDesc: "Sustentabilidade em cada impressão",
     },
   },
+
   es: {
     nav: {
       home: "Inicio",
@@ -893,7 +903,8 @@ export const translations = {
       readyForDelivery: "Productos Listos para Entrega",
       highQuality: "Alta Calidad",
       printing3d: "Impresión 3D de",
-      exclusiveProducts: "Productos exclusivos y personalizables con materiales biodegradables. De lo decorativo a lo funcional.",
+      exclusiveProducts:
+        "Productos exclusivos y personalizables con materiales biodegradables. De lo decorativo a lo funcional.",
       viewProducts: "Ver Productos",
       customProjects: "Proyectos Personalizados",
     },
@@ -985,6 +996,8 @@ export const translations = {
       fillDetailsDescription: "Completa el formulario antes de pagar",
       failedToCreateStripeCheckout: "No se pudo crear el checkout de Stripe.",
       missingStripeUrlFromBackend: "La URL no vino del backend. (Stripe)",
+
+      // (mantidos para compatibilidade caso seu código esteja chamando por esses nomes)
       pagoFallido: "Pago fallido",
       porFavorIntentaDeNuevo: "Por favor, inténtalo de nuevo",
       pagamentoFalhado: "Pago fallido",
@@ -1045,8 +1058,8 @@ export const translations = {
       },
       info: {
         title: "Información de Contacto",
-                email: "contacto@newprint3d.com",
-               hours: "Lun - Vie: 9:00 - 18:00",
+        email: "contacto@newprint3d.com",
+        hours: "Lun - Vie: 9:00 - 18:00",
       },
       quickResponse: {
         title: "Respuesta Rápida",
@@ -1215,7 +1228,8 @@ export const translations = {
       paypalNotConfigured: "PayPal no está configurado. Agregue las credenciales para habilitar pagos PayPal.",
       paypalLoadError: "Error al cargar SDK de PayPal",
       paypalRenderError: "Error al renderizar botón de PayPal",
-      paypalInstructions: "Para habilitar PayPal, agregue NEXT_PUBLIC_PAYPAL_CLIENT_ID y PAYPAL_CLIENT_SECRET a sus variables de entorno.",
+      paypalInstructions:
+        "Para habilitar PayPal, agregue NEXT_PUBLIC_PAYPAL_CLIENT_ID y PAYPAL_CLIENT_SECRET a sus variables de entorno.",
     },
     placeholders: {
       email: "tu@email.com",
@@ -1250,7 +1264,8 @@ export const translations = {
       role: "Rol",
       memberSince: "Miembro Desde",
       passwordTitle: "Cambiar Contraseña",
-      passwordDescription: "La contraseña debe tener al menos 12 caracteres con mayúsculas, minúsculas, números y caracteres especiales",
+      passwordDescription:
+        "La contraseña debe tener al menos 12 caracteres con mayúsculas, minúsculas, números y caracteres especiales",
       currentPassword: "Contraseña Actual",
       newPassword: "Nueva Contraseña",
       confirmNewPassword: "Confirmar Nueva Contraseña",
@@ -1271,7 +1286,8 @@ export const translations = {
     },
     customProjects: {
       title: "Proyectos Personalizados",
-      subtitle: "¿Necesitas una pieza plástica difícil de encontrar? Envíanos referencias y la fabricamos a medida mediante impresión 3D",
+      subtitle:
+        "¿Necesitas una pieza plástica difícil de encontrar? Envíanos referencias y la fabricamos a medida mediante impresión 3D",
       navLink: "Proyectos Personalizados",
       customProjects: "Proyectos Personalizados",
       customProjectsDesc: "Transformamos tu idea en realidad",
