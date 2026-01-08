@@ -119,6 +119,7 @@ export const translations = {
       orPayWith: "Or pay with",
       fillDetailsTitle: "Fill in the details",
       fillDetailsDescription: "Complete the form before paying",
+      failedToCreateStripeCheckout: "Failed to create Stripe checkout.",
     },
     orders: {
       title: "My Orders",
@@ -545,6 +546,7 @@ export const translations = {
       orPayWith: "Ou pague com",
       fillDetailsTitle: "Preencha os dados",
       fillDetailsDescription: "Complete o formulário antes de pagar",
+      failedToCreateStripeCheckout: "Falha ao criar o checkout do Stripe.",
     },
     orders: {
       title: "Meus Pedidos",
@@ -971,6 +973,7 @@ export const translations = {
       orPayWith: "O paga con",
       fillDetailsTitle: "Rellena los datos",
       fillDetailsDescription: "Completa el formulario antes de pagar",
+      failedToCreateStripeCheckout: "No se pudo crear el checkout de Stripe.",
     },
     orders: {
       title: "Mis Pedidos",
