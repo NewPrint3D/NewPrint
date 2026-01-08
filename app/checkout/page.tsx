@@ -155,7 +155,7 @@ export default function CheckoutPage() {
       toast({
         title: t.checkout.title,
         description:
-          error instanceof Error ? error.message : t.checkout.pleaseTryAgain,
+          error instanceof Error ? error.message : t.checkout.title,
         variant: "destructive",
       })
     } finally {
