@@ -15,7 +15,6 @@ import { useToast } from "@/components/ui/use-toast"
 
 import { useCart } from "@/contexts/cart-context"
 import { useLanguage } from "@/contexts/language-context"
-const { t, locale } = useLanguage()
 type CartItem = {
   product?: {
     name?: { en?: string } | string
@@ -54,6 +53,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { t } = useLanguage()
+   const { t, locale } = useLanguage()
   const { items } = useCart() as { items: CartItem[] }
   const [isProcessing, setIsProcessing] = useState(false)
 
