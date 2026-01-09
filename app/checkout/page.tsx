@@ -236,7 +236,7 @@ export default function CheckoutPage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName">First name</Label>
+                     <Label htmlFor="firstName">{t.checkout.firstName}</Label>
                       <Input
                         id="firstName"
                         value={formData.firstName}
@@ -337,7 +337,7 @@ export default function CheckoutPage() {
             <div>
               <Card>
                 <CardHeader>
-                  <CardTitle>Order Summary</CardTitle>
+                  <CardTitle>{t.checkout.orderSummary}</CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
@@ -370,7 +370,7 @@ export default function CheckoutPage() {
 
                   <div className="border-t pt-4 space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span>Subtotal</span>
+                     <span>{t.cart.subtotal}</span>
                       <span>€ {to2(subtotal)}</span>
                     </div>
 
