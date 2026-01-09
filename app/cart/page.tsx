@@ -23,7 +23,7 @@ const orderTotal = totalPrice + shipping
 
   if (items.length === 0) {
     return (
-      <main className="min-h-screen">
+    <main className=¨min-h-screen¨>
         <Navbar />
         <div className="pt-24 pb-12">
           <div className="container mx-auto px-4">
