@@ -343,10 +343,10 @@ export default function CheckoutPage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
                     {items.map((it, idx) => {
-                      const name =
-                        typeof it.product?.name === "object"
-                          ? it.product?.name?.en
-                          : it.product?.name
+                    const name =
+                    typeof it.product?.name === "object"
+                    ? it.product?.name?.[locale] || it.product?.name?.en
+                    : it.product?.name
 
                       const qty = safeNumber(it.quantity)
                       const price = safeNumber(it.price)
