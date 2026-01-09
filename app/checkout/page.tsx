@@ -311,7 +311,7 @@ export default function CheckoutPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="zipCode">ZIP / Postal code</Label>
+                      <Label htmlFor="zipCode">{t.checkout.zipCode}</Label>
                       <Input
                         id="zipCode"
                         value={formData.zipCode}
@@ -375,7 +375,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <div className="flex justify-between">
-                      <span>Shipping</span>
+                      <span>{t.Shipping}</span>
                       <span>€ {to2(shipping)}</span>
                     </div>
                   </div>
