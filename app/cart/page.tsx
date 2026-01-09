@@ -54,9 +54,7 @@ const orderTotal = totalPrice + shipping
     <Navbar />
     <div className="pt-24 pb-12">
       <div className="container mx-auto px-4">
-
           <h1 className="text-4xl font-bold mb-8">{t.cart.title}</h1>
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => (
