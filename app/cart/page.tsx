@@ -41,13 +41,7 @@ const orderTotal = totalPrice + shipping
                   </Link>
                 </Button>
               </div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </main>
-    )
-  }
+        
 
 return (
   <main className="min-h-screen">
