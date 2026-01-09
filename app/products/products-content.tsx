@@ -8,7 +8,7 @@ import { useLanguage } from "@/contexts/language-context"
 import type { Product } from "@/lib/db-products"
 
 export function ProductsContent() {
-  const { t } = useLanguage()
+ const { t, locale } = useLanguage()
   const searchParams = useSearchParams()
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
@@ -27,7 +27,7 @@ export function ProductsContent() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const res = await fetch("/api/products-public")
+        const res = await fetch(`/api/products-public?locale=${locale}`)
         if (res.ok) {
           const data = await res.json()
           setProducts(data.products)
@@ -39,7 +39,7 @@ export function ProductsContent() {
       }
     }
     fetchProducts()
-  }, [])
+  }, [locale])
 
   useEffect(() => {
     const params = new URLSearchParams()
