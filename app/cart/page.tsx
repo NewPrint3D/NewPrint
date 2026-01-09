@@ -73,12 +73,7 @@ const orderTotal = totalPrice + shipping
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h3 className="font-bold text-lg mb-1">
-                            {locale === "es"
-                            ? item.product.name_es
-                            : locale === "pt"
-                            ? item.product.name_pt
-                            : item.product.name_en}
+                           <h3 className="font-bold text-lg mb-1">{item.product.name[locale]}</h3>
                             </h3>
                             <p className="text-sm text-muted-foreground">{item.product.description[locale]}</p>
                           </div>
