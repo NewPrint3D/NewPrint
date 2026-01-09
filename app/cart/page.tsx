@@ -1,28 +1,29 @@
 "use client";
 
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { useLanguage } from "@/contexts/language-context"
-import { useCart } from "@/contexts/cart-context"
-import { formatCurrency } from "@/lib/intl"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Trash2, ShoppingBag, ArrowRight } from "lucide-react"
-import Link from "next/link"
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import { useLanguage } from "@/contexts/language-context";
+import { useCart } from "@/contexts/cart-context";
+import { formatCurrency } from "@/lib/intl";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function CartPage() {
-  const { t, locale } = useLanguage()
-  const { items, removeItem, updateQuantity, totalPrice } = useCart()
+  const { t, locale } = useLanguage();
+  const { items, removeItem, updateQuantity, totalPrice } = useCart();
 
- const freeShippingThreshold = 50
-const shipping = totalPrice >= freeShippingThreshold ? 0 : 5.99
-const missingForFreeShipping = Math.max(0, freeShippingThreshold - totalPrice)
-const orderTotal = totalPrice + shipping
+  const freeShippingThreshold = 50;
+  const shipping = totalPrice >= freeShippingThreshold ? 0 : 5.99;
+  const missingForFreeShipping = Math.max(0, freeShippingThreshold - totalPrice);
+  const orderTotal = totalPrice + shipping;
 
+  // ✅ Carrinho vazio (retorno completo e fechado)
   if (items.length === 0) {
     return (
-     <main className=¨min-h-screen¨>
-       <Navbar />
+      <main className="min-h-screen">
+        <Navbar />
         <div className="pt-24 pb-12">
           <div className="container mx-auto px-4">
             <div className="max-w-2xl mx-auto text-center py-16">
@@ -30,8 +31,10 @@ const orderTotal = totalPrice + shipping
                 <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
                   <ShoppingBag className="w-12 h-12 text-muted-foreground" />
                 </div>
+
                 <h1 className="text-3xl font-bold mb-4">{t.cart.empty}</h1>
                 <p className="text-muted-foreground mb-8">{t.cart.emptyDescription}</p>
+
                 <Button asChild size="lg">
                   <Link href="/products">
                     {t.cart.continueShopping}
@@ -39,18 +42,28 @@ const orderTotal = totalPrice + shipping
                   </Link>
                 </Button>
               </div>
-        
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
 
-  <main className="min-h-screen">
-    <Navbar />
-    <div className="pt-24 pb-12">
-      <div className="container mx-auto px-4">
-
+  // ✅ Carrinho com itens
+  return (
+    <main className="min-h-screen">
+      <Navbar />
+      <div className="pt-24 pb-12">
+        <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-8">{t.cart.title}</h1>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => (
-                <Card key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}-${item.selectedMaterial}`}>
+                <Card
+                  key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}-${item.selectedMaterial}`}
+                >
                   <CardContent className="p-6">
                     <div className="flex gap-6">
                       <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-muted flex-shrink-0">
@@ -64,15 +77,22 @@ const orderTotal = totalPrice + shipping
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                           <h3 className="font-bold text-lg mb-1">{item.product.name[locale]}</h3>
-                            </h3>
-                            <p className="text-sm text-muted-foreground">{item.product.description[locale]}</p>
+                            <h3 className="font-bold text-lg mb-1">{item.product.name[locale]}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {item.product.description[locale]}
+                            </p>
                           </div>
+
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() =>
-                              removeItem(item.product.id, item.selectedColor, item.selectedSize, item.selectedMaterial)
+                              removeItem(
+                                item.product.id,
+                                item.selectedColor,
+                                item.selectedSize,
+                                item.selectedMaterial
+                              )
                             }
                             className="text-destructive hover:text-destructive"
                           >
@@ -88,10 +108,12 @@ const orderTotal = totalPrice + shipping
                               style={{ backgroundColor: item.selectedColor }}
                             />
                           </div>
+
                           <div>
                             <span className="text-muted-foreground">{t.cart.size}:</span>{" "}
                             <span className="font-medium">{item.selectedSize}</span>
                           </div>
+
                           <div>
                             <span className="text-muted-foreground">{t.cart.material}:</span>{" "}
                             <span className="font-medium">{item.selectedMaterial}</span>
@@ -110,13 +132,15 @@ const orderTotal = totalPrice + shipping
                                   item.selectedColor,
                                   item.selectedSize,
                                   item.selectedMaterial,
-                                  item.quantity - 1,
+                                  item.quantity - 1
                                 )
                               }
                             >
                               -
                             </Button>
+
                             <span className="font-medium w-8 text-center">{item.quantity}</span>
+
                             <Button
                               variant="outline"
                               size="icon"
@@ -127,13 +151,14 @@ const orderTotal = totalPrice + shipping
                                   item.selectedColor,
                                   item.selectedSize,
                                   item.selectedMaterial,
-                                  item.quantity + 1,
+                                  item.quantity + 1
                                 )
                               }
                             >
                               +
                             </Button>
                           </div>
+
                           <div className="text-right">
                             <p className="text-sm text-muted-foreground">
                               {formatCurrency(item.price, locale)} {t.cart.perItem}
@@ -153,38 +178,42 @@ const orderTotal = totalPrice + shipping
             <div className="lg:col-span-1">
               <Card className="sticky top-24">
                 <CardContent className="p-6 space-y-4">
-                  <h2 className="text-2xl font-bold mb-6">{t.cart.orderSummary ?? t.checkout.orderSummary}</h2>
+                  <h2 className="text-2xl font-bold mb-6">
+                    {t.cart.orderSummary ?? t.checkout.orderSummary}
+                  </h2>
+
                   <div className="mb-4 rounded-lg border p-3 text-sm">
-                  <div className="font-medium">
-                 🚚 {t.cart.freeShippingAbove50}
-            </div>
-             {missingForFreeShipping > 0 ? (
-            <div className="text-muted-foreground mt-1">
-          💡 {t.cart.missingForFreeShipping} {formatCurrency(missingForFreeShipping, locale)}
-          </div>
-          ) : (
-         <div className="text-muted-foreground mt-1">
-         ✅ {t.cart.freeShippingApplied}
-          </div>
-            )}
-            </div>
+                    <div className="font-medium">🚚 {t.cart.freeShippingAbove50}</div>
+
+                    {missingForFreeShipping > 0 ? (
+                      <div className="text-muted-foreground mt-1">
+                        💡 {t.cart.missingForFreeShipping}{" "}
+                        {formatCurrency(missingForFreeShipping, locale)}
+                      </div>
+                    ) : (
+                      <div className="text-muted-foreground mt-1">✅ {t.cart.freeShippingApplied}</div>
+                    )}
+                  </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">{t.cart.subtotal}</span>
                       <span className="font-medium">{formatCurrency(totalPrice, locale)}</span>
                     </div>
+
                     {shipping > 0 && (
                       <div className="flex items-center justify-between">
-                       <span className="text-muted-foreground">{t.cart.shipping}</span>
-                       <span className="font-medium">{formatCurrency(shipping, locale)}</span>
+                        <span className="text-muted-foreground">{t.cart.shipping}</span>
+                        <span className="font-medium">{formatCurrency(shipping, locale)}</span>
                       </div>
-                     )}
-                   
+                    )}
+
                     <div className="border-t border-border pt-3">
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-bold">{t.cart.orderTotal}</span>
-                        <span className="text-2xl font-bold text-primary">{formatCurrency(orderTotal, locale)}</span>
+                        <span className="text-2xl font-bold text-primary">
+                          {formatCurrency(orderTotal, locale)}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -208,7 +237,8 @@ const orderTotal = totalPrice + shipping
           </div>
         </div>
       </div>
+
       <Footer />
     </main>
-  )
+  );
 }
