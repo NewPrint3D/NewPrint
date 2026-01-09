@@ -9,6 +9,10 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get("category")
     const featured = searchParams.get("featured")
+    const localeParam = (searchParams.get("locale") || "es").toLowerCase()
+    const locale = localeParam === "pt" || localeParam === "en" || localeParam === "es"
+      ? localeParam
+      : "es"
 
     let products
 
@@ -42,7 +46,30 @@ export async function GET(request: Request) {
       `
     }
 
-    return NextResponse.json({ products })
+        const productsLocalized = (products || []).map((product: any) => {
+      const name =
+        locale === "es"
+          ? product.name_es
+          : locale === "pt"
+          ? product.name_pt
+          : product.name_en
+
+      const description =
+        locale === "es"
+          ? product.description_es
+          : locale === "pt"
+          ? product.description_pt
+          : product.description_en
+
+      return {
+        ...product,
+        name,
+        description,
+      }
+    })
+
+    return NextResponse.json({ products: productsLocalized })
+
   } catch (error) {
     console.error("Erro ao buscar produtos:", error)
     return NextResponse.json({ error: "Erro ao buscar produtos" }, { status: 500 })
