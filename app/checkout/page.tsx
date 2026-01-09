@@ -15,6 +15,7 @@ import { useToast } from "@/components/ui/use-toast"
 
 import { useCart } from "@/contexts/cart-context"
 import { useLanguage } from "@/contexts/language-context"
+const { t, locale } = useLanguage()
 type CartItem = {
   product?: {
     name?: { en?: string } | string
