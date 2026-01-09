@@ -52,8 +52,7 @@ function to2(n: number) {
 export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { t } = useLanguage()
-   const { t, locale } = useLanguage()
+  const { t, locale } = useLanguage()
   const { items } = useCart() as { items: CartItem[] }
   const [isProcessing, setIsProcessing] = useState(false)
 
