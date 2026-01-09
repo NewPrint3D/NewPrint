@@ -268,7 +268,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="phone">{t.checkout.phone}</Label>
                     <Input
                       id="phone"
                       value={formData.phone}
@@ -278,7 +278,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="address">Address</Label>
+                    <Label htmlFor="address">{t.checkout.address}</Label>
                     <Input
                       id="address"
                       value={formData.address}
@@ -289,7 +289,7 @@ export default function CheckoutPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="city">City</Label>
+                      <Label htmlFor="city">{t.checkout.city}</Label>
                       <Input
                         id="city"
                         value={formData.city}
@@ -299,7 +299,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="state">State</Label>
+                      <Label htmlFor="state">{t.checkout.state}</Label>
                       <Input
                         id="state"
                         value={formData.state}
@@ -321,7 +321,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="country">Country</Label>
+                      <Label htmlFor="country">{t.checkout.country}</Label>
                       <Input
                         id="country"
                         value={formData.country}
