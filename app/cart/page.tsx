@@ -1,25 +1,24 @@
-"use client";
+"use client"
 
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
-import { useLanguage } from "@/contexts/language-context";
-import { useCart } from "@/contexts/cart-context";
-import { formatCurrency } from "@/lib/intl";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Trash2, ShoppingBag, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { Navbar } from "@/components/navbar"
+import { Footer } from "@/components/footer"
+import { useLanguage } from "@/contexts/language-context"
+import { useCart } from "@/contexts/cart-context"
+import { formatCurrency } from "@/lib/intl"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Trash2, ShoppingBag, ArrowRight } from "lucide-react"
+import Link from "next/link"
 
 export default function CartPage() {
-  const { t, locale } = useLanguage();
-  const { items, removeItem, updateQuantity, totalPrice } = useCart();
+  const { t, locale } = useLanguage()
+  const { items, removeItem, updateQuantity, totalPrice } = useCart()
 
-  const freeShippingThreshold = 50;
-  const shipping = totalPrice >= freeShippingThreshold ? 0 : 5.99;
-  const missingForFreeShipping = Math.max(0, freeShippingThreshold - totalPrice);
-  const orderTotal = totalPrice + shipping;
+  const freeShippingThreshold = 50
+  const shipping = totalPrice >= freeShippingThreshold ? 0 : 5.99
+  const missingForFreeShipping = Math.max(0, freeShippingThreshold - totalPrice)
+  const orderTotal = totalPrice + shipping
 
-  // ✅ Carrinho vazio (retorno completo e fechado)
   if (items.length === 0) {
     return (
       <main className="min-h-screen">
@@ -47,10 +46,9 @@ export default function CartPage() {
         </div>
         <Footer />
       </main>
-    );
+    )
   }
 
-  // ✅ Carrinho com itens
   return (
     <main className="min-h-screen">
       <Navbar />
@@ -69,7 +67,7 @@ export default function CartPage() {
                       <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                         <img
                           src={item.product.image || "/placeholder.svg"}
-                          alt={item.product.name[locale]}
+                          alt={item.product.name?.[locale] ?? item.product.name?.en ?? "Product"}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -77,9 +75,13 @@ export default function CartPage() {
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h3 className="font-bold text-lg mb-1">{item.product.name[locale]}</h3>
+                            <h3 className="font-bold text-lg mb-1">
+                              {item.product.name?.[locale] ?? item.product.name?.en ?? "Product"}
+                            </h3>
                             <p className="text-sm text-muted-foreground">
-                              {item.product.description[locale]}
+                              {item.product.description?.[locale] ??
+                                item.product.description?.en ??
+                                ""}
                             </p>
                           </div>
 
@@ -191,7 +193,9 @@ export default function CartPage() {
                         {formatCurrency(missingForFreeShipping, locale)}
                       </div>
                     ) : (
-                      <div className="text-muted-foreground mt-1">✅ {t.cart.freeShippingApplied}</div>
+                      <div className="text-muted-foreground mt-1">
+                        ✅ {t.cart.freeShippingApplied}
+                      </div>
                     )}
                   </div>
 
@@ -237,8 +241,7 @@ export default function CartPage() {
           </div>
         </div>
       </div>
-
       <Footer />
     </main>
-  );
+  )
 }
