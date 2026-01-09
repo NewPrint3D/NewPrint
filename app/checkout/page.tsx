@@ -246,7 +246,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="lastName">Last name</Label>
+                      <Label htmlFor="lastName">{t.checkout.Lastname}</Label>
                       <Input
                         id="lastName"
                         value={formData.lastName}
