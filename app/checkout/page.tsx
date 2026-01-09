@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 
 import { useCart } from "@/contexts/cart-context"
-
+import { useLanguage } from "@/contexts/language-context"
 type CartItem = {
   product?: {
     name?: { en?: string } | string
@@ -52,7 +52,7 @@ function to2(n: number) {
 export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
-
+  const { t } = useLanguage()
   const { items } = useCart() as { items: CartItem[] }
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -230,7 +230,7 @@ export default function CheckoutPage() {
             <div className="lg:col-span-2 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Shipping Information</CardTitle>
+                  <CardTitle>{t.checkout.shippingInfo}</CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
