@@ -43,7 +43,6 @@ const orderTotal = totalPrice + shipping
               </div>
         
 
-return (
   <main className="min-h-screen">
     <Navbar />
     <div className="pt-24 pb-12">
