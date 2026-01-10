@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -15,6 +14,7 @@ import { useLanguage } from "@/contexts/language-context"
 export function CustomProjectsSection() {
   const { toast } = useToast()
   const { t } = useLanguage()
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -22,53 +22,54 @@ export function CustomProjectsSection() {
     message: "",
     file: null as File | null,
   })
+
   const [isDragging, setIsDragging] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
 
-  try {
-    setIsSubmitting(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-    const fd = new FormData()
-    fd.append("name", formData.name)
-    fd.append("email", formData.email)
-    fd.append("phone", formData.phone)
-    fd.append("message", formData.message)
-    if (formData.file) fd.append("file", formData.file)
+    try {
+      setIsSubmitting(true)
 
-    const res = await fetch("/api/contact", {
-      method: "POST",
-      body: fd,
-    })
+      const fd = new FormData()
+      fd.append("name", formData.name)
+      fd.append("email", formData.email)
+      fd.append("phone", formData.phone)
+      fd.append("message", formData.message)
+      if (formData.file) fd.append("file", formData.file)
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "")
-      throw new Error(text || `Erro ao enviar (status ${res.status})`)
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        body: fd,
+      })
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "")
+        throw new Error(text || `Erro ao enviar (status ${res.status})`)
+      }
+
+      toast({
+        title: t.customProjects.messageSent,
+        description: t.customProjects.messageDesc,
+      })
+
+      setFormData({ name: "", email: "", phone: "", message: "", file: null })
+      setPreview(null)
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Falha ao enviar",
+        description:
+          err instanceof Error
+            ? err.message
+            : "Não foi possível enviar sua solicitação. Tente novamente.",
+      })
+    } finally {
+      setIsSubmitting(false)
     }
-
-    toast({
-      title: t.customProjects.messageSent,
-      description: t.customProjects.messageDesc,
-    })
-
-    setFormData({ name: "", email: "", phone: "", message: "", file: null })
-    setPreview(null)
-  } catch (err) {
-    toast({
-      variant: "destructive",
-      title: "Falha ao enviar",
-      description:
-        err instanceof Error
-          ? err.message
-          : "Não foi possível enviar sua solicitação. Tente novamente.",
-    })
-  } finally {
-    setIsSubmitting(false)
   }
-}
-
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -85,20 +86,15 @@ const handleSubmit = async (e: React.FormEvent) => {
     setIsDragging(false)
 
     const files = e.dataTransfer.files
-    if (files && files[0]) {
-      handleFileSelect(files[0])
-    }
+    if (files && files[0]) handleFileSelect(files[0])
   }
 
   const handleFileSelect = (file: File) => {
-    setFormData({ ...formData, file })
+    setFormData((prev) => ({ ...prev, file }))
 
-    // Create preview for images
     if (file.type.startsWith("image/")) {
       const reader = new FileReader()
-      reader.onloadend = () => {
-        setPreview(reader.result as string)
-      }
+      reader.onloadend = () => setPreview(reader.result as string)
       reader.readAsDataURL(file)
     } else {
       setPreview(null)
@@ -107,13 +103,11 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      handleFileSelect(file)
-    }
+    if (file) handleFileSelect(file)
   }
 
   const removeFile = () => {
-    setFormData({ ...formData, file: null })
+    setFormData((prev) => ({ ...prev, file: null }))
     setPreview(null)
   }
 
@@ -142,9 +136,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">{t.customProjects.title}</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            {t.customProjects.subtitle}
-          </p>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">{t.customProjects.subtitle}</p>
           <div className="w-20 h-1 bg-gradient-to-r from-primary via-accent to-chart-3 mx-auto rounded-full animate-[gradient_3s_linear_infinite] bg-[length:200%_auto] mt-4" />
         </div>
 
@@ -179,67 +171,62 @@ const handleSubmit = async (e: React.FormEvent) => {
               <div className="space-y-2">
                 <Label htmlFor="name">{t.customProjects.name}</Label>
                 <Input
-                  <Input
-                   id="name"
-                   name="name"
-                   autoComplete="name"
-                   value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                     className="bg-background/50"
-                     />
-
+                  id="name"
+                  name="name"
+                  autoComplete="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                  className="bg-background/50"
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">{t.customProjects.email}</Label>
-                 <Input
-                  id="email"
-                   name="email"
-                   type="email"
-                   autoComplete="email"
-                   value={formData.email}
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
-                      className="bg-background/50"
-                       />
-
+                    className="bg-background/50"
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="phone">{t.customProjects.phone}</Label>
                   <Input
-                  id="phone"
-                   name="phone"
+                    id="phone"
+                    name="phone"
                     type="tel"
-                     autoComplete="tel"
-                     value={formData.phone}
-                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    autoComplete="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="bg-background/50"
-                    />
-
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="message">{t.customProjects.projectDetails}</Label>
                 <Textarea
-                 id="message"
+                  id="message"
                   name="message"
                   autoComplete="off"
                   value={formData.message}
-                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      required
-                     rows={5}
-                     placeholder={t.customProjects.projectPlaceholder}
-                     className="bg-background/50"
-                     />
-
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  required
+                  rows={5}
+                  placeholder={t.customProjects.projectPlaceholder}
+                  className="bg-background/50"
+                />
               </div>
 
               <div className="space-y-2">
-                <Label>{t.customProjects.uploadFile}</Label>
+                <Label htmlFor="file">{t.customProjects.uploadFile}</Label>
 
                 {!formData.file ? (
                   <div
@@ -254,6 +241,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                   >
                     <input
                       id="file"
+                      name="file"
                       type="file"
                       onChange={handleFileInputChange}
                       accept="image/*,.stl,.obj"
@@ -284,10 +272,12 @@ const handleSubmit = async (e: React.FormEvent) => {
                           <FileImage className="w-8 h-8 text-primary" />
                         </div>
                       )}
+
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{formData.file.name}</p>
                         <p className="text-xs text-muted-foreground">{(formData.file.size / 1024).toFixed(2)} KB</p>
                       </div>
+
                       <Button type="button" variant="ghost" size="icon" onClick={removeFile} className="shrink-0">
                         <X className="w-4 h-4" />
                       </Button>
