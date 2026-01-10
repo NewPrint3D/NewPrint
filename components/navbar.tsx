@@ -32,6 +32,15 @@ export function Navbar() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+useEffect(() => {
+  if (typeof window === "undefined") return
+
+  document.body.style.overflow = isMobileMenuOpen ? "hidden" : ""
+
+  return () => {
+    document.body.style.overflow = ""
+  }
+}, [isMobileMenuOpen])
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
@@ -49,7 +58,7 @@ export function Navbar() {
       )}
     >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 relative z-50">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="relative">
               <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse-glow" />
@@ -172,46 +181,62 @@ export function Navbar() {
           </div>
         </div>
 
-        {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-in slide-in-from-top-5 duration-300">
-            <div className="flex flex-col gap-4">
-              <Link
-                href="/"
-                className="text-foreground/80 hover:text-primary transition-colors duration-200 font-medium py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {t.nav.home}
-              </Link>
-              <Link
-                href="/products"
-                className="text-foreground/80 hover:text-primary transition-colors duration-200 font-medium py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {t.nav.products}
-              </Link>
-              <button
-                onClick={() => scrollToSection("custom")}
-                className="text-foreground/80 hover:text-primary transition-colors duration-200 font-medium py-2 text-left"
-              >
-                {t.customProjects.navLink}
-              </button>
-              <Link
-                href="/about"
-                className="text-foreground/80 hover:text-primary transition-colors duration-200 font-medium py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {t.nav.about}
-              </Link>
-              <Link
-                href="/contact"
-                className="text-foreground/80 hover:text-primary transition-colors duration-200 font-medium py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {t.nav.contact}
-              </Link>
-            </div>
-          </div>
-        )}
+       {isMobileMenuOpen && (
+  <>
+    {/* Overlay (escurece o fundo) */}
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden z-40"
+      onClick={() => setIsMobileMenuOpen(false)}
+      aria-hidden="true"
+    />
+
+    {/* Painel do menu */}
+    <div className="fixed top-16 left-0 right-0 md:hidden z-50 bg-background/95 backdrop-blur-lg border-t border-border shadow-2xl animate-in slide-in-from-top-5 duration-300">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex flex-col gap-4">
+          <Link
+            href="/"
+            className="text-foreground/80 hover:text-primary transition-colors duration-200 font-medium py-2"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            {t.nav.home}
+          </Link>
+
+          <Link
+            href="/products"
+            className="text-foreground/80 hover:text-primary transition-colors duration-200 font-medium py-2"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            {t.nav.products}
+          </Link>
+
+          <button
+            onClick={() => scrollToSection("custom")}
+            className="text-foreground/80 hover:text-primary transition-colors duration-200 font-medium py-2 text-left"
+          >
+            {t.customProjects.navLink}
+          </button>
+
+          <Link
+            href="/about"
+            className="text-foreground/80 hover:text-primary transition-colors duration-200 font-medium py-2"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            {t.nav.about}
+          </Link>
+
+          <Link
+            href="/contact"
+            className="text-foreground/80 hover:text-primary transition-colors duration-200 font-medium py-2"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            {t.nav.contact}
+          </Link>
+        </div>
+      </div>
+    </div>
+  </>
+)}
       </div>
     </nav>
   )
