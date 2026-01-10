@@ -191,7 +191,8 @@ useEffect(() => {
     />
 
     {/* Painel do menu */}
-    <div className="fixed top-16 left-0 right-0 md:hidden z-50 bg-background/95 backdrop-blur-lg border-t border-border shadow-2xl animate-in slide-in-from-top-5 duration-300">
+    <div className="fixed top-16 left-0 right-0 md:hidden z-50 bg-background/95 backdrop-blur-lg border-t border-border shadow-2xl animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 ease-out
+
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col gap-4">
           <Link
