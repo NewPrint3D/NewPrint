@@ -38,7 +38,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     fd.append("message", formData.message)
     if (formData.file) fd.append("file", formData.file)
 
-    const res = await fetch("/api/project-request", {
+    const res = await fetch("/api/contact", {
       method: "POST",
       body: fd,
     })
