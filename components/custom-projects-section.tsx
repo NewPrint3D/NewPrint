@@ -13,7 +13,20 @@ import { useLanguage } from "@/contexts/language-context"
 
 export function CustomProjectsSection() {
   const { toast } = useToast()
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
+const sendingLabel =
+  locale === "pt"
+    ? "Enviando..."
+    : locale === "es"
+      ? "Enviando..."
+      : "Sending..."
+
+const sentLabel =
+  locale === "pt"
+    ? "Enviado com sucesso ✓"
+    : locale === "es"
+      ? "Enviado con éxito ✓"
+      : "Sent successfully ✓"
 
   const [formData, setFormData] = useState({
     name: "",
@@ -290,11 +303,12 @@ export function CustomProjectsSection() {
 
               <Button type="submit" size="lg" className="w-full group" disabled={isSubmitting || isSent}>
               <span className="flex items-center gap-2">
-              {isSubmitting
-              ? "Enviando..."
+             {isSubmitting
+            ? sendingLabel
             : isSent
-          ? "Enviado com sucesso ✓"
-        : t.customProjects.sendRequest}
+            ? sentLabel
+           : t.customProjects.sendRequest}
+
     <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
   </span>
 </Button>
