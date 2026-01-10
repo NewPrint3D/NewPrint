@@ -413,7 +413,7 @@ const processingLabel =
                   <div className="space-y-3 pt-2">
                    <Button
                    type="button"
-                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-lg"
+                   className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg"
                      disabled={isProcessing || !canSubmit}
                       onClick={handleCheckout}
                        >
@@ -422,14 +422,12 @@ const processingLabel =
 
                     <Button
                     type="button"
-                     className="w-full h-12 border border-border"
-                     variant="outline"
+                     className="w-full h-12 bg-[#0070ba] hover:bg-[#003087] text-white font-semibold transition-all"
                       disabled={isProcessing || !canSubmit}
-                     onClick={handlePayPalCheckout}
-                     >
-                       {payPalLabel}
+                      onClick={handlePayPalCheckout}
+                         >
+                      {payPalLabel}
                       </Button>
-
                   </div>
 
                  {!canSubmit ? (
