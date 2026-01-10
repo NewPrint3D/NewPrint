@@ -24,14 +24,17 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+ useEffect(() => {
+  if (typeof window === "undefined") return
+
+  const handleScroll = () => {
+    setIsScrolled(window.scrollY > 20)
+  }
+
+  window.addEventListener("scroll", handleScroll)
+  return () => window.removeEventListener("scroll", handleScroll)
+}, [])
+
 useEffect(() => {
   if (typeof window === "undefined") return
 
@@ -42,13 +45,14 @@ useEffect(() => {
   }
 }, [isMobileMenuOpen])
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" })
-      setIsMobileMenuOpen(false)
-    }
+const scrollToSection = (sectionId: string) => {
+  const element = document.getElementById(sectionId)
+  if (element) {
+    element.scrollIntoView({ behavior: "smooth", block: "start" })
+    setIsMobileMenuOpen(false)
   }
+}
+
 
   return (
     <nav
