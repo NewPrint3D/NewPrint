@@ -396,8 +396,8 @@ export default function CheckoutPage() {
                       disabled={isProcessing || !canSubmit}
                       onClick={handleCheckout}
                     >
-                      Place Order
-                    </Button>
+                    {isProcessing ? "Processing..." : "Pay by Card (Credit/Debit)"}
+                     </Button>
 
                     <Button
                       type="button"
