@@ -179,50 +179,63 @@ const handleSubmit = async (e: React.FormEvent) => {
               <div className="space-y-2">
                 <Label htmlFor="name">{t.customProjects.name}</Label>
                 <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  className="bg-background/50"
-                />
+                  <Input
+                   id="name"
+                   name="name"
+                   autoComplete="name"
+                   value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                     className="bg-background/50"
+                     />
+
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">{t.customProjects.email}</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
+                 <Input
+                  id="email"
+                   name="email"
+                   type="email"
+                   autoComplete="email"
+                   value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
-                    className="bg-background/50"
-                  />
+                      className="bg-background/50"
+                       />
+
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="phone">{t.customProjects.phone}</Label>
                   <Input
-                    id="phone"
+                  id="phone"
+                   name="phone"
                     type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                     autoComplete="tel"
+                     value={formData.phone}
+                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="bg-background/50"
-                  />
+                    />
+
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="message">{t.customProjects.projectDetails}</Label>
                 <Textarea
-                  id="message"
+                 id="message"
+                  name="message"
+                  autoComplete="off"
                   value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  required
-                  rows={5}
-                  placeholder={t.customProjects.projectPlaceholder}
-                  className="bg-background/50"
-                />
+                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      required
+                     rows={5}
+                     placeholder={t.customProjects.projectPlaceholder}
+                     className="bg-background/50"
+                     />
+
               </div>
 
               <div className="space-y-2">
