@@ -53,6 +53,27 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { t, locale } = useLanguage()
+ const payCardLabel =
+  locale === "pt"
+    ? "Pagar com Cartão (Crédito/Débito)"
+    : locale === "es"
+      ? "Pagar con Tarjeta (Crédito/Débito)"
+      : "Pay by Card (Credit/Debit)"
+
+const payPalLabel =
+  locale === "pt"
+    ? "Pagar com PayPal"
+    : locale === "es"
+      ? "Pagar con PayPal"
+      : "Pay with PayPal"
+
+const processingLabel =
+  locale === "pt"
+    ? "Processando..."
+    : locale === "es"
+      ? "Procesando..."
+      : "Processing..."
+ 
   const { items } = useCart() as { items: CartItem[] }
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -396,7 +417,8 @@ export default function CheckoutPage() {
                       disabled={isProcessing || !canSubmit}
                       onClick={handleCheckout}
                     >
-                    {isProcessing ? "Processing..." : "Pay by Card (Credit/Debit)"}
+                   {isProcessing ? processingLabel : payCardLabel}
+
                      </Button>
 
                     <Button
@@ -406,7 +428,7 @@ export default function CheckoutPage() {
                       disabled={isProcessing || !canSubmit}
                       onClick={handlePayPalCheckout}
                     >
-                      Pay with PayPal
+                      {payPalLabel}
                     </Button>
                   </div>
 
