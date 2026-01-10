@@ -411,32 +411,36 @@ const processingLabel =
                   </div>
 
                   <div className="space-y-3 pt-2">
-                    <Button
-                      type="button"
-                      className="w-full"
-                      disabled={isProcessing || !canSubmit}
+                   <Button
+                   type="button"
+                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-lg"
+                     disabled={isProcessing || !canSubmit}
                       onClick={handleCheckout}
-                    >
-                   {isProcessing ? processingLabel : payCardLabel}
-
-                     </Button>
+                       >
+                        {isProcessing ? processingLabel : payCardLabel}
+                    </Button>
 
                     <Button
-                      type="button"
-                      className="w-full"
-                      variant="secondary"
+                    type="button"
+                     className="w-full h-12 border border-border"
+                     variant="outline"
                       disabled={isProcessing || !canSubmit}
-                      onClick={handlePayPalCheckout}
-                    >
-                      {payPalLabel}
-                    </Button>
+                     onClick={handlePayPalCheckout}
+                     >
+                       {payPalLabel}
+                      </Button>
+
                   </div>
 
-                  {!canSubmit && (
-                    <p className="text-xs opacity-70">
-                      Fill in all fields to enable payment.
-                    </p>
-                  )}
+                 {!canSubmit ? (
+                 <p className="text-xs opacity-70">
+                  Fill in all fields to enable payment.
+                  </p>
+                  ) : (
+                  <p className="text-xs text-center text-muted-foreground">
+                  🔒 Secure payment • Encrypted checkout • No card data stored
+                  </p>
+                   )}
                 </CardContent>
               </Card>
             </div>
