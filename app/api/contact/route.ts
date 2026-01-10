@@ -2,27 +2,42 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+import { NextResponse } from "next/server"
+
 export async function POST(req: Request) {
   try {
-    const { name, email, subject, message } = await req.json();
+    const formData = await req.formData()
 
-    await resend.emails.send({
-      from: "NewPrint3D <no-reply@newprint3d.com>",
-      to: ["contacto@newprint3d.com"],
-      replyTo: email,
-      subject: `[Contato Site] ${subject}`,
-      html: `
-        <h2>Novo contato pelo site</h2>
-        <p><strong>Nome:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Mensagem:</strong></p>
-        <p>${message}</p>
-      `,
-    });
+    const data = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      message: formData.get("message"),
+      file: formData.get("file"),
+    }
 
-    return Response.json({ ok: true });
+    console.log("📩 Novo contato recebido:", {
+      ...data,
+      file:
+        data.file instanceof File
+          ? {
+              name: data.file.name,
+              size: data.file.size,
+              type: data.file.type,
+            }
+          : null,
+    })
+
+    return NextResponse.json(
+      { success: true, message: "Contato recebido com sucesso" },
+      { status: 200 }
+    )
   } catch (error) {
-    console.error("Erro ao enviar email:", error);
-    return new Response("Erro ao enviar email", { status: 500 });
+    console.error("❌ Erro em /api/contact:", error)
+
+    return NextResponse.json(
+      { success: false, message: "Erro interno no servidor" },
+      { status: 500 }
+    )
   }
 }
