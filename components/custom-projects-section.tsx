@@ -26,7 +26,7 @@ export function CustomProjectsSection() {
   const [isDragging, setIsDragging] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
+  const [isSent, setIsSent] = useState(false)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -57,6 +57,8 @@ export function CustomProjectsSection() {
 
       setFormData({ name: "", email: "", phone: "", message: "", file: null })
       setPreview(null)
+      setIsSent(true)
+      setTimeout(() => setIsSent(false), 4000)
     } catch (err) {
       toast({
         variant: "destructive",
@@ -286,12 +288,17 @@ export function CustomProjectsSection() {
                 )}
               </div>
 
-              <Button type="submit" size="lg" className="w-full group" disabled={isSubmitting}>
-                <span className="flex items-center gap-2">
-                  {isSubmitting ? "Enviando..." : t.customProjects.sendRequest}
-                  <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </span>
-              </Button>
+              <Button type="submit" size="lg" className="w-full group" disabled={isSubmitting || isSent}>
+              <span className="flex items-center gap-2">
+              {isSubmitting
+              ? "Enviando..."
+            : isSent
+          ? "Enviado com sucesso ✓"
+        : t.customProjects.sendRequest}
+    <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+  </span>
+</Button>
+
             </form>
           </CardContent>
         </Card>
