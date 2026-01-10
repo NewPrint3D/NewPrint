@@ -185,7 +185,7 @@ useEffect(() => {
   <>
     {/* Overlay (escurece o fundo) */}
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden z-40"
+      className="fixed inset-0 bg-black/70 backdrop-blur-md md:hidden z-40"
       onClick={() => setIsMobileMenuOpen(false)}
       aria-hidden="true"
     />
