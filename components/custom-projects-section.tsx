@@ -24,16 +24,51 @@ export function CustomProjectsSection() {
   })
   const [isDragging, setIsDragging] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  try {
+    setIsSubmitting(true)
+
+    const fd = new FormData()
+    fd.append("name", formData.name)
+    fd.append("email", formData.email)
+    fd.append("phone", formData.phone)
+    fd.append("message", formData.message)
+    if (formData.file) fd.append("file", formData.file)
+
+    const res = await fetch("/api/project-request", {
+      method: "POST",
+      body: fd,
+    })
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "")
+      throw new Error(text || `Erro ao enviar (status ${res.status})`)
+    }
+
     toast({
       title: t.customProjects.messageSent,
       description: t.customProjects.messageDesc,
     })
+
     setFormData({ name: "", email: "", phone: "", message: "", file: null })
     setPreview(null)
+  } catch (err) {
+    toast({
+      variant: "destructive",
+      title: "Falha ao enviar",
+      description:
+        err instanceof Error
+          ? err.message
+          : "Não foi possível enviar sua solicitação. Tente novamente.",
+    })
+  } finally {
+    setIsSubmitting(false)
   }
+}
+
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -248,9 +283,9 @@ export function CustomProjectsSection() {
                 )}
               </div>
 
-              <Button type="submit" size="lg" className="w-full group">
+              <Button type="submit" size="lg" className="w-full group" disabled={isSubmitting}>
                 <span className="flex items-center gap-2">
-                  {t.customProjects.sendRequest}
+                  {isSubmitting ? "Enviando..." : t.customProjects.sendRequest}
                   <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Button>
