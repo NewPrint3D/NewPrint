@@ -279,7 +279,7 @@ export default function EditProductPage({ params }: PageProps) {
                 )}
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Names (Required in all languages)</h3>
+                <h3 className="font-semibold">{t.admin.namesAllLanguages}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name_en">English</Label>
@@ -314,8 +314,7 @@ export default function EditProductPage({ params }: PageProps) {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Descriptions (Required in all languages)</h3>
-
+              <h3 className="font-semibold">{t.admin.descriptionsAllLanguages}</h3>
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="description_en">English</Label>
@@ -354,7 +353,7 @@ export default function EditProductPage({ params }: PageProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
+                   <Label htmlFor="category">{t.admin.category}</Label>
                     <select
                       id="category"
                       value={formData.category}
@@ -371,7 +370,7 @@ export default function EditProductPage({ params }: PageProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="base_price">Base Price (€)</Label>
+                   <Label htmlFor="base_price">{t.admin.basePrice}</Label>
                     <Input
                       id="base_price"
                       type="number"
@@ -384,14 +383,15 @@ export default function EditProductPage({ params }: PageProps) {
                 </div>
 
                 <ImageUpload
-                  label="Product Image"
+                <ImageUpload
+                 label={t.admin.productImage}
                   value={formData.image_url}
                   onChange={(imageData) => setFormData({ ...formData, image_url: imageData })}
                   disabled={isLoading}
                 />
 
                 <div className="space-y-2">
-                  <Label htmlFor="colors">Colors (comma separated hex codes)</Label>
+                 <Label htmlFor="colors">{t.admin.colorsHelp}</Label>
                   <Input
                     id="colors"
                     value={formData.colors}
@@ -402,7 +402,7 @@ export default function EditProductPage({ params }: PageProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="sizes">Sizes (comma separated)</Label>
+                    <Label htmlFor="sizes">{t.admin.sizesHelp}</Label>
                     <Input
                       id="sizes"
                       value={formData.sizes}
@@ -412,7 +412,7 @@ export default function EditProductPage({ params }: PageProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="materials">Materials (comma separated)</Label>
+                   <Label htmlFor="materials">{t.admin.materialsHelp}</Label>
                     <Input
                       id="materials"
                       value={formData.materials}
@@ -424,29 +424,29 @@ export default function EditProductPage({ params }: PageProps) {
 
                 {/* ✅ MODELO 2: Variantes/SKUs */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Variants (SKUs)</h3>
+                 <h3 className="font-semibold">{t.admin.variantsTitle}</h3>
 
                   <div className="space-y-3">
                     {formData.variants.length === 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        Add at least 1 variant (ex: Unitário, Conjunto P, Conjunto M, Conjunto G)
-                      </p>
+                     <p className="text-sm text-muted-foreground">
+                      {t.admin.variantsHelper}
+                     </p>
                     )}
 
                     {formData.variants.map((v, idx) => (
                       <div key={idx} className="grid grid-cols-1 md:grid-cols-5 gap-3 p-3 rounded-lg border border-border">
                         <div className="space-y-2">
-                          <Label>Variant Name</Label>
+                          <Label>{t.admin.variantName}</Label>
                           <Input value={v.name} onChange={(e) => updateVariant(idx, "name", e.target.value)} />
                         </div>
 
                         <div className="space-y-2">
-                          <Label>SKU (optional)</Label>
+                          <Label>{t.admin.variantSku}</Label>
                           <Input value={v.sku} onChange={(e) => updateVariant(idx, "sku", e.target.value)} />
                         </div>
 
                         <div className="space-y-2">
-                          <Label>Price (€)</Label>
+                          <Label>{t.admin.variantPrice}</Label>
                           <Input
                             type="number"
                             step="0.01"
@@ -456,39 +456,40 @@ export default function EditProductPage({ params }: PageProps) {
                         </div>
 
                         <div className="space-y-2">
-                          <Label>Stock</Label>
+                          <Label>{t.admin.variantStock}</Label>
                           <Input type="number" value={v.stock} onChange={(e) => updateVariant(idx, "stock", e.target.value)} />
                         </div>
 
                         <div className="flex items-end gap-2">
-                          <Button type="button" variant="outline" className="w-full" onClick={() => removeVariant(idx)}>
-                            Remove
-                          </Button>
+                         <Button type="button" variant="outline" className="w-full" onClick={() => removeVariant(idx)}>
+                        {t.admin.remove}
+                        </Button>
                         </div>
                       </div>
                     ))}
 
-                    <Button type="button" onClick={addVariant} className="w-full">
-                      + Add Variant
-                    </Button>
+                   <Button type="button" onClick={addVariant} className="w-full">
+                  + {t.admin.addVariant}
+                  </Button>
+ 
                   </div>
                 </div>
 
                 {/* ✅ Imagens por cor */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Images by Color</h3>
+               <h3 className="font-semibold">{t.admin.imagesByColorTitle}</h3>
 
                   <div className="space-y-3">
                     {formData.color_images.length === 0 && (
                       <p className="text-sm text-muted-foreground">
-                        Add image URLs for each color (hex). The product page will swap image when color is selected.
+                        {t.admin.imagesByColorHelper}
                       </p>
                     )}
 
                     {formData.color_images.map((img, idx) => (
                       <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 rounded-lg border border-border">
                         <div className="space-y-2">
-                          <Label>Color HEX</Label>
+                          <Label>{t.admin.colorHex}</Label>
                           <Input
                             value={img.color}
                             onChange={(e) => updateColorImage(idx, "color", e.target.value)}
@@ -497,7 +498,7 @@ export default function EditProductPage({ params }: PageProps) {
                         </div>
 
                         <div className="space-y-2 md:col-span-2">
-                          <Label>Image URL</Label>
+                        <Label>{t.admin.imageUrl}</Label>
                           <div className="flex gap-2">
                             <Input
                               value={img.url}
@@ -505,7 +506,7 @@ export default function EditProductPage({ params }: PageProps) {
                               placeholder="https://..."
                             />
                             <Button type="button" variant="outline" onClick={() => removeColorImage(idx)}>
-                              Remove
+                             {t.admin.remove}
                             </Button>
                           </div>
                         </div>
@@ -513,14 +514,14 @@ export default function EditProductPage({ params }: PageProps) {
                     ))}
 
                     <Button type="button" onClick={addColorImage} className="w-full" variant="outline">
-                      + Add Color Image
+                     + {t.admin.addColorImage}
                     </Button>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="stock_quantity">Stock Quantity</Label>
+                    <Label htmlFor="stock_quantity">{t.admin.stockQuantity}</Label>
                     <Input
                       id="stock_quantity"
                       type="number"
@@ -539,7 +540,7 @@ export default function EditProductPage({ params }: PageProps) {
                         onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
                         className="w-4 h-4"
                       />
-                      <Label htmlFor="featured">Featured Product</Label>
+                     <Label htmlFor="featured">{t.admin.featuredProduct}</Label>
                     </div>
 
                     <div className="flex items-center space-x-2">
@@ -550,7 +551,7 @@ export default function EditProductPage({ params }: PageProps) {
                         onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
                         className="w-4 h-4"
                       />
-                      <Label htmlFor="active">Active (Visible to customers)</Label>
+                     <Label htmlFor="active">{t.admin.activeVisible}</Label>
                     </div>
                   </div>
                 </div>
@@ -560,15 +561,15 @@ export default function EditProductPage({ params }: PageProps) {
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Updating...
+                       {t.admin.updating}
                       </>
                     ) : (
-                      "Update Product"
+                     t.admin.updateProduct
                     )}
                   </Button>
 
                   <Button type="button" variant="outline" onClick={() => router.push("/admin/products")}>
-                    Cancel
+                   {t.admin.cancel}
                   </Button>
                 </div>
               </form>
