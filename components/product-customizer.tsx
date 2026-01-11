@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useLanguage } from "@/contexts/language-context"
 import { useCart } from "@/contexts/cart-context"
 import { formatCurrency } from "@/lib/intl"
@@ -34,6 +34,16 @@ const safeNumber = (v: unknown) => {
   const n = typeof v === "string" ? Number(v) : (v as number)
   return Number.isFinite(n) ? n : 0
 }
+const isLightHex = (hex: string) => {
+  const h = (hex || "").replace("#", "")
+  if (h.length !== 6) return false
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
+  // relative luminance
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
+  return luminance > 0.75
+}
 
 export function ProductCustomizer({ product, onVariantChange }: ProductCustomizerProps) {
   const { t, locale } = useLanguage()
@@ -43,6 +53,30 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
   const [selectedMaterial, setSelectedMaterial] = useState(product.materials[0])
   const [quantity, setQuantity] = useState(1)
   const [isAdded, setIsAdded] = useState(false)
+  const storageKey = `np3d:product:${product.id}:variant`
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey)
+      if (!saved) return
+      const parsed = JSON.parse(saved) as { color?: string; size?: string; material?: string }
+      if (parsed.color) setSelectedColor(parsed.color)
+      if (parsed.size) setSelectedSize(parsed.size)
+      if (parsed.material) setSelectedMaterial(parsed.material)
+
+      // sincroniza com o pai (ProductDetailClient) para trocar imagem
+      onVariantChange?.({
+        color: parsed.color || selectedColor,
+        size: parsed.size || selectedSize,
+        material: parsed.material || selectedMaterial,
+        price:
+          basePrice +
+          getMaterialExtra(parsed.material || selectedMaterial) +
+          getSizeExtra(parsed.size || selectedSize),
+      })
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const materialPrices: Record<string, number> = {
     PLA: 0,
@@ -107,24 +141,27 @@ const notifyVariantChange = (color: string, size: string, material: string) => {
               const colorName = getColorName(color)
               const isSelected = selectedColor === color
               return (
-                <button
-                  key={color}
-                  type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  aria-label={t.aria.selectColor.replace("{color}", colorName)}
-                  onClick={() => handleColorChange(color)}
-                  className={`relative w-12 h-12 rounded-full border-2 transition-all duration-200 hover:scale-110 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
-                    isSelected ? "border-primary ring-4 ring-primary/20" : "border-border"
-                  }`}
-                  style={{ backgroundColor: color }}
-                >
-                  {isSelected && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Check className="w-6 h-6 text-white drop-shadow-lg" />
-                    </div>
-                  )}
-                </button>
+               <button
+                key={color}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                aria-label={t.aria.selectColor.replace("{color}", colorName)}
+                onClick={() => handleColorChange(color)}
+                className={`relative w-12 h-12 rounded-full border-2 transition-all duration-200
+                  hover:scale-110 active:scale-95
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+                  ${isSelected ? "border-primary ring-4 ring-primary/25 shadow-lg" : "border-border hover:shadow-md"}
+                `}
+                style={{ backgroundColor: color }}
+              >
+                {isSelected && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Check className={`w-6 h-6 drop-shadow-lg ${isLightHex(color) ? "text-black" : "text-white"}`} />
+                  </div>
+                )}
+              </button>
+
               )
             })}
           </div>
