@@ -36,12 +36,25 @@ export interface Product {
   category: string
   basePrice: number
   image: string
+
+  // Optional: map exact image per color (hex or slug)
+  imagesByColor?: Record<string, string>
+
   colors: string[]
   sizes: string[]
   materials: string[]
   featured: boolean
   stock: number
   active: boolean
+}
+// Map productId -> color -> imageUrl
+// Fill these progressively with your real images per color
+const PRODUCT_COLOR_IMAGES: Record<string, Record<string, string>> = {
+  // Example:
+  // "1": {
+  //   "#FF0000": "https://newprint3d.com/images/products/1/red.webp",
+  //   "#000000": "https://newprint3d.com/images/products/1/black.webp",
+  // },
 }
 
 function normalizeProduct(dbProduct: DBProduct): Product {
@@ -60,6 +73,9 @@ function normalizeProduct(dbProduct: DBProduct): Product {
     category: dbProduct.category,
     basePrice: Number(dbProduct.base_price),
     image: dbProduct.image_url,
+
+    imagesByColor: PRODUCT_COLOR_IMAGES[String(dbProduct.id)],
+
     colors: Array.isArray(dbProduct.colors) ? dbProduct.colors : [],
     sizes: Array.isArray(dbProduct.sizes) ? dbProduct.sizes : [],
     materials: Array.isArray(dbProduct.materials) ? dbProduct.materials : [],
