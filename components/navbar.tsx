@@ -240,7 +240,6 @@ const scrollToSection = (sectionId: string) => {
         </div>
       </div>
     </div>
-  </>
 )}
       </div>
     </nav>
