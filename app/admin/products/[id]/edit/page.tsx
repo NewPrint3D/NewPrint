@@ -4,33 +4,49 @@ export const dynamic = "force-dynamic"
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { ArrowLeft, Loader2 } from "lucide-react"
+
 import { useAuth } from "@/contexts/auth-context"
 import { useLanguage } from "@/contexts/language-context"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ImageUpload } from "@/components/image-upload"
-import { Loader2, ArrowLeft } from "lucide-react"
-import Link from "next/link"
 
 interface PageProps {
   params: Promise<{ id: string }>
+}
+
+type VariantForm = {
+  name: string
+  sku: string
+  price: string
+  stock: string
+}
+
+type ColorImageForm = {
+  color: string
+  url: string
 }
 
 export default function EditProductPage({ params }: PageProps) {
   const { isAdmin } = useAuth()
   const { t } = useLanguage()
   const router = useRouter()
+
   const [productId, setProductId] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
   const [error, setError] = useState("")
+
   const [formData, setFormData] = useState({
     name_en: "",
     name_pt: "",
@@ -47,6 +63,12 @@ export default function EditProductPage({ params }: PageProps) {
     featured: false,
     stock_quantity: "0",
     active: true,
+
+    // ✅ Modelo 2: Variantes/SKUs
+    variants: [] as VariantForm[],
+
+    // ✅ Imagens por cor
+    color_images: [] as ColorImageForm[],
   })
 
   useEffect(() => {
@@ -64,6 +86,7 @@ export default function EditProductPage({ params }: PageProps) {
       try {
         if (typeof window === "undefined") return
         const token = localStorage.getItem("auth_token")
+
         const res = await fetch(`/api/products/${productId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -86,16 +109,15 @@ export default function EditProductPage({ params }: PageProps) {
             image_url: product.image_url || product.image || "",
             colors: Array.isArray(product.colors)
               ? product.colors.join(",")
-              : product.colors || "#8B5CF6,#06B6D4,#10B981",
-            sizes: Array.isArray(product.sizes)
-              ? product.sizes.join(",")
-              : product.sizes || "Small,Medium,Large",
-            materials: Array.isArray(product.materials)
-              ? product.materials.join(",")
-              : product.materials || "PLA,ABS,PETG",
+              : product.colors || "#88CFC6,#06B6D4,#10B981",
+            sizes: Array.isArray(product.sizes) ? product.sizes.join(",") : product.sizes || "Small,Medium,Large",
+            materials: Array.isArray(product.materials) ? product.materials.join(",") : product.materials || "PLA,ABS,PETG",
             featured: product.featured || false,
             stock_quantity: String(product.stock_quantity || product.stock || 0),
             active: product.active !== false,
+
+            variants: Array.isArray(product.variants) ? product.variants : [],
+            color_images: Array.isArray(product.color_images) ? product.color_images : [],
           })
         } else {
           setError(t.admin.failedToLoad)
@@ -108,7 +130,62 @@ export default function EditProductPage({ params }: PageProps) {
     }
 
     fetchProduct()
-  }, [productId, isAdmin])
+  }, [productId, isAdmin, t.admin.failedToLoad, t.admin.networkError])
+
+  const addVariant = () => {
+    setFormData((fd) => ({
+      ...fd,
+      variants: [
+        ...(fd.variants || []),
+        {
+          name: "Unitário",
+          sku: "",
+          price: fd.base_price || "0",
+          stock: "0",
+        },
+      ],
+    }))
+  }
+
+  const updateVariant = (index: number, key: keyof VariantForm, value: string) => {
+    setFormData((fd) => {
+      const variants = [...(fd.variants || [])]
+      variants[index] = { ...variants[index], [key]: value }
+      return { ...fd, variants }
+    })
+  }
+
+  const removeVariant = (index: number) => {
+    setFormData((fd) => {
+      const variants = [...(fd.variants || [])]
+      variants.splice(index, 1)
+      return { ...fd, variants }
+    })
+  }
+
+  const addColorImage = () => {
+    const firstColor = (formData.colors.split(",")[0] || "#FFFFFF").trim()
+    setFormData((fd) => ({
+      ...fd,
+      color_images: [...(fd.color_images || []), { color: firstColor, url: "" }],
+    }))
+  }
+
+  const updateColorImage = (index: number, key: keyof ColorImageForm, value: string) => {
+    setFormData((fd) => {
+      const color_images = [...(fd.color_images || [])]
+      color_images[index] = { ...color_images[index], [key]: value }
+      return { ...fd, color_images }
+    })
+  }
+
+  const removeColorImage = (index: number) => {
+    setFormData((fd) => {
+      const color_images = [...(fd.color_images || [])]
+      color_images.splice(index, 1)
+      return { ...fd, color_images }
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -121,7 +198,9 @@ export default function EditProductPage({ params }: PageProps) {
         setIsLoading(false)
         return
       }
+
       const token = localStorage.getItem("auth_token")
+
       const res = await fetch(`/api/products/${productId}`, {
         method: "PUT",
         headers: {
@@ -132,9 +211,18 @@ export default function EditProductPage({ params }: PageProps) {
           ...formData,
           base_price: Number.parseFloat(formData.base_price),
           stock_quantity: Number.parseInt(formData.stock_quantity),
-          colors: formData.colors.split(",").map((c) => c.trim()),
-          sizes: formData.sizes.split(",").map((s) => s.trim()),
-          materials: formData.materials.split(",").map((m) => m.trim()),
+
+          colors: formData.colors.split(",").map((c) => c.trim()).filter(Boolean),
+          sizes: formData.sizes.split(",").map((s) => s.trim()).filter(Boolean),
+          materials: formData.materials.split(",").map((m) => m.trim()).filter(Boolean),
+
+          // ✅ ainda não salva no banco (PASSO 2), mas já envia no payload
+          variants: formData.variants.map((v) => ({
+            ...v,
+            price: Number.parseFloat(v.price || "0"),
+            stock: Number.parseInt(v.stock || "0"),
+          })),
+          color_images: formData.color_images,
         }),
       })
 
@@ -181,6 +269,7 @@ export default function EditProductPage({ params }: PageProps) {
             <CardHeader>
               <CardTitle>{t.admin.productInformation}</CardTitle>
             </CardHeader>
+
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
@@ -201,6 +290,7 @@ export default function EditProductPage({ params }: PageProps) {
                         required
                       />
                     </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="name_pt">Português</Label>
                       <Input
@@ -210,6 +300,7 @@ export default function EditProductPage({ params }: PageProps) {
                         required
                       />
                     </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="name_es">Español</Label>
                       <Input
@@ -224,6 +315,7 @@ export default function EditProductPage({ params }: PageProps) {
 
                 <div className="space-y-4">
                   <h3 className="font-semibold">Descriptions (Required in all languages)</h3>
+
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="description_en">English</Label>
@@ -235,6 +327,7 @@ export default function EditProductPage({ params }: PageProps) {
                         rows={3}
                       />
                     </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="description_pt">Português</Label>
                       <Textarea
@@ -245,6 +338,7 @@ export default function EditProductPage({ params }: PageProps) {
                         rows={3}
                       />
                     </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="description_es">Español</Label>
                       <Textarea
@@ -277,7 +371,7 @@ export default function EditProductPage({ params }: PageProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="base_price">Base Price ($)</Label>
+                    <Label htmlFor="base_price">Base Price (€)</Label>
                     <Input
                       id="base_price"
                       type="number"
@@ -302,7 +396,7 @@ export default function EditProductPage({ params }: PageProps) {
                     id="colors"
                     value={formData.colors}
                     onChange={(e) => setFormData({ ...formData, colors: e.target.value })}
-                    placeholder="#8B5CF6,#06B6D4,#10B981"
+                    placeholder="#88CFC6,#06B6D4,#10B981"
                   />
                 </div>
 
@@ -328,6 +422,102 @@ export default function EditProductPage({ params }: PageProps) {
                   </div>
                 </div>
 
+                {/* ✅ MODELO 2: Variantes/SKUs */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold">Variants (SKUs)</h3>
+
+                  <div className="space-y-3">
+                    {formData.variants.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Add at least 1 variant (ex: Unitário, Conjunto P, Conjunto M, Conjunto G)
+                      </p>
+                    )}
+
+                    {formData.variants.map((v, idx) => (
+                      <div key={idx} className="grid grid-cols-1 md:grid-cols-5 gap-3 p-3 rounded-lg border border-border">
+                        <div className="space-y-2">
+                          <Label>Variant Name</Label>
+                          <Input value={v.name} onChange={(e) => updateVariant(idx, "name", e.target.value)} />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>SKU (optional)</Label>
+                          <Input value={v.sku} onChange={(e) => updateVariant(idx, "sku", e.target.value)} />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Price (€)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={v.price}
+                            onChange={(e) => updateVariant(idx, "price", e.target.value)}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Stock</Label>
+                          <Input type="number" value={v.stock} onChange={(e) => updateVariant(idx, "stock", e.target.value)} />
+                        </div>
+
+                        <div className="flex items-end gap-2">
+                          <Button type="button" variant="outline" className="w-full" onClick={() => removeVariant(idx)}>
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+
+                    <Button type="button" onClick={addVariant} className="w-full">
+                      + Add Variant
+                    </Button>
+                  </div>
+                </div>
+
+                {/* ✅ Imagens por cor */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold">Images by Color</h3>
+
+                  <div className="space-y-3">
+                    {formData.color_images.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Add image URLs for each color (hex). The product page will swap image when color is selected.
+                      </p>
+                    )}
+
+                    {formData.color_images.map((img, idx) => (
+                      <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 rounded-lg border border-border">
+                        <div className="space-y-2">
+                          <Label>Color HEX</Label>
+                          <Input
+                            value={img.color}
+                            onChange={(e) => updateColorImage(idx, "color", e.target.value)}
+                            placeholder="#FFFFFF"
+                          />
+                        </div>
+
+                        <div className="space-y-2 md:col-span-2">
+                          <Label>Image URL</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              value={img.url}
+                              onChange={(e) => updateColorImage(idx, "url", e.target.value)}
+                              placeholder="https://..."
+                            />
+                            <Button type="button" variant="outline" onClick={() => removeColorImage(idx)}>
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <Button type="button" onClick={addColorImage} className="w-full" variant="outline">
+                      + Add Color Image
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="stock_quantity">Stock Quantity</Label>
@@ -340,7 +530,7 @@ export default function EditProductPage({ params }: PageProps) {
                     />
                   </div>
 
-                  <div className="flex flex-col justify-end space-y-2">
+                  <div className="flex flex-col justify-end space-y-4">
                     <div className="flex items-center space-x-2">
                       <input
                         type="checkbox"
@@ -351,6 +541,7 @@ export default function EditProductPage({ params }: PageProps) {
                       />
                       <Label htmlFor="featured">Featured Product</Label>
                     </div>
+
                     <div className="flex items-center space-x-2">
                       <input
                         type="checkbox"
@@ -375,6 +566,7 @@ export default function EditProductPage({ params }: PageProps) {
                       "Update Product"
                     )}
                   </Button>
+
                   <Button type="button" variant="outline" onClick={() => router.push("/admin/products")}>
                     Cancel
                   </Button>
