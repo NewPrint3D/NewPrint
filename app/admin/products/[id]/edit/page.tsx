@@ -513,7 +513,7 @@ export default function EditProductPage({ params }: PageProps) {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>{t.admin.variantSku}</Label>
+                        <Label>Sku</Label>
                         <Input
                           value={v.sku}
                           onChange={(e) => updateVariant(idx, "sku", e.target.value)}
@@ -522,7 +522,7 @@ export default function EditProductPage({ params }: PageProps) {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>{t.admin.variantPrice}</Label>
+                        <Label>Price</Label>
                         <Input
                           type="number"
                           step="0.01"
@@ -532,7 +532,7 @@ export default function EditProductPage({ params }: PageProps) {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>{t.admin.variantStock}</Label>
+                        <Label>Stock</Label>
                         <Input
                           type="number"
                           value={v.stock}
@@ -554,7 +554,7 @@ export default function EditProductPage({ params }: PageProps) {
                   ))}
 
                   <Button type="button" className="w-full" onClick={addVariant}>
-                    + {t.admin.addVariant}
+                    + Add Variant
                   </Button>
                 </div>
 
@@ -563,7 +563,10 @@ export default function EditProductPage({ params }: PageProps) {
                   <h3 className="font-semibold">Images by Color</h3>
 
                   {formData.color_images.length === 0 && (
-                    <p className="text-sm text-muted-foreground">{t.admin.imagesByColorHelper}</p>
+                  <p className="text-sm text-muted-foreground">
+                   Add image URLs for each color (hex). The product page will swap image when color is selected.
+                   </p>
+ 
                   )}
 
                   {formData.color_images.map((img, idx) => (
@@ -572,7 +575,7 @@ export default function EditProductPage({ params }: PageProps) {
                       className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 rounded-lg border border-border"
                     >
                       <div className="space-y-2">
-                        <Label>{t.admin.colorHex}</Label>
+                        <Label>color Hex</Label>
                         <Input
                           value={img.color}
                           onChange={(e) => updateColorImage(idx, "color", e.target.value)}
@@ -581,7 +584,7 @@ export default function EditProductPage({ params }: PageProps) {
                       </div>
 
                       <div className="space-y-2 md:col-span-2">
-                        <Label>{t.admin.imageUrl}</Label>
+                        <Label>image Url</Label>
                         <div className="flex gap-2">
                           <Input
                             value={img.url}
@@ -593,7 +596,7 @@ export default function EditProductPage({ params }: PageProps) {
                             variant="outline"
                             onClick={() => removeColorImage(idx)}
                           >
-                            {t.admin.remove}
+                            remove
                           </Button>
                         </div>
                       </div>
@@ -602,18 +605,18 @@ export default function EditProductPage({ params }: PageProps) {
 
                   <Button
                     type="button"
-                    onClick={addColorImage}
+                    onClick=addColor Image
                     className="w-full"
                     variant="outline"
                   >
-                    + {t.admin.addColorImage}
+                    + add Color Image
                   </Button>
                 </div>
 
                 {/* Footer of form */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="stock_quantity">{t.admin.stockQuantity}</Label>
+                    <Label htmlFor="stock_quantity">stock Quantity</Label>
                     <Input
                       id="stock_quantity"
                       type="number"
@@ -634,7 +637,7 @@ export default function EditProductPage({ params }: PageProps) {
                         onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
                         className="w-4 h-4"
                       />
-                      <Label htmlFor="featured">{t.admin.featuredProduct}</Label>
+                      <Label htmlFor="featured">featured Product</Label>
                     </div>
 
                     <div className="flex items-center space-x-2">
@@ -645,7 +648,7 @@ export default function EditProductPage({ params }: PageProps) {
                         onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
                         className="w-4 h-4"
                       />
-                      <Label htmlFor="active">{t.admin.activeVisible}</Label>
+                      <Label htmlFor="active">active Visible</Label>
                     </div>
                   </div>
                 </div>
