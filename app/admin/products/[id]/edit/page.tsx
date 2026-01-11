@@ -456,7 +456,7 @@ export default function EditProductPage({ params }: PageProps) {
                 {/* Colors / Sizes / Materials */}
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="colors">{t.admin.colorsHelp}</Label>
+                    <Label htmlFor="colors">Colors (comma-separated)</Label>
                     <Input
                       id="colors"
                       value={formData.colors}
