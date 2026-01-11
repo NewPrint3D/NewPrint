@@ -30,6 +30,10 @@ const getColorName = (hex: string): string => {
   }
   return colorMap[hex] || hex
 }
+const safeNumber = (v: unknown) => {
+  const n = typeof v === "string" ? Number(v) : (v as number)
+  return Number.isFinite(n) ? n : 0
+}
 
 export function ProductCustomizer({ product, onVariantChange }: ProductCustomizerProps) {
   const { t, locale } = useLanguage()
@@ -53,12 +57,17 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
     Standard: 0,
   }
 
-  const totalPrice = product.basePrice + materialPrices[selectedMaterial] + sizePrices[selectedSize]
+const basePrice = safeNumber(product.basePrice)
 
-  const notifyVariantChange = (color: string, size: string, material: string) => {
-    const price = product.basePrice + materialPrices[material] + sizePrices[size]
-    onVariantChange?.({ color, size, material, price })
-  }
+const getMaterialExtra = (material: string) => materialPrices[material] ?? 0
+const getSizeExtra = (size: string) => sizePrices[size] ?? 0
+
+const totalPrice = basePrice + getMaterialExtra(selectedMaterial) + getSizeExtra(selectedSize)
+
+const notifyVariantChange = (color: string, size: string, material: string) => {
+  const price = basePrice + getMaterialExtra(material) + getSizeExtra(size)
+  onVariantChange?.({ color, size, material, price })
+}
 
   const handleColorChange = (color: string) => {
     setSelectedColor(color)
