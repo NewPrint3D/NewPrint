@@ -353,7 +353,7 @@ export default function EditProductPage({ params }: PageProps) {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="name_pt">{t.admin.portuguese}</Label>
+                      <Label htmlFor="name_pt">Portuguese</Label>
                       <Input
                         id="name_pt"
                         value={formData.name_pt}
@@ -363,7 +363,7 @@ export default function EditProductPage({ params }: PageProps) {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="name_es">{t.admin.spanish}</Label>
+                      <Label htmlFor="name_es">Spanish</Label>
                       <Input
                         id="name_es"
                         value={formData.name_es}
@@ -380,7 +380,7 @@ export default function EditProductPage({ params }: PageProps) {
 
                   <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="description_en">{t.admin.english}</Label>
+                      <Label htmlFor="description_en">English</Label>
                       <Textarea
                         id="description_en"
                         rows={4}
@@ -393,7 +393,7 @@ export default function EditProductPage({ params }: PageProps) {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="description_pt">{t.admin.portuguese}</Label>
+                      <Label htmlFor="description_pt">Portuguese</Label>
                       <Textarea
                         id="description_pt"
                         rows={4}
@@ -406,7 +406,7 @@ export default function EditProductPage({ params }: PageProps) {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="description_es">{t.admin.spanish}</Label>
+                      <Label htmlFor="description_es">Spanish</Label>
                       <Textarea
                         id="description_es"
                         rows={4}
