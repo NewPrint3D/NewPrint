@@ -238,7 +238,7 @@ export default function EditProductPage({ params }: PageProps) {
       setIsLoading(false)
     }
   }
-}
+
     if (!isAdmin) return null
 
  if (isFetching) {
