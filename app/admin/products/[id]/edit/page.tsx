@@ -339,7 +339,7 @@ export default function EditProductPage({ params }: PageProps) {
 
                 {/* Names */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold">{t.admin.namesAllLanguages}</h3>
+                  <h3 className="font-semibold">(Required in all languages)</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
