@@ -477,7 +477,7 @@ export default function EditProductPage({ params }: PageProps) {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="materials">{t.admin.materialsHelp}</Label>
+                      <Label htmlFor="materials">Materials (comma-separated)</Label>
                       <Input
                         id="materials"
                         value={formData.materials}
