@@ -505,7 +505,7 @@ export default function EditProductPage({ params }: PageProps) {
                       className="grid grid-cols-1 md:grid-cols-5 gap-3 p-3 rounded-lg border border-border"
                     >
                       <div className="space-y-2 md:col-span-2">
-                        <Label>{t.admin.variantName}</Label>
+                       <Label>Variant Name</Label>
                         <Input
                           value={v.name}
                           onChange={(e) => updateVariant(idx, "name", e.target.value)}
