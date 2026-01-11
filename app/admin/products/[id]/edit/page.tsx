@@ -231,7 +231,7 @@ export default function EditProductPage({ params }: PageProps) {
       } else {
         const data = await res.json()
         setError(data.error || t.admin.failedToUpdate)
-      }
+      },
     } catch (error) {
       setError(t.admin.networkError)
     } finally {
@@ -239,7 +239,7 @@ export default function EditProductPage({ params }: PageProps) {
     }
   }
 }
-     (!isAdmin) return null
+    if (!isAdmin) return null
 
   if (isFetching) {
     return (
