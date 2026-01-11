@@ -105,16 +105,34 @@ const notifyVariantChange = (color: string, size: string, material: string) => {
 
   const handleColorChange = (color: string) => {
     setSelectedColor(color)
+    try {
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({ color, size: selectedSize, material: selectedMaterial })
+      )
+    } catch {}
     notifyVariantChange(color, selectedSize, selectedMaterial)
   }
 
-  const handleSizeChange = (size: string) => {
+   const handleSizeChange = (size: string) => {
     setSelectedSize(size)
+    try {
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({ color: selectedColor, size, material: selectedMaterial })
+      )
+    } catch {}
     notifyVariantChange(selectedColor, size, selectedMaterial)
   }
 
-  const handleMaterialChange = (material: string) => {
+   const handleMaterialChange = (material: string) => {
     setSelectedMaterial(material)
+    try {
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({ color: selectedColor, size: selectedSize, material })
+      )
+    } catch {}
     notifyVariantChange(selectedColor, selectedSize, material)
   }
 
