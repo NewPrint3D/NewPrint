@@ -239,7 +239,7 @@ export default function EditProductPage({ params }: PageProps) {
     }
   }
 }
-  if (!isAdmin) return null
+  if (!isadmin) return null
 
   if (isFetching) {
     return (
