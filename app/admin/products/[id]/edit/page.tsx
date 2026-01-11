@@ -296,21 +296,21 @@ export default function EditProductPage({ params }: PageProps) {
     }
   }
 
-  if (!isAdmin) return null
+ if (!isAdmin) return null;
 
-  if (isFetching) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-      </div>
-    );
-  }
+if (isFetching) {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+    </div>
+  );
+}
 
-      <main className="flex-1 pt-24 pb-16">
-        <div className="container mx-auto px-4 max-w-3xl">
+return (
+  <div className="min-h-screen flex flex-col">
+    <Navbar />
+    <main className="flex-1 pt-24 pb-16">
+
           <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Button asChild variant="ghost" className="mb-4">
               <Link href="/admin/products">
