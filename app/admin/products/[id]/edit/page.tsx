@@ -339,7 +339,7 @@ export default function EditProductPage({ params }: PageProps) {
 
                 {/* Names */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold">(Required in all languages)</h3>
+                <h3 className="font-semibold">Required in all languages</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
@@ -446,7 +446,7 @@ export default function EditProductPage({ params }: PageProps) {
 
                 {/* Product Image */}
                 <div className="space-y-2">
-                  <Label>{t.admin.productImage}</Label>
+                  <Label>Product Image</Label>
                   <ImageUpload
                     value={formData.image_url}
                     onChange={(url) => setFormData({ ...formData, image_url: url })}
@@ -491,7 +491,7 @@ export default function EditProductPage({ params }: PageProps) {
                 {/* Variants / SKUs */}
                 <div className="space-y-4">
                   <div className="space-y-1">
-                    <h3 className="font-semibold">{t.admin.variantsTitle}</h3>
+                    <h3 className="font-semibold">Variants</h3>
                     {formData.variants.length === 0 && (
                       <p className="text-sm text-muted-foreground">{t.admin.variantsHelper}</p>
                     )}
@@ -558,7 +558,7 @@ export default function EditProductPage({ params }: PageProps) {
 
                 {/* Images by Color */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold">{t.admin.imagesByColorTitle}</h3>
+                  <h3 className="font-semibold">Images by Color</h3>
 
                   {formData.color_images.length === 0 && (
                     <p className="text-sm text-muted-foreground">{t.admin.imagesByColorHelper}</p>
