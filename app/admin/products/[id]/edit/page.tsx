@@ -493,7 +493,9 @@ export default function EditProductPage({ params }: PageProps) {
                   <div className="space-y-1">
                     <h3 className="font-semibold">Variants</h3>
                     {formData.variants.length === 0 && (
-                      <p className="text-sm text-muted-foreground">{t.admin.variantsHelper}</p>
+                      <p className="text-sm text-muted-foreground">
+                     Add variants/SKUs for this product (optional).
+                     </p>
                     )}
                   </div>
 
