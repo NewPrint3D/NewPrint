@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Product3DViewer } from "@/components/product-3d-viewer"
@@ -19,7 +19,45 @@ interface ProductDetailClientProps {
 
 export function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
   const { t, locale } = useLanguage()
-  const [selectedColor, setSelectedColor] = useState(product.colors[0] || "#8B5CF6")
+
+  const storageKey = `np3d:product:${product.id}:variant`
+
+  const getImageForColor = (color?: string) => {
+    const map =
+      (product as any).imagesByColor ||
+      (product as any).colorImages ||
+      (product as any).imagesByVariantColor ||
+      null
+
+    if (map && color && map[color]) return map[color]
+    return product.image
+  }
+
+  const [selectedColor, setSelectedColor] = useState<string>(product.colors?.[0] || "#88CFC6")
+  const [selectedImage, setSelectedImage] = useState<string>(getImageForColor(product.colors?.[0]))
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey)
+      if (!saved) return
+      const parsed = JSON.parse(saved) as { color?: string; image?: string }
+      if (parsed.color) setSelectedColor(parsed.color)
+      if (parsed.image) setSelectedImage(parsed.image)
+      else if (parsed.color) setSelectedImage(getImageForColor(parsed.color))
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ color: selectedColor, image: selectedImage }))
+    } catch {}
+  }, [selectedColor, selectedImage, storageKey])
+
+  useEffect(() => {
+    setSelectedImage((current) => current || getImageForColor(selectedColor))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedColor])
 
   return (
     <main className="min-h-screen">
@@ -29,7 +67,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
             <div>
               <Product3DViewer
-                productImage={product.image}
+               productImage={selectedImage}
                 productName={product.name[locale]}
                 selectedColor={selectedColor}
               />
@@ -55,7 +93,15 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                 <p className="text-lg text-muted-foreground leading-relaxed">{product.description[locale]}</p>
               </div>
 
-              <ProductCustomizer product={product} onVariantChange={(v) => setSelectedColor(v.color)} />
+             <ProductCustomizer
+              product={product}
+                onVariantChange={(v: any) => {
+                if (v?.color) setSelectedColor(v.color)
+                if (v?.image) setSelectedImage(v.image)
+                 else if (v?.images?.[0]) setSelectedImage(v.images[0])
+                   else if (v?.color) setSelectedImage(getImageForColor(v.color))
+                       }}
+                       />
             </div>
           </div>
 
