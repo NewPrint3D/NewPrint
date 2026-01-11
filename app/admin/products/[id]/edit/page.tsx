@@ -187,7 +187,7 @@ export default function EditProductPage({ params }: PageProps) {
       variants: [
         ...(fd.variants || []),
         {
-          name: t.admin.defaultVariantName || "Unit",
+         name: "Unit",
           sku: "",
           price: fd.base_price || "0",
           stock: "0",
