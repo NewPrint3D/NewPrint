@@ -53,7 +53,6 @@ const scrollToSection = (sectionId: string) => {
   }
 }
 
-
   return (
     <nav
       className={cn(
@@ -61,6 +60,7 @@ const scrollToSection = (sectionId: string) => {
         isScrolled ? "bg-background/80 backdrop-blur-lg border-b border-border shadow-lg" : "bg-transparent",
       )}
     >
+ 
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 relative z-50">
           <Link href="/" className="flex items-center gap-2 group">
