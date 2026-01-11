@@ -343,7 +343,7 @@ export default function EditProductPage({ params }: PageProps) {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name_en">{t.admin.english}</Label>
+                      <Label htmlFor="name_en">English</Label>
                       <Input
                         id="name_en"
                         value={formData.name_en}
