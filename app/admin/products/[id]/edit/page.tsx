@@ -376,7 +376,7 @@ export default function EditProductPage({ params }: PageProps) {
 
                 {/* Descriptions */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold">{t.admin.descriptionsAllLanguages}</h3>
+                  <h3 className="font-semibold">Descriptions (All Languages)</h3>
 
                   <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
