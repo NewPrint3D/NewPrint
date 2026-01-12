@@ -226,12 +226,33 @@ export default function EditProductPage({ params }: PageProps) {
         }),
       })
 
-      if (res.ok) {
-        router.push("/admin/products")
-      } else {
-        const data = await res.json()
-        setError(data.error || t.admin.failedToUpdate)
-      }
+    const raw = await res.text();
+let data: any = {};
+try {
+  data = raw ? JSON.parse(raw) : {};
+} catch {
+  data = { raw };
+}
+
+console.log("[admin] update status:", res.status);
+console.log("[admin] update response:", data);
+
+if (res.ok) {
+  const returnedProduct = data?.product ?? data;
+
+  const sentVariants = Array.isArray(formData.variants) ? formData.variants.length : 0;
+  const gotVariants = Array.isArray(returnedProduct?.variants) ? returnedProduct.variants.length : 0;
+
+  if (sentVariants > 0 && gotVariants === 0) {
+    setError("Servidor respondeu OK, mas não retornou variantes. A API provavelmente está ignorando 'variants'.");
+    return;
+  }
+
+  router.push("/admin/products");
+} else {
+  setError(data?.error || data?.message || t.admin.failedToUpdate);
+}
+
     } catch (error) {
       setError(t.admin.networkError)
     } finally {
