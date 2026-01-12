@@ -236,64 +236,110 @@ export default function EditProductPage({ params }: PageProps) {
     })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setIsLoading(true)
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError("");
+  setIsLoading(true);
 
+  try {
+    if (typeof window === "undefined") {
+      setError(t.admin.demoAuthWarning);
+      return;
+    }
+
+    const token = localStorage.getItem("auth_token");
+
+    if (!token) {
+      setError("Sessão expirada. Faça login novamente.");
+      return;
+    }
+
+    const normalizeMoney = (value: unknown) => {
+      const s = String(value ?? "0").replace(",", ".");
+      const n = Number.parseFloat(s);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    const normalizeInt = (value: unknown) => {
+      const n = Number.parseInt(String(value ?? "0"), 10);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    const variants = (formData.variants || []).map((v) => ({
+      ...v,
+      price: normalizeMoney(v.price),
+      stock: normalizeInt(v.stock),
+    }));
+
+    // Se existem variantes, o stock do produto deve ser coerente.
+    const totalStockFromVariants = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
+    const stockQuantity = variants.length > 0 ? totalStockFromVariants : normalizeInt(formData.stock_quantity);
+
+    const payload = {
+      ...formData,
+      base_price: normalizeMoney(formData.base_price),
+      stock_quantity: stockQuantity,
+      colors: String(formData.colors ?? "")
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean),
+      sizes: String(formData.sizes ?? "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      materials: String(formData.materials ?? "")
+        .split(",")
+        .map((m) => m.trim())
+        .filter(Boolean),
+      variants,
+      color_images: Array.isArray(formData.color_images) ? formData.color_images : [],
+    };
+
+    console.log("[admin] updating product:", productId, payload);
+
+    const res = await fetch(`/api/products/${productId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const raw = await res.text();
+    let data: any = {};
     try {
-      if (typeof window === "undefined") {
-        setError(t.admin.demoAuthWarning)
-        return
-      }
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      data = { raw };
+    }
 
-      const token = localStorage.getItem("auth_token")
+    console.log("[admin] update response:", res.status, data);
 
-      const res = await fetch(`/api/products/${productId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...formData,
-          base_price: Number.parseFloat(formData.base_price || "0"),
-          stock_quantity: Number.parseInt(formData.stock_quantity || "0", 10),
+    if (!res.ok) {
+      setError(data?.error || data?.message || t.admin.failedToUpdate);
+      return;
+    }
 
-          colors: formData.colors
-            .split(",")
-            .map((c) => c.trim())
-            .filter(Boolean),
-          sizes: formData.sizes
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
-          materials: formData.materials
-            .split(",")
-            .map((m) => m.trim())
-            .filter(Boolean),
+    // Sanity check: se eu enviei variantes, o servidor deve devolver variantes (ou um product com variantes).
+    const returnedProduct = data?.product ?? data;
 
-          variants: (formData.variants || []).map((v) => ({
-            ...v,
-            price: Number.parseFloat(v.price || "0"),
-            stock: Number.parseInt(v.stock || "0", 10),
-          })),
+    if (variants.length > 0 && (!returnedProduct?.variants || returnedProduct.variants.length === 0)) {
+      setError(
+        "O servidor respondeu OK, mas não retornou as variantes. Isso indica que a API está ignorando o campo 'variants'. Vou corrigir o endpoint no próximo passo."
+      );
+      return;
+    }
 
-          color_images: formData.color_images || [],
-        }),
-      })
-
-      if (res.ok) {
-        router.push("/admin/products")
-      } else {
-      const data = await res.json().catch(() => ({}));
-setError(data?.error || t.admin.failedToUpdate);
-}
-} catch (error) {
-  setError(t.admin.networkError);
-} finally {
-  setIsLoading(false);
+    router.push("/admin/products");
+  } catch (error) {
+    console.error("[admin] update failed:", error);
+    setError(t.admin.networkError);
+  } finally {
+    setIsLoading(false);
   }
+};
+
   }
 
  if (!isAdmin) return null;
