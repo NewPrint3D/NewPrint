@@ -1,4 +1,4 @@
-"use client"
+F"use client"
 
 export const dynamic = "force-dynamic"
 
@@ -201,6 +201,11 @@ export default function EditProductPage({ params }: PageProps) {
       }
 
       const token = localStorage.getItem("auth_token")
+console.log("[admin] payload sending:", {
+  variants: formData.variants,
+  color_images: formData.color_images,
+  colors: formData.colors,
+});
 
       const res = await fetch(`/api/products/${productId}`, {
         method: "PUT",
