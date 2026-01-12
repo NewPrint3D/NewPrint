@@ -286,14 +286,14 @@ export default function EditProductPage({ params }: PageProps) {
       if (res.ok) {
         router.push("/admin/products")
       } else {
-        const data = await res.json().catch(() => ({}))
-        setError(data?.error || t.admin.failedToUpdate)
-      }
-     catch {
-      setError(t.admin.networkError)
-    } finally {
-      setIsLoading(false)
-    }
+      const data = await res.json().catch(() => ({}));
+setError(data?.error || t.admin.failedToUpdate);
+}
+} catch (error) {
+  setError(t.admin.networkError);
+} finally {
+  setIsLoading(false);
+  }
   }
 
  if (!isAdmin) return null;
