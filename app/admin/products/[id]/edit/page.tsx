@@ -587,7 +587,7 @@ if (res.ok) {
                       "Update Product"
                     )}
                   </Button>
-
+                  
                   <Button type="button" variant="outline" onClick={() => router.push("/admin/products")}>
                     Cancel
                   </Button>
