@@ -289,7 +289,7 @@ export default function EditProductPage({ params }: PageProps) {
         const data = await res.json().catch(() => ({}))
         setError(data?.error || t.admin.failedToUpdate)
       }
-    } catch {
+     catch {
       setError(t.admin.networkError)
     } finally {
       setIsLoading(false)
