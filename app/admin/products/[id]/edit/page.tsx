@@ -2,14 +2,15 @@
 
 export const dynamic = "force-dynamic"
 
-import React, { useEffect, useState } from "react"
-import Link from "next/link"
+import type React from "react"
+
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { ArrowLeft, Loader2 } from "lucide-react"
 
 import { useAuth } from "@/contexts/auth-context"
 import { useLanguage } from "@/contexts/language-context"
-
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 
@@ -36,94 +37,53 @@ type ColorImageForm = {
   url: string
 }
 
-type FormDataState = {
-  name_en: string
-  name_pt: string
-  name_es: string
-
-  description_en: string
-  description_pt: string
-  description_es: string
-
-  category: string
-  base_price: string
-  image_url: string
-
-  colors: string
-  sizes: string
-  materials: string
-
-  featured: boolean
-  stock_quantity: string
-  active: boolean
-
-  variants: VariantForm[]
-  color_images: ColorImageForm[]
-}
-
 export default function EditProductPage({ params }: PageProps) {
   const { isAdmin } = useAuth()
   const { t } = useLanguage()
   const router = useRouter()
 
   const [productId, setProductId] = useState<string>("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [isFetching, setIsFetching] = useState(true)
+  const [error, setError] = useState("")
 
-  const [isFetching, setIsFetching] = useState<boolean>(true)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [error, setError] = useState<string>("")
-
-  const [formData, setFormData] = useState<FormDataState>({
+  const [formData, setFormData] = useState({
     name_en: "",
     name_pt: "",
     name_es: "",
-
     description_en: "",
     description_pt: "",
     description_es: "",
-
     category: "accessories",
     base_price: "",
     image_url: "",
-
     colors: "",
     sizes: "",
     materials: "",
-
     featured: false,
     stock_quantity: "0",
     active: true,
 
-    variants: [],
-    color_images: [],
+    // ✅ Modelo 2: Variantes/SKUs
+    variants: [] as VariantForm[],
+
+    // ✅ Imagens por cor
+    color_images: [] as ColorImageForm[],
   })
 
-  // Resolve params.id
   useEffect(() => {
-    let mounted = true
     async function loadParams() {
-      try {
-        const resolvedParams = await params
-        if (!mounted) return
-        setProductId(resolvedParams.id)
-      } catch {
-        // ignore
-      }
+      const resolvedParams = await params
+      setProductId(resolvedParams.id)
     }
     loadParams()
-    return () => {
-      mounted = false
-    }
   }, [params])
 
-  // Fetch product
   useEffect(() => {
     async function fetchProduct() {
       if (!productId || !isAdmin) return
 
       try {
-        setIsFetching(true)
-        setError("")
-
         if (typeof window === "undefined") return
         const token = localStorage.getItem("auth_token")
 
@@ -133,45 +93,36 @@ export default function EditProductPage({ params }: PageProps) {
           },
         })
 
-        if (!res.ok) {
+        if (res.ok) {
+          const data = await res.json()
+          const product = data.product
+
+          setFormData({
+            name_en: product.name_en || product.name?.en || "",
+            name_pt: product.name_pt || product.name?.pt || "",
+            name_es: product.name_es || product.name?.es || "",
+            description_en: product.description_en || product.description?.en || "",
+            description_pt: product.description_pt || product.description?.pt || "",
+            description_es: product.description_es || product.description?.es || "",
+            category: product.category || "accessories",
+            base_price: String(product.base_price || product.basePrice || 0),
+            image_url: product.image_url || product.image || "",
+            colors: Array.isArray(product.colors)
+              ? product.colors.join(",")
+              : product.colors || "#88CFC6,#06B6D4,#10B981",
+            sizes: Array.isArray(product.sizes) ? product.sizes.join(",") : product.sizes || "Small,Medium,Large",
+            materials: Array.isArray(product.materials) ? product.materials.join(",") : product.materials || "PLA,ABS,PETG",
+            featured: product.featured || false,
+            stock_quantity: String(product.stock_quantity || product.stock || 0),
+            active: product.active !== false,
+
+            variants: Array.isArray(product.variants) ? product.variants : [],
+            color_images: Array.isArray(product.color_images) ? product.color_images : [],
+          })
+        } else {
           setError(t.admin.failedToLoad)
-          return
         }
-
-        const data = await res.json()
-        const product = data?.product
-
-        setFormData({
-          name_en: product?.name_en ?? product?.name?.en ?? "",
-          name_pt: product?.name_pt ?? product?.name?.pt ?? "",
-          name_es: product?.name_es ?? product?.name?.es ?? "",
-
-          description_en: product?.description_en ?? product?.description?.en ?? "",
-          description_pt: product?.description_pt ?? product?.description?.pt ?? "",
-          description_es: product?.description_es ?? product?.description?.es ?? "",
-
-          category: product?.category ?? "accessories",
-          base_price: String(product?.base_price ?? product?.basePrice ?? 0),
-          image_url: product?.image_url ?? product?.image ?? "",
-
-          colors: Array.isArray(product?.colors)
-            ? product.colors.join(",")
-            : (product?.colors ?? ""),
-          sizes: Array.isArray(product?.sizes)
-            ? product.sizes.join(",")
-            : (product?.sizes ?? ""),
-          materials: Array.isArray(product?.materials)
-            ? product.materials.join(",")
-            : (product?.materials ?? ""),
-
-          featured: Boolean(product?.featured),
-          stock_quantity: String(product?.stock_quantity ?? product?.stock ?? 0),
-          active: product?.active !== false,
-
-          variants: Array.isArray(product?.variants) ? product.variants : [],
-          color_images: Array.isArray(product?.color_images) ? product.color_images : [],
-        })
-      } catch {
+      } catch (err) {
         setError(t.admin.networkError)
       } finally {
         setIsFetching(false)
@@ -187,7 +138,7 @@ export default function EditProductPage({ params }: PageProps) {
       variants: [
         ...(fd.variants || []),
         {
-         name: "Unit",
+          name: "Unitário",
           sku: "",
           price: fd.base_price || "0",
           stock: "0",
@@ -236,126 +187,73 @@ export default function EditProductPage({ params }: PageProps) {
     })
   }
 
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError("");
-  setIsLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setIsLoading(true)
 
-  try {
-    if (typeof window === "undefined") {
-      setError(t.admin.demoAuthWarning);
-      return;
-    }
-
-    const token = localStorage.getItem("auth_token");
-
-    if (!token) {
-      setError("Sessão expirada. Faça login novamente.");
-      return;
-    }
-
-    const normalizeMoney = (value: unknown) => {
-      const s = String(value ?? "0").replace(",", ".");
-      const n = Number.parseFloat(s);
-      return Number.isFinite(n) ? n : 0;
-    };
-
-    const normalizeInt = (value: unknown) => {
-      const n = Number.parseInt(String(value ?? "0"), 10);
-      return Number.isFinite(n) ? n : 0;
-    };
-
-    const variants = (formData.variants || []).map((v) => ({
-      ...v,
-      price: normalizeMoney(v.price),
-      stock: normalizeInt(v.stock),
-    }));
-
-    // Se existem variantes, o stock do produto deve ser coerente.
-    const totalStockFromVariants = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
-    const stockQuantity = variants.length > 0 ? totalStockFromVariants : normalizeInt(formData.stock_quantity);
-
-    const payload = {
-      ...formData,
-      base_price: normalizeMoney(formData.base_price),
-      stock_quantity: stockQuantity,
-      colors: String(formData.colors ?? "")
-        .split(",")
-        .map((c) => c.trim())
-        .filter(Boolean),
-      sizes: String(formData.sizes ?? "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean),
-      materials: String(formData.materials ?? "")
-        .split(",")
-        .map((m) => m.trim())
-        .filter(Boolean),
-      variants,
-      color_images: Array.isArray(formData.color_images) ? formData.color_images : [],
-    };
-
-    console.log("[admin] updating product:", productId, payload);
-
-    const res = await fetch(`/api/products/${productId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const raw = await res.text();
-    let data: any = {};
     try {
-      data = raw ? JSON.parse(raw) : {};
-    } catch {
-      data = { raw };
+      if (typeof window === "undefined") {
+        setError(t.admin.demoAuthWarning)
+        setIsLoading(false)
+        return
+      }
+
+      const token = localStorage.getItem("auth_token")
+
+      const res = await fetch(`/api/products/${productId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...formData,
+          base_price: Number.parseFloat(formData.base_price),
+          stock_quantity: Number.parseInt(formData.stock_quantity),
+
+          colors: formData.colors.split(",").map((c) => c.trim()).filter(Boolean),
+          sizes: formData.sizes.split(",").map((s) => s.trim()).filter(Boolean),
+          materials: formData.materials.split(",").map((m) => m.trim()).filter(Boolean),
+
+          // ✅ ainda não salva no banco (PASSO 2), mas já envia no payload
+          variants: formData.variants.map((v) => ({
+            ...v,
+            price: Number.parseFloat(v.price || "0"),
+            stock: Number.parseInt(v.stock || "0"),
+          })),
+          color_images: formData.color_images,
+        }),
+      })
+
+      if (res.ok) {
+        router.push("/admin/products")
+      } else {
+        const data = await res.json()
+        setError(data.error || t.admin.failedToUpdate)
+      }
+    } catch (error) {
+      setError(t.admin.networkError)
+    } finally {
+      setIsLoading(false)
     }
-
-    console.log("[admin] update response:", res.status, data);
-
-    if (!res.ok) {
-      setError(data?.error || data?.message || t.admin.failedToUpdate);
-      return;
-    }
-
-    // Sanity check: se eu enviei variantes, o servidor deve devolver variantes (ou um product com variantes).
-    const returnedProduct = data?.product ?? data;
-
-    if (variants.length > 0 && (!returnedProduct?.variants || returnedProduct.variants.length === 0)) {
-      setError(
-        "O servidor respondeu OK, mas não retornou as variantes. Isso indica que a API está ignorando o campo 'variants'. Vou corrigir o endpoint no próximo passo."
-      );
-      return;
-    }
-
-    router.push("/admin/products");
-  } catch (error) {
-    console.error("[admin] update failed:", error);
-    setError(t.admin.networkError);
-  } finally {
-    setIsLoading(false);
   }
-};
 
+  if (!isAdmin) return null
+
+  if (isFetching) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+      </div>
+    )
   }
 
- if (!isAdmin) return null;
-
-if (isFetching) {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-    </div>
-  );
-
-return (
-  <div className="min-h-screen flex-col">
-    <Navbar />
-    <main className="flex-1 pt-24 pb-16">
-
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-1 pt-24 pb-16">
+        <div className="container mx-auto px-4 max-w-3xl">
           <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Button asChild variant="ghost" className="mb-4">
               <Link href="/admin/products">
@@ -363,7 +261,6 @@ return (
                 {t.admin.backToProducts}
               </Link>
             </Button>
-
             <h1 className="text-4xl font-bold mb-2">{t.admin.editProduct}</h1>
             <p className="text-muted-foreground">{t.admin.editProductHelper}</p>
           </div>
@@ -381,10 +278,8 @@ return (
                   </div>
                 )}
 
-                {/* Names */}
                 <div className="space-y-4">
-                <h3 className="font-semibold">Required in all languages</h3>
-
+                  <h3 className="font-semibold">Names (Required in all languages)</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name_en">English</Label>
@@ -397,7 +292,7 @@ return (
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="name_pt">Portuguese</Label>
+                      <Label htmlFor="name_pt">Português</Label>
                       <Input
                         id="name_pt"
                         value={formData.name_pt}
@@ -407,7 +302,7 @@ return (
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="name_es">Spanish</Label>
+                      <Label htmlFor="name_es">Español</Label>
                       <Input
                         id="name_es"
                         value={formData.name_es}
@@ -418,65 +313,65 @@ return (
                   </div>
                 </div>
 
-                {/* Descriptions */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Descriptions (All Languages)</h3>
+                  <h3 className="font-semibold">Descriptions (Required in all languages)</h3>
 
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="description_en">English</Label>
                       <Textarea
                         id="description_en"
-                        rows={4}
                         value={formData.description_en}
-                        onChange={(e) =>
-                          setFormData({ ...formData, description_en: e.target.value })
-                        }
+                        onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
                         required
+                        rows={3}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="description_pt">Portuguese</Label>
+                      <Label htmlFor="description_pt">Português</Label>
                       <Textarea
                         id="description_pt"
-                        rows={4}
                         value={formData.description_pt}
-                        onChange={(e) =>
-                          setFormData({ ...formData, description_pt: e.target.value })
-                        }
+                        onChange={(e) => setFormData({ ...formData, description_pt: e.target.value })}
                         required
+                        rows={3}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="description_es">Spanish</Label>
+                      <Label htmlFor="description_es">Español</Label>
                       <Textarea
                         id="description_es"
-                        rows={4}
                         value={formData.description_es}
-                        onChange={(e) =>
-                          setFormData({ ...formData, description_es: e.target.value })
-                        }
+                        onChange={(e) => setFormData({ ...formData, description_es: e.target.value })}
                         required
+                        rows={3}
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Category + Base Price */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="category">{t.admin.category}</Label>
-                    <Input
+                    <Label htmlFor="category">Category</Label>
+                    <select
                       id="category"
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    />
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                      required
+                    >
+                      <option value="accessories">Accessories</option>
+                      <option value="home">Home</option>
+                      <option value="office">Office</option>
+                      <option value="toys">Toys</option>
+                      <option value="other">Other</option>
+                    </select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="base_price">{t.admin.basePrice}</Label>
+                    <Label htmlFor="base_price">Base Price (€)</Label>
                     <Input
                       id="base_price"
                       type="number"
@@ -488,186 +383,149 @@ return (
                   </div>
                 </div>
 
-                {/* Product Image */}
+                <ImageUpload
+                  label="Product Image"
+                  value={formData.image_url}
+                  onChange={(imageData) => setFormData({ ...formData, image_url: imageData })}
+                  disabled={isLoading}
+                />
+
                 <div className="space-y-2">
-                  <Label>Product Image</Label>
-                  <ImageUpload
-                    value={formData.image_url}
-                    onChange={(url) => setFormData({ ...formData, image_url: url })}
+                  <Label htmlFor="colors">Colors (comma separated hex codes)</Label>
+                  <Input
+                    id="colors"
+                    value={formData.colors}
+                    onChange={(e) => setFormData({ ...formData, colors: e.target.value })}
+                    placeholder="#88CFC6,#06B6D4,#10B981"
                   />
                 </div>
 
-                {/* Colors / Sizes / Materials */}
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="colors">Colors (comma-separated)</Label>
+                    <Label htmlFor="sizes">Sizes (comma separated)</Label>
                     <Input
-                      id="colors"
-                      value={formData.colors}
-                      onChange={(e) => setFormData({ ...formData, colors: e.target.value })}
-                      placeholder="#F4F4F4,#1B1B1B,#1565C0"
+                      id="sizes"
+                      value={formData.sizes}
+                      onChange={(e) => setFormData({ ...formData, sizes: e.target.value })}
+                      placeholder="Small,Medium,Large"
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="sizes">Sizes (comma-separated)</Label>
-                      <Input
-                        id="sizes"
-                        value={formData.sizes}
-                        onChange={(e) => setFormData({ ...formData, sizes: e.target.value })}
-                        placeholder="Small,Medium,Large"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="materials">Materials (comma-separated)</Label>
-                      <Input
-                        id="materials"
-                        value={formData.materials}
-                        onChange={(e) => setFormData({ ...formData, materials: e.target.value })}
-                        placeholder="PLA,ABS,PETG"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="materials">Materials (comma separated)</Label>
+                    <Input
+                      id="materials"
+                      value={formData.materials}
+                      onChange={(e) => setFormData({ ...formData, materials: e.target.value })}
+                      placeholder="PLA,ABS,PETG"
+                    />
                   </div>
                 </div>
 
-                {/* Variants / SKUs */}
+                {/* ✅ MODELO 2: Variantes/SKUs */}
                 <div className="space-y-4">
-                  <div className="space-y-1">
-                    <h3 className="font-semibold">Variants</h3>
+                  <h3 className="font-semibold">Variants (SKUs)</h3>
+
+                  <div className="space-y-3">
                     {formData.variants.length === 0 && (
                       <p className="text-sm text-muted-foreground">
-                     Add variants/SKUs for this product (optional).
-                     </p>
+                        Add at least 1 variant (ex: Unitário, Conjunto P, Conjunto M, Conjunto G)
+                      </p>
                     )}
-                  </div>
 
-                  {formData.variants.map((v, idx) => (
-                    <div
-                      key={idx}
-                      className="grid grid-cols-1 md:grid-cols-5 gap-3 p-3 rounded-lg border border-border"
-                    >
-                      <div className="space-y-2 md:col-span-2">
-                       <Label>Variant Name</Label>
-                        <Input
-                          value={v.name}
-                          onChange={(e) => updateVariant(idx, "name", e.target.value)}
-                        />
-                      </div>
+                    {formData.variants.map((v, idx) => (
+                      <div key={idx} className="grid grid-cols-1 md:grid-cols-5 gap-3 p-3 rounded-lg border border-border">
+                        <div className="space-y-2">
+                          <Label>Variant Name</Label>
+                          <Input value={v.name} onChange={(e) => updateVariant(idx, "name", e.target.value)} />
+                        </div>
 
-                      <div className="space-y-2">
-                        <Label>Sku</Label>
-                        <Input
-                          value={v.sku}
-                          onChange={(e) => updateVariant(idx, "sku", e.target.value)}
-                          placeholder="SKU"
-                        />
-                      </div>
+                        <div className="space-y-2">
+                          <Label>SKU (optional)</Label>
+                          <Input value={v.sku} onChange={(e) => updateVariant(idx, "sku", e.target.value)} />
+                        </div>
 
-                      <div className="space-y-2">
-                        <Label>Price</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={v.price}
-                          onChange={(e) => updateVariant(idx, "price", e.target.value)}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Stock</Label>
-                        <Input
-                          type="number"
-                          value={v.stock}
-                          onChange={(e) => updateVariant(idx, "stock", e.target.value)}
-                        />
-                      </div>
-
-                      <div className="flex items-end md:col-span-5">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="w-full"
-                          onClick={() => removeVariant(idx)}
-                        >
-                          {t.admin.remove}
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-
-                  <Button type="button" className="w-full" onClick={addVariant}>
-                    + Add Variant
-                  </Button>
-                </div>
-
-                {/* Images by Color */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Images by Color</h3>
-
-                  {formData.color_images.length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                   Add image URLs for each color (hex). The product page will swap image when color is selected.
-                   </p>
- 
-                  )}
-
-                  {formData.color_images.map((img, idx) => (
-                    <div
-                      key={idx}
-                      className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 rounded-lg border border-border"
-                    >
-                      <div className="space-y-2">
-                        <Label>color Hex</Label>
-                        <Input
-                          value={img.color}
-                          onChange={(e) => updateColorImage(idx, "color", e.target.value)}
-                          placeholder="#FFFFFF"
-                        />
-                      </div>
-
-                      <div className="space-y-2 md:col-span-2">
-                        <Label>image Url</Label>
-                        <div className="flex gap-2">
+                        <div className="space-y-2">
+                          <Label>Price (€)</Label>
                           <Input
-                            value={img.url}
-                            onChange={(e) => updateColorImage(idx, "url", e.target.value)}
-                            placeholder="https://..."
+                            type="number"
+                            step="0.01"
+                            value={v.price}
+                            onChange={(e) => updateVariant(idx, "price", e.target.value)}
                           />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => removeColorImage(idx)}
-                          >
-                            remove
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Stock</Label>
+                          <Input type="number" value={v.stock} onChange={(e) => updateVariant(idx, "stock", e.target.value)} />
+                        </div>
+
+                        <div className="flex items-end gap-2">
+                          <Button type="button" variant="outline" className="w-full" onClick={() => removeVariant(idx)}>
+                            Remove
                           </Button>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
 
-                  <Button
-                    type="button"
-                    onClick=addColor Image
-                    className="w-full"
-                    variant="outline"
-                  >
-                    + add Color Image
-                  </Button>
+                    <Button type="button" onClick={addVariant} className="w-full">
+                      + Add Variant
+                    </Button>
+                  </div>
                 </div>
 
-                {/* Footer of form */}
+                {/* ✅ Imagens por cor */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold">Images by Color</h3>
+
+                  <div className="space-y-3">
+                    {formData.color_images.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Add image URLs for each color (hex). The product page will swap image when color is selected.
+                      </p>
+                    )}
+
+                    {formData.color_images.map((img, idx) => (
+                      <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 rounded-lg border border-border">
+                        <div className="space-y-2">
+                          <Label>Color HEX</Label>
+                          <Input
+                            value={img.color}
+                            onChange={(e) => updateColorImage(idx, "color", e.target.value)}
+                            placeholder="#FFFFFF"
+                          />
+                        </div>
+
+                        <div className="space-y-2 md:col-span-2">
+                          <Label>Image URL</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              value={img.url}
+                              onChange={(e) => updateColorImage(idx, "url", e.target.value)}
+                              placeholder="https://..."
+                            />
+                            <Button type="button" variant="outline" onClick={() => removeColorImage(idx)}>
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <Button type="button" onClick={addColorImage} className="w-full" variant="outline">
+                      + Add Color Image
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="stock_quantity">stock Quantity</Label>
+                    <Label htmlFor="stock_quantity">Stock Quantity</Label>
                     <Input
                       id="stock_quantity"
                       type="number"
                       value={formData.stock_quantity}
-                      onChange={(e) =>
-                        setFormData({ ...formData, stock_quantity: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
                       required
                     />
                   </div>
@@ -681,7 +539,7 @@ return (
                         onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
                         className="w-4 h-4"
                       />
-                      <Label htmlFor="featured">featured Product</Label>
+                      <Label htmlFor="featured">Featured Product</Label>
                     </div>
 
                     <div className="flex items-center space-x-2">
@@ -692,7 +550,7 @@ return (
                         onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
                         className="w-4 h-4"
                       />
-                      <Label htmlFor="active">active Visible</Label>
+                      <Label htmlFor="active">Active (Visible to customers)</Label>
                     </div>
                   </div>
                 </div>
@@ -702,19 +560,15 @@ return (
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t.admin.updating}
+                        Updating...
                       </>
                     ) : (
-                      t.admin.updateProduct
+                      "Update Product"
                     )}
                   </Button>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => router.push("/admin/products")}
-                  >
-                    {t.admin.cancel}
+                  <Button type="button" variant="outline" onClick={() => router.push("/admin/products")}>
+                    Cancel
                   </Button>
                 </div>
               </form>
@@ -722,8 +576,7 @@ return (
           </Card>
         </div>
       </main>
-
       <Footer />
     </div>
-  );
+  )
 }
