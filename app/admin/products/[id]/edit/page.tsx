@@ -189,8 +189,9 @@ export default function EditProductPage({ params }: PageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
-    setIsLoading(true)
+    console.log("🔥 HANDLE SUBMIT EXECUTED ");
+      setError("")
+      setIsLoading(true)
 
     try {
       if (typeof window === "undefined") {
