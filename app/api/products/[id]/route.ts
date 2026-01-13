@@ -128,9 +128,9 @@ export async function PUT(
         featured = ${featured},
         stock_quantity = ${stock_quantity},
         active = ${active !== undefined ? active : true},
-       variants = ${JSON.stringify(variants ?? [])},
-       color_images = ${JSON.stringify(color_images ?? [])},
-        updated_at = CURRENT_TIMESTAMP
+       variants = ${JSON.stringify(variants)}::jsonb,
+       color_images = ${JSON.stringify(color_images)}::jsonb,
+         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${resolvedParams.id}
       RETURNING *
     `
