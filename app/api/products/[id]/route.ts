@@ -173,3 +173,4 @@ export async function DELETE(
     return NextResponse.json({ error: "Erro ao deletar produto" }, { status: 500 })
   }
 }
+}
