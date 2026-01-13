@@ -52,7 +52,8 @@ async function fetchProductById(id: string) {
 }
 
 export default async function ProductDetailPage({ params }: Props) {
-  const product = await fetchProductById(params.id)
+ const resolvedParams = await params
+const product = await fetchProductById(resolvedParams.id)
 
   if (!product) {
     notFound()
