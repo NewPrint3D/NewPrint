@@ -4,7 +4,7 @@ import { notFound } from "next/navigation"
 import { ProductDetailClient } from "./product-detail-client"
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://newprint3d.com"
@@ -19,8 +19,9 @@ async function fetchProductById(id: string) {
   return res.json()
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const product = await fetchProductById(params.id)
+  export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const resolvedParams = await params
+  const product = await fetchProductById(resolvedParams.id)
 
   if (!product) {
     return { title: "Product Not Found" }
