@@ -108,6 +108,10 @@ export async function PUT(
        variants,
       color_images,
     } = data
+    
+    const variantsJson = JSON.stringify(variants ?? [])
+const colorImagesJson = JSON.stringify(color_images ?? [])
+
  const normalizedColors =
     Array.isArray(colors)
     ? colors
