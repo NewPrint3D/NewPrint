@@ -9,15 +9,22 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const resolvedParams = await params
+  const db = sql
+  if (!db) {
+    return NextResponse.json(
+      { error: "Banco não configurado (DATABASE_URL ausente)." },
+      { status: 500 }
+    )
+  }
 
   try {
-    const products = await sql`
+       const products = await db`
       SELECT *
       FROM products
       WHERE id = ${resolvedParams.id}
       LIMIT 1
-    `
-
+    
+ 
     if (products.length === 0) {
       return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 })
     }
@@ -74,9 +81,8 @@ export async function PUT(
     } = data
       const normalizedVariants = Array.isArray(variants) ? variants : []
       const normalizedColorImages = Array.isArray(color_images) ? color_images : []
-
-    const variantsJson = JSON.stringify(variants ?? [])
-   const colorImagesJson = JSON.stringify(color_images ?? [])
+     const variantsJson = JSON.stringify(normalizedVariants)
+    const colorImagesJson = JSON.stringify(normalizedColorImages)
 
  const normalizedColors =
     Array.isArray(colors)
@@ -85,7 +91,7 @@ export async function PUT(
       ? [colors]
       : []
     // Atualizar produto
-    const updatedProducts = await sql!`
+    const updatedProducts = await db
       UPDATE products
       SET
         name_en = ${name_en},
@@ -102,14 +108,13 @@ export async function PUT(
         materials = ${materials},
         featured = ${featured},
         stock_quantity = ${stock_quantity},
-       variants = ${JSON.stringify(normalizedVariants)}::jsonb,
-       color_images = ${JSON.stringify(normalizedColorImages)}::jsonb,
-       color_images = ${JSON.stringify(color_images)}::jsonb,
-         updated_at = CURRENT_TIMESTAMP
+         variants = ${variantsJson}::jsonb,
+        color_images = ${colorImagesJson}::jsonb,
+             updated_at = CURRENT_TIMESTAMP
   
       WHERE id = ${resolvedParams.id}
       RETURNING *
-    `
+    
 
     if (updatedProducts.length === 0) {
       return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 })
@@ -151,12 +156,12 @@ export async function DELETE(
 
   try {
     // Soft delete - apenas marca como inativo
-    const deletedProducts = await sql!`
+    const deletedProducts =await db!`
       UPDATE products
       SET active = false, updated_at = CURRENT_TIMESTAMP
       WHERE id = ${resolvedParams.id}
       RETURNING id
-    `
+    
 
     if (deletedProducts.length === 0) {
       return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 })
