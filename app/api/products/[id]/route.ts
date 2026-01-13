@@ -156,7 +156,7 @@ export async function DELETE(
 
   try {
     // Soft delete - apenas marca como inativo
-    const deletedProducts =await db!`
+    const deletedProducts =await db
       UPDATE products
       SET active = false, updated_at = CURRENT_TIMESTAMP
       WHERE id = ${resolvedParams.id}
