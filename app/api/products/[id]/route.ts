@@ -88,7 +88,7 @@ export async function PUT(
 
   try {
     const data = await request.json()
-
+   
     const {
       name_en,
       name_pt,
@@ -108,7 +108,12 @@ export async function PUT(
        variants,
       color_images,
     } = data
-
+ const normalizedColors =
+    Array.isArray(colors)
+    ? colors
+    : typeof colors === "string"
+      ? [colors]
+      : []
     // Atualizar produto
     const updatedProducts = await sql!`
       UPDATE products
@@ -122,7 +127,7 @@ export async function PUT(
         category = ${category},
         base_price = ${base_price},
         image_url = ${image_url},
-        colors = ${colors},
+       colors = ${normalizedColors},
         sizes = ${sizes},
         materials = ${materials},
         featured = ${featured},
