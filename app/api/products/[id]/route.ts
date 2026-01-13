@@ -139,11 +139,17 @@ export async function PUT(
       return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 })
     }
 
-    return NextResponse.json({ product: updatedProducts[0] })
-  } catch (error) {
-    console.error("Erro ao atualizar produto:", error)
-    return NextResponse.json({ error: "Erro ao atualizar produto" }, { status: 500 })
-  }
+  } catch (error: any) {
+  console.error("PUT /api/products/[id] ERROR:", error)
+
+  return NextResponse.json(
+    {
+      error: "Erro ao atualizar produto",
+      details: error?.message ?? String(error),
+    },
+    { status: 500 }
+  )
+}
 }
 
 // DELETE - Deletar produto (apenas admin)
