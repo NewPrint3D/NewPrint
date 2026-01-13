@@ -10,54 +10,12 @@ export async function GET(
 ) {
   const resolvedParams = await params
 
-  // Modo demonstração: buscar no arquivo JSON
-  if (isDemoMode) {
-    console.log(`[DEMO MODE] GET /api/products/${resolvedParams.id} - buscando no arquivo JSON`)
-    const product = productsData.find(p => p.id === resolvedParams.id)
-
-    if (!product) {
-      return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 })
-    }
-
-    const normalizedProduct = {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      name_en: product.name?.en ?? '',
-      name_pt: product.name?.pt ?? '',
-      name_es: product.name?.es ?? '',
-      description_en: product.description?.en ?? '',
-      description_pt: product.description?.pt ?? '',
-      description_es: product.description?.es ?? '',
-      category: product.category,
-      base_price: product.basePrice ?? 0,
-      basePrice: product.basePrice ?? 0,
-      image_url: product.image ?? null,
-      image: product.image ?? null,
-      colors: product.colors ?? [],
-      sizes: product.sizes ?? [],
-      materials: product.materials ?? [],
-      featured: Boolean(product.featured),
-      active: true,
-      stock_quantity: 0,
-     stock_quantity: 0,
-
-     variants: product.variants ?? [],
-     color_images: product.color_images ?? [],
-}
- 
-    }
-
-    return NextResponse.json({
-      product: normalizedProduct,
-      demoMode: true,
-      message: "Produto carregado do arquivo local (data/products.json)"
-    })
-  }
-
   try {
-    const products = await sql!`
-      SELECT * FROM products WHERE id = ${resolvedParams.id} AND active = true
+    const products = await sql`
+      SELECT *
+      FROM products
+      WHERE id = ${resolvedParams.id}
+      LIMIT 1
     `
 
     if (products.length === 0) {
