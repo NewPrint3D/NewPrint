@@ -40,6 +40,12 @@ export async function GET(
       featured: Boolean(product.featured),
       active: true,
       stock_quantity: 0,
+     stock_quantity: 0,
+
+     variants: product.variants ?? [],
+     color_images: product.color_images ?? [],
+}
+ 
     }
 
     return NextResponse.json({
@@ -108,9 +114,11 @@ export async function PUT(
        variants,
       color_images,
     } = data
-    
+      const normalizedVariants = Array.isArray(variants) ? variants : []
+      const normalizedColorImages = Array.isArray(color_images) ? color_images : []
+
     const variantsJson = JSON.stringify(variants ?? [])
-const colorImagesJson = JSON.stringify(color_images ?? [])
+   const colorImagesJson = JSON.stringify(color_images ?? [])
 
  const normalizedColors =
     Array.isArray(colors)
@@ -136,10 +144,11 @@ const colorImagesJson = JSON.stringify(color_images ?? [])
         materials = ${materials},
         featured = ${featured},
         stock_quantity = ${stock_quantity},
-        active = ${active !== undefined ? active : true},
-       variants = ${JSON.stringify(variants)}::jsonb,
+       variants = ${JSON.stringify(normalizedVariants)}::jsonb,
+       color_images = ${JSON.stringify(normalizedColorImages)}::jsonb,
        color_images = ${JSON.stringify(color_images)}::jsonb,
          updated_at = CURRENT_TIMESTAMP
+  
       WHERE id = ${resolvedParams.id}
       RETURNING *
     `
