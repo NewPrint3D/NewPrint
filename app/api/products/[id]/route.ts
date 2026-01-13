@@ -105,6 +105,8 @@ export async function PUT(
       featured,
       stock_quantity,
       active,
+       variants,
+      color_images,
     } = data
 
     // Atualizar produto
@@ -126,6 +128,8 @@ export async function PUT(
         featured = ${featured},
         stock_quantity = ${stock_quantity},
         active = ${active !== undefined ? active : true},
+         variants = ${variants},
+        color_images = ${color_images},
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${resolvedParams.id}
       RETURNING *
