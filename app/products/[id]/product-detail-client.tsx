@@ -82,11 +82,18 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
             <div>
-              <Product3DViewer
-                productImage={selectedImage}
-                productName={(product as any).name?.[locale] || (product as any).name_pt || (product as any).name || "Produto"}
-                selectedColor={selectedColor}
-              />
+            <Product3DViewer
+  productName={
+    (product as any).name?.[locale] ||
+    (product as any).name_pt ||
+    (product as any).name ||
+    "Produto"
+  }
+  selectedColor={selectedColor}
+  baseImage={(product as any).image_url || "/placeholder.svg"}
+  colorImages={Array.isArray((product as any).color_images) ? (product as any).color_images : []}
+/>
+
             </div>
 
             <div className="space-y-6">
