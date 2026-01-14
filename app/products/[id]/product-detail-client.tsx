@@ -7,179 +7,158 @@ import { Product3DViewer } from "@/components/product-3d-viewer"
 import { ProductCustomizer } from "@/components/product-customizer"
 import { ProductCard } from "@/components/product-card"
 import { useLanguage } from "@/contexts/language-context"
-import type { Product } from "@/lib/db-products"
+import type { Product as DbProduct } from "@/lib/db-products"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Star, Truck, Shield, RefreshCw } from "lucide-react"
 
 interface ProductDetailClientProps {
-  product: any
-  relatedProducts: Product[]
+  product: DbProduct
+  relatedProducts: DbProduct[]
 }
 
-const safeNumber = (v: unknown) => {
-  const n = typeof v === "string" ? Number(v) : (v as number)
-  return Number.isFinite(n) ? n : 0
+/**
+ * Normaliza o produto vindo do banco/API para não quebrar o front
+ * (porque no banco está snake_case: base_price, image_url, color_images, etc.)
+ */
+function normalizeProduct(raw: any) {
+  const colorsFromColorImages = Array.isArray(raw?.color_images)
+    ? raw.color_images.map((c: any) => c?.color).filter(Boolean)
+    : []
+
+  const safeColors = Array.isArray(raw?.colors) && raw.colors.length > 0 ? raw.colors : colorsFromColorImages
+  const safeSizes = Array.isArray(raw?.sizes) && raw.sizes.length > 0 ? raw.sizes : []
+  const safeMaterials = Array.isArray(raw?.materials) && raw.materials.length > 0 ? raw.materials : []
+
+  const basePriceNumber =
+    raw?.basePrice != null
+      ? Number(raw.basePrice)
+      : raw?.base_price != null
+        ? Number(raw.base_price)
+        : 0
+
+  const imageUrl = raw?.image ?? raw?.image_url ?? raw?.main_image ?? ""
+
+  // cria mapa: "#000000" => "https://...."
+  const imagesByColor: Record<string, string> = {}
+  if (Array.isArray(raw?.color_images)) {
+    for (const item of raw.color_images) {
+      const c = item?.color
+      const u = item?.url
+      if (c && u) imagesByColor[c] = u
+    }
+  }
+
+  // compatibilidade com outras chaves antigas
+  const imagesByColorLegacy =
+    raw?.imagesByColor || raw?.colorImages || raw?.imagesByVariantColor || null
+  if (imagesByColorLegacy && typeof imagesByColorLegacy === "object") {
+    for (const [k, v] of Object.entries(imagesByColorLegacy)) {
+      if (k && typeof v === "string") imagesByColor[k] = v
+    }
+  }
+
+  return {
+    ...raw,
+    basePrice: Number.isFinite(basePriceNumber) ? basePriceNumber : 0,
+    image: imageUrl,
+    colors: safeColors.length > 0 ? safeColors : ["#000000"],
+    sizes: safeSizes.length > 0 ? safeSizes : ["Standard"],
+    materials: safeMaterials.length > 0 ? safeMaterials : ["PLA"],
+    imagesByColor,
+  }
+}
+
+function getText(raw: any, field: "name" | "description", locale: string) {
+  // 1) formato novo: product.name[locale]
+  const obj = raw?.[field]
+  if (obj && typeof obj === "object" && obj[locale]) return String(obj[locale])
+
+  // 2) formato banco: name_pt/name_en/name_es + description_pt...
+  const key = `${field}_${locale}`
+  if (raw?.[key]) return String(raw[key])
+
+  // 3) fallback: en
+  const fallbackKey = `${field}_en`
+  if (raw?.[fallbackKey]) return String(raw[fallbackKey])
+
+  // 4) último fallback
+  if (obj && typeof obj === "string") return obj
+  return ""
 }
 
 export function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
   const { t, locale } = useLanguage()
 
-  const safeProduct = product ?? {}
-  const safeRelatedProducts = Array.isArray(relatedProducts) ? relatedProducts : []
+  const p = useMemo(() => normalizeProduct(product as any), [product])
 
-  // ✅ Normaliza o produto para funcionar tanto com:
-  // - camelCase (basePrice, colors, image)
-  // - snake_case da API/admin (base_price, color_images)
-  const normalized = useMemo(() => {
-    const colorImages = Array.isArray(safeProduct?.color_images) ? safeProduct.color_images : []
-    const colorsFromColorImages = colorImages.map((c: any) => c?.color).filter(Boolean).map(String)
-    const uniqueColors = Array.from(new Set(colorsFromColorImages))
-
-    const imageFromColorImages = colorImages?.[0]?.url ? String(colorImages[0].url) : undefined
-
-    return {
-      ...safeProduct,
-
-      // preço
-      basePrice: safeNumber(safeProduct?.basePrice ?? safeProduct?.base_price),
-
-      // imagem principal
-      image: safeProduct?.image ?? safeProduct?.main_image ?? imageFromColorImages ?? "/placeholder.svg",
-
-      // cores
-      colors: Array.isArray(safeProduct?.colors) && safeProduct.colors.length > 0 ? safeProduct.colors : uniqueColors,
-
-      // garante arrays p/ não quebrar UI
-      sizes: Array.isArray(safeProduct?.sizes) ? safeProduct.sizes : [],
-      materials: Array.isArray(safeProduct?.materials) ? safeProduct.materials : [],
-
-      // mantém o que veio da API
-      color_images: colorImages,
-    }
-  }, [safeProduct])
-
-  const storageKey = `np3d:product:${normalized?.id ?? "unknown"}:variant`
-
-  // ✅ mapa cor -> url (prioriza API color_images)
-  const colorImageMap = useMemo(() => {
-    const map: Record<string, string> = {}
-
-    if (Array.isArray(normalized?.color_images)) {
-      for (const item of normalized.color_images) {
-        if (item?.color && item?.url) map[String(item.color)] = String(item.url)
-      }
-    }
-
-    // formatos antigos (se existirem)
-    const alt =
-      normalized?.imagesByColor || normalized?.colorImages || normalized?.imagesByVariantColor || null
-    if (alt && typeof alt === "object") {
-      for (const k of Object.keys(alt)) {
-        if (alt[k]) map[String(k)] = String(alt[k])
-      }
-    }
-
-    return map
-  }, [normalized])
+  const storageKey = `np3d:product:${p.id}:variant`
 
   const getImageForColor = (color?: string) => {
-    if (color && colorImageMap[color]) return colorImageMap[color]
-    return normalized?.image || "/placeholder.svg"
+    if (color && p.imagesByColor?.[color]) return p.imagesByColor[color]
+    return p.image || "/placeholder.svg"
   }
 
-  const availableColors = useMemo(() => {
-    const fromColors = Array.isArray(normalized?.colors) ? normalized.colors.map(String) : []
-    if (fromColors.length > 0) return fromColors
+  const [selectedColor, setSelectedColor] = useState<string>(p.colors?.[0] || "#000000")
+  const [selectedImage, setSelectedImage] = useState<string>(getImageForColor(p.colors?.[0]))
 
-    const fromColorImages = Array.isArray(normalized?.color_images)
-      ? normalized.color_images.map((c: any) => c?.color).filter(Boolean).map(String)
-      : []
-
-    return Array.from(new Set(fromColorImages))
-  }, [normalized])
-
-  const productName =
-    normalized?.name?.[locale] ||
-    (locale === "pt" ? normalized?.name_pt : locale === "es" ? normalized?.name_es : normalized?.name_en) ||
-    normalized?.name_en ||
-    normalized?.name_pt ||
-    normalized?.name_es ||
-    "Produto"
-
-  const productDescription =
-    normalized?.description?.[locale] ||
-    (locale === "pt"
-      ? normalized?.description_pt
-      : locale === "es"
-        ? normalized?.description_es
-        : normalized?.description_en) ||
-    normalized?.description_en ||
-    normalized?.description_pt ||
-    normalized?.description_es ||
-    ""
-
-  const defaultColor = availableColors?.[0] || "#88CFC6"
-
-  const [selectedColor, setSelectedColor] = useState<string>(defaultColor)
-  const [selectedImage, setSelectedImage] = useState<string>(getImageForColor(defaultColor))
-
-  // ✅ se as cores mudarem (ex.: admin atualizou), reajusta defaults
-  useEffect(() => {
-    const first = availableColors?.[0]
-    if (!first) {
-      setSelectedImage(normalized?.image || "/placeholder.svg")
-      return
-    }
-    setSelectedColor(first)
-    setSelectedImage(getImageForColor(first))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availableColors.join("|"), normalized?.image])
-
-  // ✅ localStorage
+  // carrega seleção salva
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey)
       if (!saved) return
       const parsed = JSON.parse(saved) as { color?: string; image?: string }
-      if (parsed?.color) setSelectedColor(String(parsed.color))
-      if (parsed?.image) setSelectedImage(String(parsed.image))
-      else if (parsed?.color) setSelectedImage(getImageForColor(String(parsed.color)))
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
+      const nextColor = parsed.color && p.colors.includes(parsed.color) ? parsed.color : p.colors?.[0] || "#000000"
+      setSelectedColor(nextColor)
+
+      if (parsed.image) setSelectedImage(parsed.image)
+      else setSelectedImage(getImageForColor(nextColor))
+    } catch {
+      // nada
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageKey])
+
+  // salva seleção
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify({ color: selectedColor, image: selectedImage }))
-    } catch {}
+    } catch {
+      // nada
+    }
   }, [selectedColor, selectedImage, storageKey])
 
-  // ✅ garante imagem
-  const viewerImage = selectedImage || normalized?.image || "/placeholder.svg"
+  // quando muda cor, troca imagem
+  useEffect(() => {
+    setSelectedImage(getImageForColor(selectedColor))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedColor])
+
+  const title = getText(p, "name", locale)
+  const description = getText(p, "description", locale)
 
   return (
     <main className="min-h-screen">
       <Navbar />
+
       <div className="pt-24 pb-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
             <div>
-              <Product3DViewer productImage={viewerImage} productName={String(productName)} selectedColor={selectedColor} />
+              <Product3DViewer productImage={selectedImage} productName={title} selectedColor={selectedColor} />
             </div>
 
             <div className="space-y-6">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="secondary" className="capitalize">
-                    {String(normalized?.category || "")}
+                    {p.category}
                   </Badge>
-                  {normalized?.featured && (
-                    <Badge className="bg-accent text-accent-foreground">{t.common.featured}</Badge>
-                  )}
+                  {p.featured && <Badge className="bg-accent text-accent-foreground">{t.common.featured}</Badge>}
                 </div>
 
-                <h1 className="text-4xl font-bold mb-4 text-balance">{String(productName)}</h1>
+                <h1 className="text-4xl font-bold mb-4 text-balance">{title}</h1>
 
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex items-center">
@@ -190,29 +169,17 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                   <span className="text-muted-foreground">{t.product.reviewsCount.replace("{count}", "128")}</span>
                 </div>
 
-                <p className="text-lg text-muted-foreground leading-relaxed">{productDescription}</p>
+                <p className="text-lg text-muted-foreground leading-relaxed">{description}</p>
               </div>
 
               <ProductCustomizer
-                product={normalized}
+                // passa o produto normalizado para garantir colors/sizes/materials/basePrice ok
+                product={p as any}
                 onVariantChange={(v: any) => {
-                  // cor
-                  if (v?.color) setSelectedColor(String(v.color))
-
-                  // imagem direta
-                  if (v?.image) {
-                    setSelectedImage(String(v.image))
-                    return
-                  }
-
-                  // se veio só cor, busca imagem
-                  if (v?.color) {
-                    setSelectedImage(getImageForColor(String(v.color)))
-                    return
-                  }
-
-                  // fallback
-                  setSelectedImage(normalized?.image || "/placeholder.svg")
+                  if (v?.color) setSelectedColor(v.color)
+                  if (v?.image) setSelectedImage(v.image)
+                  else if (v?.images?.[0]) setSelectedImage(v.images[0])
+                  else if (v?.color) setSelectedImage(getImageForColor(v.color))
                 }}
               />
             </div>
@@ -227,7 +194,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
             <TabsContent value="description" className="mt-6">
               <div className="prose prose-lg max-w-none">
-                <p className="text-muted-foreground leading-relaxed">{productDescription}</p>
+                <p className="text-muted-foreground leading-relaxed">{description}</p>
               </div>
             </TabsContent>
 
@@ -236,22 +203,18 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                 <div className="p-4 rounded-lg bg-muted/50">
                   <h4 className="font-bold mb-2">{t.product.details.availableColors}</h4>
                   <p className="text-muted-foreground">
-                    {t.product.details.colorCount.replace("{count}", String(availableColors.length))}
+                    {t.product.details.colorCount.replace("{count}", String(p.colors?.length || 0))}
                   </p>
                 </div>
 
                 <div className="p-4 rounded-lg bg-muted/50">
                   <h4 className="font-bold mb-2">{t.product.details.availableSizes}</h4>
-                  <p className="text-muted-foreground">
-                    {Array.isArray(normalized?.sizes) ? normalized.sizes.join(", ") : ""}
-                  </p>
+                  <p className="text-muted-foreground">{Array.isArray(p.sizes) ? p.sizes.join(", ") : ""}</p>
                 </div>
 
                 <div className="p-4 rounded-lg bg-muted/50">
                   <h4 className="font-bold mb-2">{t.product.details.materials}</h4>
-                  <p className="text-muted-foreground">
-                    {Array.isArray(normalized?.materials) ? normalized.materials.join(", ") : ""}
-                  </p>
+                  <p className="text-muted-foreground">{Array.isArray(p.materials) ? p.materials.join(", ") : ""}</p>
                 </div>
 
                 <div className="p-4 rounded-lg bg-muted/50">
@@ -268,11 +231,13 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                   <h4 className="font-bold mb-2">{t.product.shippingHighlights.fast.title}</h4>
                   <p className="text-sm text-muted-foreground">{t.product.shippingHighlights.fast.description}</p>
                 </div>
+
                 <div className="flex flex-col items-center text-center p-6 rounded-lg bg-muted/50">
                   <Shield className="w-12 h-12 text-primary mb-4" />
                   <h4 className="font-bold mb-2">{t.product.shippingHighlights.quality.title}</h4>
                   <p className="text-sm text-muted-foreground">{t.product.shippingHighlights.quality.description}</p>
                 </div>
+
                 <div className="flex flex-col items-center text-center p-6 rounded-lg bg-muted/50">
                   <RefreshCw className="w-12 h-12 text-primary mb-4" />
                   <h4 className="font-bold mb-2">{t.product.shippingHighlights.returns.title}</h4>
@@ -282,11 +247,11 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
             </TabsContent>
           </Tabs>
 
-          {safeRelatedProducts.length > 0 && (
+          {Array.isArray(relatedProducts) && relatedProducts.length > 0 && (
             <div>
               <h2 className="text-3xl font-bold mb-8 text-center">{t.product.related}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {safeRelatedProducts.map((rp: any) => (
+                {relatedProducts.map((rp: any) => (
                   <ProductCard key={rp.id} product={rp} />
                 ))}
               </div>
@@ -294,6 +259,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
           )}
         </div>
       </div>
+
       <Footer />
     </main>
   )
