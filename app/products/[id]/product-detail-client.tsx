@@ -14,110 +14,133 @@ import { Star, Truck, Shield, RefreshCw } from "lucide-react"
 
 interface ProductDetailClientProps {
   product: any
-  relatedProducts: Product[]
+  relatedProducts: any
 }
 
 export function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
   const { t, locale } = useLanguage()
 
-  const storageKey = `np3d:product:${product?.id}:variant`
+  // ✅ garante arrays
+  const safeRelatedProducts: Product[] = Array.isArray(relatedProducts) ? relatedProducts : []
 
-  // ✅ Nome/descrição funcionando tanto no formato antigo (name[locale])
-  // quanto no formato novo da API (name_pt, name_en, name_es)
+  // ✅ evita quebrar se product vier null/undefined por algum motivo
+  const safeProduct = product ?? {}
+
+  const storageKey = `np3d:product:${safeProduct?.id ?? "unknown"}:variant`
+
+  // ✅ Nome/descrição: suporta:
+  // - formato antigo: name[locale], description[locale]
+  // - formato API: name_pt/name_en/name_es + description_pt/description_en/description_es
   const productName =
-    product?.name?.[locale] ||
-    (locale === "pt" ? product?.name_pt : locale === "es" ? product?.name_es : product?.name_en) ||
-    product?.name_en ||
+    safeProduct?.name?.[locale] ||
+    (locale === "pt" ? safeProduct?.name_pt : locale === "es" ? safeProduct?.name_es : safeProduct?.name_en) ||
+    safeProduct?.name_en ||
+    safeProduct?.name_pt ||
+    safeProduct?.name_es ||
     "Produto"
 
   const productDescription =
-    product?.description?.[locale] ||
+    safeProduct?.description?.[locale] ||
     (locale === "pt"
-      ? product?.description_pt
+      ? safeProduct?.description_pt
       : locale === "es"
-        ? product?.description_es
-        : product?.description_en) ||
-    product?.description_en ||
+        ? safeProduct?.description_es
+        : safeProduct?.description_en) ||
+    safeProduct?.description_en ||
+    safeProduct?.description_pt ||
+    safeProduct?.description_es ||
     ""
 
-  // ✅ Monta um "mapa" de cor -> url a partir de color_images (API)
+  // ✅ monta um mapa cor -> url, suportando:
+  // - API: color_images: [{ color, url }]
+  // - formatos antigos: imagesByColor / colorImages / imagesByVariantColor
   const colorImageMap = useMemo(() => {
     const map: Record<string, string> = {}
 
-    // formato API: color_images: [{ color: "#000000", url: "..." }]
-    const apiColorImages = product?.color_images
+    const apiColorImages = safeProduct?.color_images
     if (Array.isArray(apiColorImages)) {
       for (const item of apiColorImages) {
-        if (item?.color && item?.url) map[item.color] = item.url
+        if (item?.color && item?.url) map[String(item.color)] = String(item.url)
       }
     }
 
-    // formatos antigos (caso existam)
     const alt =
-      product?.imagesByColor || product?.colorImages || product?.imagesByVariantColor || null
+      safeProduct?.imagesByColor || safeProduct?.colorImages || safeProduct?.imagesByVariantColor || null
+
     if (alt && typeof alt === "object") {
       for (const k of Object.keys(alt)) {
-        if (alt[k]) map[k] = alt[k]
+        if (alt[k]) map[String(k)] = String(alt[k])
       }
     }
 
     return map
-  }, [product])
+  }, [safeProduct])
 
   const getImageForColor = (color?: string) => {
     if (color && colorImageMap[color]) return colorImageMap[color]
-    return product?.image
+    return safeProduct?.image || "/placeholder.svg"
   }
 
-  // ✅ Cores: tenta pegar do product.colors, senão deriva do color_images
+  // ✅ Cores disponíveis:
+  // - se vier product.colors usa
+  // - senão deriva de color_images
   const availableColors = useMemo(() => {
-    const fromColors = Array.isArray(product?.colors) ? product.colors : []
-    if (fromColors.length > 0) return fromColors
+    const fromColors = Array.isArray(safeProduct?.colors) ? safeProduct.colors : []
+    if (fromColors.length > 0) return fromColors.map(String)
 
-    const fromColorImages = Array.isArray(product?.color_images)
-      ? product.color_images.map((c: any) => c?.color).filter(Boolean)
+    const fromColorImages = Array.isArray(safeProduct?.color_images)
+      ? safeProduct.color_images.map((c: any) => c?.color).filter(Boolean).map(String)
       : []
 
-    // remove duplicadas
     return Array.from(new Set(fromColorImages))
-  }, [product])
+  }, [safeProduct])
 
   const defaultColor = availableColors?.[0] || "#88CFC6"
 
   const [selectedColor, setSelectedColor] = useState<string>(defaultColor)
-  const [selectedImage, setSelectedImage] = useState<string>(getImageForColor(defaultColor) || product?.image)
+  const [selectedImage, setSelectedImage] = useState<string>(getImageForColor(defaultColor))
 
-  // ✅ Se as cores chegarem depois, atualiza o padrão
+  // ✅ se as cores mudarem (ex.: chegaram depois), ajusta defaults sem quebrar
   useEffect(() => {
     const first = availableColors?.[0]
     if (!first) return
     setSelectedColor(first)
-    setSelectedImage(getImageForColor(first) || product?.image)
+    setSelectedImage(getImageForColor(first))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availableColors?.join("|")])
+  }, [availableColors.join("|")])
 
+  // ✅ recuperar seleção do localStorage (se existir)
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey)
       if (!saved) return
       const parsed = JSON.parse(saved) as { color?: string; image?: string }
-      if (parsed.color) setSelectedColor(parsed.color)
-      if (parsed.image) setSelectedImage(parsed.image)
-      else if (parsed.color) setSelectedImage(getImageForColor(parsed.color) || product?.image)
+      if (parsed?.color) setSelectedColor(String(parsed.color))
+      if (parsed?.image) setSelectedImage(String(parsed.image))
+      else if (parsed?.color) setSelectedImage(getImageForColor(String(parsed.color)))
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // ✅ salvar seleção
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify({ color: selectedColor, image: selectedImage }))
     } catch {}
   }, [selectedColor, selectedImage, storageKey])
 
+  // ✅ sempre que mudar a cor, garante imagem válida
   useEffect(() => {
-    setSelectedImage((current) => current || getImageForColor(selectedColor) || product?.image)
+    setSelectedImage((current) => {
+      if (current) return current
+      return getImageForColor(selectedColor)
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedColor])
+
+  // ✅ fallback extra: nunca deixe passar undefined para o viewer
+  const viewerImage = selectedImage || safeProduct?.image || "/placeholder.svg"
+  const viewerName = String(productName || "Produto")
 
   return (
     <main className="min-h-screen">
@@ -126,21 +149,21 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
             <div>
-              <Product3DViewer productImage={selectedImage} productName={productName} selectedColor={selectedColor} />
+              <Product3DViewer productImage={viewerImage} productName={viewerName} selectedColor={selectedColor} />
             </div>
 
             <div className="space-y-6">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="secondary" className="capitalize">
-                    {product?.category || ""}
+                    {String(safeProduct?.category || "")}
                   </Badge>
-                  {product?.featured && (
+                  {safeProduct?.featured && (
                     <Badge className="bg-accent text-accent-foreground">{t.common.featured}</Badge>
                   )}
                 </div>
 
-                <h1 className="text-4xl font-bold mb-4 text-balance">{productName}</h1>
+                <h1 className="text-4xl font-bold mb-4 text-balance">{viewerName}</h1>
 
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex items-center">
@@ -156,15 +179,38 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
               <ProductCustomizer
                 product={{
-                  ...product,
-                  // ✅ garante que o customizer tenha cores (mesmo vindo da API)
+                  ...safeProduct,
+                  // ✅ garante que o customizer receba cores consistentes
                   colors: availableColors,
                 }}
                 onVariantChange={(v: any) => {
-                  if (v?.color) setSelectedColor(v.color)
-                  if (v?.image) setSelectedImage(v.image)
-                  else if (v?.images?.[0]) setSelectedImage(v.images[0])
-                  else if (v?.color) setSelectedImage(getImageForColor(v.color) || product?.image)
+                  try {
+                    // ✅ cor
+                    if (v?.color) setSelectedColor(String(v.color))
+
+                    // ✅ imagem direta
+                    if (v?.image) {
+                      setSelectedImage(String(v.image))
+                      return
+                    }
+
+                    // ✅ images[0] (blindado)
+                    if (Array.isArray(v?.images) && v.images.length > 0 && v.images[0]) {
+                      setSelectedImage(String(v.images[0]))
+                      return
+                    }
+
+                    // ✅ se só veio cor, tenta mapear
+                    if (v?.color) {
+                      setSelectedImage(getImageForColor(String(v.color)))
+                      return
+                    }
+
+                    // ✅ fallback final
+                    setSelectedImage(safeProduct?.image || "/placeholder.svg")
+                  } catch {
+                    setSelectedImage(safeProduct?.image || "/placeholder.svg")
+                  }
                 }}
               />
             </div>
@@ -194,13 +240,15 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
                 <div className="p-4 rounded-lg bg-muted/50">
                   <h4 className="font-bold mb-2">{t.product.details.availableSizes}</h4>
-                  <p className="text-muted-foreground">{Array.isArray(product?.sizes) ? product.sizes.join(", ") : ""}</p>
+                  <p className="text-muted-foreground">
+                    {Array.isArray(safeProduct?.sizes) ? safeProduct.sizes.join(", ") : ""}
+                  </p>
                 </div>
 
                 <div className="p-4 rounded-lg bg-muted/50">
                   <h4 className="font-bold mb-2">{t.product.details.materials}</h4>
                   <p className="text-muted-foreground">
-                    {Array.isArray(product?.materials) ? product.materials.join(", ") : ""}
+                    {Array.isArray(safeProduct?.materials) ? safeProduct.materials.join(", ") : ""}
                   </p>
                 </div>
 
@@ -232,12 +280,12 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
             </TabsContent>
           </Tabs>
 
-          {relatedProducts.length > 0 && (
+          {safeRelatedProducts.length > 0 && (
             <div>
               <h2 className="text-3xl font-bold mb-8 text-center">{t.product.related}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {relatedProducts.map((relatedProduct) => (
-                  <ProductCard key={relatedProduct.id} product={relatedProduct} />
+                {safeRelatedProducts.map((rp) => (
+                  <ProductCard key={rp.id} product={rp} />
                 ))}
               </div>
             </div>
