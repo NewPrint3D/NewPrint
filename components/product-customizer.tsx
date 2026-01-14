@@ -12,16 +12,11 @@ import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, Check, CheckCircle } from "lucide-react"
 import type { Product } from "@/lib/products"
 
+type ColorImage = { color?: string; hex?: string; url?: string; imageUrl?: string; image_url?: string }
+
 interface ProductCustomizerProps {
   product: Product
-  onVariantChange?: (v: { color: string; size: string; material: string; price: number; image?: string }) => void
-}
-
-const safeArray = <T,>(v: unknown, fallback: T[] = []) => (Array.isArray(v) ? (v as T[]) : fallback)
-
-const safeNumber = (v: unknown) => {
-  const n = typeof v === "string" ? Number(v) : (v as number)
-  return Number.isFinite(n) ? n : 0
+  onVariantChange?: (v: { color: string; size: string; material: string; price: number; image: string }) => void
 }
 
 const getColorName = (hex: string): string => {
@@ -35,9 +30,16 @@ const getColorName = (hex: string): string => {
     "#EC4899": "Pink",
     "#F97316": "Orange",
     "#000000": "Black",
-    "#FFFFFF": "White",
+    "#F5F5F5": "White",
+    "#212121": "Dark Gray",
+    "#D32F2F": "Red",
   }
-  return colorMap[hex] || hex
+  return colorMap[hex?.toUpperCase()] || hex
+}
+
+const safeNumber = (v: unknown) => {
+  const n = typeof v === "string" ? Number(v) : (v as number)
+  return Number.isFinite(n) ? n : 0
 }
 
 const isLightHex = (hex: string) => {
@@ -50,94 +52,142 @@ const isLightHex = (hex: string) => {
   return luminance > 0.75
 }
 
+const normalizeHex = (hex?: string) => (hex || "").trim().toLowerCase()
+
+const toArray = (v: any): string[] => {
+  if (Array.isArray(v)) return v.filter(Boolean).map(String).map((s) => s.trim()).filter(Boolean)
+  if (typeof v === "string") return v.split(",").map((s) => s.trim()).filter(Boolean)
+  return []
+}
+
 export function ProductCustomizer({ product, onVariantChange }: ProductCustomizerProps) {
   const { t, locale } = useLanguage()
   const { addItem } = useCart()
 
-  const colors = useMemo(() => safeArray<string>((product as any).colors, ["#000000"]), [product])
-  const sizes = useMemo(() => safeArray<string>((product as any).sizes, ["Standard"]), [product])
-  const materials = useMemo(() => safeArray<string>((product as any).materials, ["PLA"]), [product])
+  // ---- Normaliza campos que às vezes vêm como string do banco
+  const colors = useMemo(() => toArray((product as any).colors), [product])
+  const sizes = useMemo(() => toArray((product as any).sizes), [product])
+  const materials = useMemo(() => toArray((product as any).materials), [product])
 
-  const imagesByColor =
-    (product as any).imagesByColor ||
-    (product as any).colorImages ||
-    (product as any).imagesByVariantColor ||
-    {}
+  // ---- base image principal (pode vir como image_url, imageUrl ou image)
+  const baseImage =
+    (product as any).image_url ||
+    (product as any).imageUrl ||
+    (product as any).image ||
+    "/placeholder.svg"
 
-  const basePrice = safeNumber((product as any).basePrice ?? (product as any).base_price)
+  // ---- color_images vindo do admin (array de {color, url})
+  const colorImages: ColorImage[] = useMemo(() => {
+    const raw = (product as any).color_images || (product as any).colorImages || []
+    return Array.isArray(raw) ? raw : []
+  }, [product])
 
-  const materialPrices: Record<string, number> = { PLA: 0, ABS: 5, PETG: 8 }
-  const sizePrices: Record<string, number> = { Small: 0, Medium: 5, Large: 10, Standard: 0 }
+  const getImageForColor = (hex: string) => {
+    const key = normalizeHex(hex)
+    const found = colorImages.find((ci) => normalizeHex(ci.color || ci.hex) === key)
+    return (
+      found?.url ||
+      found?.imageUrl ||
+      found?.image_url ||
+      baseImage
+    )
+  }
+
+  const materialPrices: Record<string, number> = {
+    PLA: 0,
+    ABS: 5,
+    PETG: 8,
+  }
+
+  const sizePrices: Record<string, number> = {
+    Small: 0,
+    Medium: 5,
+    Large: 10,
+    Standard: 0,
+    "19cm": 0,
+  }
+
+  const basePrice = safeNumber((product as any).basePrice ?? (product as any).base_price ?? (product as any).price)
 
   const getMaterialExtra = (material: string) => materialPrices[material] ?? 0
   const getSizeExtra = (size: string) => sizePrices[size] ?? 0
 
   const storageKey = `np3d:product:${(product as any).id}:variant`
 
-  const [selectedColor, setSelectedColor] = useState<string>(colors[0])
-  const [selectedSize, setSelectedSize] = useState<string>(sizes[0])
-  const [selectedMaterial, setSelectedMaterial] = useState<string>(materials[0])
+  // defaults seguros
+  const defaultColor = colors[0] || "#000000"
+  const defaultSize = sizes[0] || "Standard"
+  const defaultMaterial = materials[0] || "PLA"
+  const defaultImage = getImageForColor(defaultColor)
+
+  const [selectedColor, setSelectedColor] = useState<string>(defaultColor)
+  const [selectedSize, setSelectedSize] = useState<string>(defaultSize)
+  const [selectedMaterial, setSelectedMaterial] = useState<string>(defaultMaterial)
+  const [selectedImage, setSelectedImage] = useState<string>(defaultImage)
+
   const [quantity, setQuantity] = useState(1)
   const [isAdded, setIsAdded] = useState(false)
 
   const totalPrice = basePrice + getMaterialExtra(selectedMaterial) + getSizeExtra(selectedSize)
 
-  const getImageForColor = (color: string) => {
-    if (imagesByColor && typeof imagesByColor === "object" && imagesByColor[color]) return imagesByColor[color]
-    return (product as any).image || (product as any).image_url || (product as any).main_image || "/placeholder.svg"
-  }
-
-  const notifyVariantChange = (color: string, size: string, material: string) => {
+  const notifyVariantChange = (color: string, size: string, material: string, image: string) => {
     const price = basePrice + getMaterialExtra(material) + getSizeExtra(size)
-    const image = getImageForColor(color)
     onVariantChange?.({ color, size, material, price, image })
   }
 
+  // carrega localStorage (se existir) e sincroniza com pai
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey)
       if (!saved) {
-        notifyVariantChange(colors[0], sizes[0], materials[0])
+        // dispara o default pro pai logo ao montar
+        notifyVariantChange(defaultColor, defaultSize, defaultMaterial, defaultImage)
         return
       }
-      const parsed = JSON.parse(saved) as { color?: string; size?: string; material?: string }
-      const c = parsed.color && colors.includes(parsed.color) ? parsed.color : colors[0]
-      const s = parsed.size && sizes.includes(parsed.size) ? parsed.size : sizes[0]
-      const m = parsed.material && materials.includes(parsed.material) ? parsed.material : materials[0]
+
+      const parsed = JSON.parse(saved) as { color?: string; size?: string; material?: string; image?: string }
+
+      const c = parsed.color && colors.includes(parsed.color) ? parsed.color : defaultColor
+      const s = parsed.size && sizes.includes(parsed.size) ? parsed.size : defaultSize
+      const m = parsed.material && materials.includes(parsed.material) ? parsed.material : defaultMaterial
+      const img = parsed.image || getImageForColor(c)
 
       setSelectedColor(c)
       setSelectedSize(s)
       setSelectedMaterial(m)
+      setSelectedImage(img)
 
-      notifyVariantChange(c, s, m)
+      notifyVariantChange(c, s, m, img)
     } catch {
-      notifyVariantChange(colors[0], sizes[0], materials[0])
+      notifyVariantChange(defaultColor, defaultSize, defaultMaterial, defaultImage)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleColorChange = (color: string) => {
-    setSelectedColor(color)
+  const persist = (next: { color: string; size: string; material: string; image: string }) => {
     try {
-      localStorage.setItem(storageKey, JSON.stringify({ color, size: selectedSize, material: selectedMaterial }))
+      localStorage.setItem(storageKey, JSON.stringify(next))
     } catch {}
-    notifyVariantChange(color, selectedSize, selectedMaterial)
+  }
+
+  const handleColorChange = (color: string) => {
+    const img = getImageForColor(color)
+    setSelectedColor(color)
+    setSelectedImage(img)
+    persist({ color, size: selectedSize, material: selectedMaterial, image: img })
+    notifyVariantChange(color, selectedSize, selectedMaterial, img)
   }
 
   const handleSizeChange = (size: string) => {
     setSelectedSize(size)
-    try {
-      localStorage.setItem(storageKey, JSON.stringify({ color: selectedColor, size, material: selectedMaterial }))
-    } catch {}
-    notifyVariantChange(selectedColor, size, selectedMaterial)
+    persist({ color: selectedColor, size, material: selectedMaterial, image: selectedImage })
+    notifyVariantChange(selectedColor, size, selectedMaterial, selectedImage)
   }
 
   const handleMaterialChange = (material: string) => {
     setSelectedMaterial(material)
-    try {
-      localStorage.setItem(storageKey, JSON.stringify({ color: selectedColor, size: selectedSize, material }))
-    } catch {}
-    notifyVariantChange(selectedColor, selectedSize, material)
+    persist({ color: selectedColor, size: selectedSize, material, image: selectedImage })
+    notifyVariantChange(selectedColor, selectedSize, material, selectedImage)
   }
 
   const handleAddToCart = () => {
@@ -148,7 +198,10 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
       selectedSize,
       selectedMaterial,
       price: totalPrice,
-    })
+      // 🔥 ESSENCIAL: mandar a imagem selecionada pro carrinho
+      selectedImage,
+    } as any)
+
     setIsAdded(true)
     setTimeout(() => setIsAdded(false), 2000)
   }
@@ -158,10 +211,12 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
       <CardContent className="p-6 space-y-6">
         <div>
           <Label className="text-base font-bold mb-3 block">{t.customizer.color}</Label>
+
           <div className="flex flex-wrap gap-3" role="radiogroup" aria-label={t.customizer.color}>
             {colors.map((color) => {
               const colorName = getColorName(color)
               const isSelected = selectedColor === color
+
               return (
                 <button
                   key={color}
@@ -190,7 +245,7 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
 
         <div>
           <Label className="text-base font-bold mb-3 block">{t.customizer.size}</Label>
-          <RadioGroup value={selectedSize} onValueChange={(v) => handleSizeChange(String(v))} className="flex flex-wrap gap-3">
+          <RadioGroup value={selectedSize} onValueChange={handleSizeChange} className="flex flex-wrap gap-3">
             {sizes.map((size) => (
               <div key={size} className="relative">
                 <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" />
@@ -199,7 +254,7 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
                   className="flex items-center justify-center px-4 py-2 rounded-lg border-2 border-border cursor-pointer transition-all duration-200 hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground"
                 >
                   {size}
-                  {sizePrices[size] > 0 && (
+                  {(sizePrices[size] ?? 0) > 0 && (
                     <Badge variant="secondary" className="ml-2">
                       +{formatCurrency(sizePrices[size], locale)}
                     </Badge>
@@ -212,7 +267,7 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
 
         <div>
           <Label className="text-base font-bold mb-3 block">{t.customizer.material}</Label>
-          <RadioGroup value={selectedMaterial} onValueChange={(v) => handleMaterialChange(String(v))} className="space-y-3">
+          <RadioGroup value={selectedMaterial} onValueChange={handleMaterialChange} className="space-y-3">
             {materials.map((material) => (
               <div key={material} className="relative">
                 <RadioGroupItem value={material} id={`material-${material}`} className="peer sr-only" />
@@ -221,7 +276,7 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
                   className="flex items-center justify-between p-4 rounded-lg border-2 border-border cursor-pointer transition-all duration-200 hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
                 >
                   <span className="font-medium">{material}</span>
-                  {materialPrices[material] > 0 && (
+                  {(materialPrices[material] ?? 0) > 0 && (
                     <Badge variant="secondary">+{formatCurrency(materialPrices[material], locale)}</Badge>
                   )}
                 </Label>
