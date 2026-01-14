@@ -10,10 +10,25 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, Check, CheckCircle } from "lucide-react"
+import type { Product } from "@/lib/products"
 
 interface ProductCustomizerProps {
-  product: any
-  onVariantChange?: (v: { color: string; size: string; material: string; price: number; image?: string }) => void
+  product: Product
+  onVariantChange?: (v: { color: string; size: string; material: string; price: number }) => void
+}
+
+const getColorName = (hex: string): string => {
+  const colorMap: Record<string, string> = {
+    "#8B5CF6": "Purple",
+    "#06B6D4": "Cyan",
+    "#10B981": "Green",
+    "#F59E0B": "Orange",
+    "#EF4444": "Red",
+    "#3B82F6": "Blue",
+    "#EC4899": "Pink",
+    "#F97316": "Orange",
+  }
+  return colorMap[hex] || hex
 }
 
 const safeNumber = (v: unknown) => {
@@ -35,38 +50,24 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
   const { t, locale } = useLanguage()
   const { addItem } = useCart()
 
-  const p = product ?? {}
+  const storageKey = `np3d:product:${product.id}:variant`
 
-  // ✅ pega cores também do color_images (quando colors vier incompleto)
-  const colorImageMap = useMemo(() => {
-    const map: Record<string, string> = {}
-    if (Array.isArray(p.color_images)) {
-      for (const item of p.color_images) {
-        if (item?.color && item?.url) map[String(item.color)] = String(item.url)
-      }
-    }
-    return map
-  }, [p.color_images])
-
-  const colors = useMemo(() => {
-    const fromColors = Array.isArray(p.colors) ? p.colors.map(String) : []
-    const fromColorImages = Array.isArray(p.color_images)
-      ? p.color_images.map((c: any) => c?.color).filter(Boolean).map(String)
-      : []
-    const merged = [...fromColors, ...fromColorImages]
-    const unique = Array.from(new Set(merged))
-    return unique.length > 0 ? unique : ["#000000"]
-  }, [p.colors, p.color_images])
-
-  const sizes = useMemo(() => {
-    return Array.isArray(p.sizes) && p.sizes.length > 0 ? p.sizes.map(String) : ["Standard"]
-  }, [p.sizes])
-
-  const materials = useMemo(() => {
-    return Array.isArray(p.materials) && p.materials.length > 0 ? p.materials.map(String) : ["PLA"]
-  }, [p.materials])
-
-  const basePrice = safeNumber(p.basePrice ?? p.base_price)
+  // ✅ Arrays seguros (evita undefined quebrar)
+  const colors = useMemo<string[]>(
+    () => (Array.isArray((product as any)?.colors) && (product as any).colors.length ? (product as any).colors : ["#000000"]),
+    [product]
+  )
+  const sizes = useMemo<string[]>(
+    () => (Array.isArray((product as any)?.sizes) && (product as any).sizes.length ? (product as any).sizes : ["Standard"]),
+    [product]
+  )
+  const materials = useMemo<string[]>(
+    () =>
+      Array.isArray((product as any)?.materials) && (product as any).materials.length
+        ? (product as any).materials
+        : ["PLA"],
+    [product]
+  )
 
   const materialPrices: Record<string, number> = {
     PLA: 0,
@@ -82,51 +83,49 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
     "19cm": 0,
   }
 
+  const basePrice = safeNumber((product as any).basePrice ?? (product as any).base_price)
+
   const getMaterialExtra = (material: string) => materialPrices[material] ?? 0
   const getSizeExtra = (size: string) => sizePrices[size] ?? 0
 
-  const storageKey = `np3d:product:${p?.id ?? "unknown"}:variant`
-
-  const [selectedColor, setSelectedColor] = useState(colors[0])
-  const [selectedSize, setSelectedSize] = useState(sizes[0])
-  const [selectedMaterial, setSelectedMaterial] = useState(materials[0])
-  const [quantity, setQuantity] = useState(1)
-  const [isAdded, setIsAdded] = useState(false)
-
-  // ✅ quando as opções mudarem (ex.: admin atualizou), garante defaults válidos
-  useEffect(() => {
-   setSelectedColor((c: string) => (colors.includes(c) ? c : colors[0]))
-   setSelectedSize((s: string) => (sizes.includes(s) ? s : sizes[0]))
-   setSelectedMaterial((m: string) => (materials.includes(m) ? m : materials[0]))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [colors.join("|"), sizes.join("|"), materials.join("|")])
+  const [selectedColor, setSelectedColor] = useState<string>(colors[0])
+  const [selectedSize, setSelectedSize] = useState<string>(sizes[0])
+  const [selectedMaterial, setSelectedMaterial] = useState<string>(materials[0])
+  const [quantity, setQuantity] = useState<number>(1)
+  const [isAdded, setIsAdded] = useState<boolean>(false)
 
   const totalPrice = basePrice + getMaterialExtra(selectedMaterial) + getSizeExtra(selectedSize)
 
   const notifyVariantChange = (color: string, size: string, material: string) => {
     const price = basePrice + getMaterialExtra(material) + getSizeExtra(size)
-    const image = colorImageMap[color] // ✅ manda imagem da cor selecionada
-    onVariantChange?.({ color, size, material, price, image })
+    onVariantChange?.({ color, size, material, price })
   }
 
-  // ✅ carrega do localStorage e sincroniza com a imagem
+  // ✅ Quando admin mudar opções (ou produto vier diferente), garante defaults válidos
+  useEffect(() => {
+    setSelectedColor((c: string) => (colors.includes(c) ? c : colors[0]))
+    setSelectedSize((s: string) => (sizes.includes(s) ? s : sizes[0]))
+    setSelectedMaterial((m: string) => (materials.includes(m) ? m : materials[0]))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colors.join("|"), sizes.join("|"), materials.join("|")])
+
+  // ✅ Carrega seleção salva
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey)
       if (!saved) return
       const parsed = JSON.parse(saved) as { color?: string; size?: string; material?: string }
-      const c = parsed.color && colors.includes(parsed.color) ? parsed.color : colors[0]
-      const s = parsed.size && sizes.includes(parsed.size) ? parsed.size : sizes[0]
-      const m = parsed.material && materials.includes(parsed.material) ? parsed.material : materials[0]
 
-      setSelectedColor(c)
-      setSelectedSize(s)
-      setSelectedMaterial(m)
+      const nextColor = parsed.color && colors.includes(parsed.color) ? parsed.color : colors[0]
+      const nextSize = parsed.size && sizes.includes(parsed.size) ? parsed.size : sizes[0]
+      const nextMaterial = parsed.material && materials.includes(parsed.material) ? parsed.material : materials[0]
 
-      notifyVariantChange(c, s, m)
-    } catch {
-      notifyVariantChange(colors[0], sizes[0], materials[0])
-    }
+      setSelectedColor(nextColor)
+      setSelectedSize(nextSize)
+      setSelectedMaterial(nextMaterial)
+
+      notifyVariantChange(nextColor, nextSize, nextMaterial)
+    } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -156,7 +155,7 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
 
   const handleAddToCart = () => {
     addItem({
-      product: p,
+      product,
       quantity,
       selectedColor,
       selectedSize,
@@ -173,7 +172,8 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
         <div>
           <Label className="text-base font-bold mb-3 block">{t.customizer.color}</Label>
           <div className="flex flex-wrap gap-3" role="radiogroup" aria-label={t.customizer.color}>
-            {colors.map((color) => {
+            {colors.map((color: string) => {
+              const colorName = getColorName(color)
               const isSelected = selectedColor === color
               return (
                 <button
@@ -181,6 +181,7 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
                   type="button"
                   role="radio"
                   aria-checked={isSelected}
+                  aria-label={t.aria.selectColor.replace("{color}", colorName)}
                   onClick={() => handleColorChange(color)}
                   className={`relative w-12 h-12 rounded-full border-2 transition-all duration-200
                     hover:scale-110 active:scale-95
@@ -225,7 +226,7 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
         <div>
           <Label className="text-base font-bold mb-3 block">{t.customizer.material}</Label>
           <RadioGroup value={selectedMaterial} onValueChange={handleMaterialChange} className="space-y-3">
-            {materials.map((material) => (
+            {materials.map((material: string) => (
               <div key={material} className="relative">
                 <RadioGroupItem value={material} id={`material-${material}`} className="peer sr-only" />
                 <Label
