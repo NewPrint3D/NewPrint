@@ -11,7 +11,7 @@ import type { Product } from "@/lib/db-products"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Star, Truck, Shield, RefreshCw } from "lucide-react"
-
+import ProductGallery from "./ProductGallery";
 interface ProductDetailClientProps {
   product: Product
   relatedProducts: Product[]
@@ -90,7 +90,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
     "Produto"
   }
   selectedColor={selectedColor}
-  baseImage={(product as any).image_url || "/placeholder.svg"}
+ baseImage={selectedImage}
   colorImages={Array.isArray((product as any).color_images) ? (product as any).color_images : []}
 />
 
