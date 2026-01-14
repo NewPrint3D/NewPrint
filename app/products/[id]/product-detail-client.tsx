@@ -93,7 +93,17 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
  baseImage={selectedImage}
   colorImages={Array.isArray((product as any).color_images) ? (product as any).color_images : []}
 />
-
+<ProductGallery
+  imagesByColor={{
+    "#000000": "/images/vaso-preto.png",
+    ...(product as any).imagesByColor,
+  }}
+  selectedColor={selectedColor}
+  onChange={(color, image) => {
+    setSelectedColor(color);
+    setSelectedImage(image);
+  }}
+/>
             </div>
 
             <div className="space-y-6">
