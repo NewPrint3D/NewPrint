@@ -71,7 +71,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
   // mantém consistente quando cor muda
   useEffect(() => {
-    if (!selectedImage) setSelectedImage(getImageForColor(selectedColor))
+   setSelectedImage(getImageForColor(selectedColor))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedColor])
 
@@ -144,11 +144,16 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
            <ProductCustomizer
   product={product as any}
-  onVariantChange={(v: any) => {
-    if (v?.color) setSelectedColor(v.color)
-    // NÃO deixa o customizer sobrescrever a imagem
-  }}
-/>
+onVariantChange={(v: any) => {
+  if (v?.color) {
+    setSelectedColor(v.color)
+    setSelectedImage(getImageForColor(v.color))
+  }
+
+  if (v?.image) {
+    setSelectedImage(v.image)
+  }
+}}
 
             </div>
           </div>
