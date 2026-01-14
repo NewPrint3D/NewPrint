@@ -82,7 +82,7 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
     Standard: 0,
   }
 
-  const basePrice = safeNumber(product?.basePrice)
+const basePrice = safeNumber(product?.basePrice ?? product?.base_price)
 
   const getMaterialExtra = (material: string) => materialPrices[material] ?? 0
   const getSizeExtra = (size: string) => sizePrices[size] ?? 0
