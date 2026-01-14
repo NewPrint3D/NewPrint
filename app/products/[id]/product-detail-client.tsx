@@ -105,6 +105,11 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
     setSelectedImage(image);
   }}
 />
+  <div style={{ marginTop: 8, fontSize: 12, opacity: 0.8 }}>
+  cor: {selectedColor} <br />
+  img: {selectedImage}
+</div>
+         
             </div>
 
             <div className="space-y-6">
