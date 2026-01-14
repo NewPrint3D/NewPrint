@@ -95,8 +95,8 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 />
 <ProductGallery
   imagesByColor={{
-    "#000000": "/images/vaso-preto.png",
     ...(product as any).imagesByColor,
+    "#000000": "/images/vaso-preto.png",
   }}
   selectedColor={selectedColor}
   onChange={(color, image) => {
