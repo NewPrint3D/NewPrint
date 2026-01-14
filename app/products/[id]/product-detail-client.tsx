@@ -108,10 +108,21 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
   const colorImageMap = useMemo(() => buildColorImageMap(normalizedProduct), [normalizedProduct])
 
   const getImageForColor = (color?: string) => {
-    const key = normalizeHex(color)
-    if (key && colorImageMap[key]) return colorImageMap[key]
-    return getMainImage(normalizedProduct) || "/placeholder.svg"
+  const p: any = product
+
+  // ✅ seu backend manda isso:
+  // color_images: [{ color: "#000000", url: "https://..." }, ...]
+  const arr = Array.isArray(p.color_images) ? p.color_images : []
+
+  if (color && arr.length) {
+    const hit = arr.find((x: any) => (x?.color || "").toLowerCase() === color.toLowerCase())
+    if (hit?.url) return hit.url
   }
+
+  // fallback para imagem principal (se existir em campos diferentes)
+  return p.image || p.image_url || p.main_image || "/placeholder.svg"
+}
+
 
   const initialColor = normalizedProduct.colors?.[0] || "#000000"
 
