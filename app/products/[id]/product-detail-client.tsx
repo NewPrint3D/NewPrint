@@ -96,8 +96,10 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 />
 <ProductGallery
   imagesByColor={{
-    ...(product as any).imagesByColor,
     "#000000": "/images/vaso-preto.png",
+    "#ffffff": "/images/vaso-branco.png",
+    "#212121": "/images/vaso-cinza.png",
+    "#ff0000": "/images/vaso-vermelho.png",
   }}
   selectedColor={selectedColor}
   onChange={(color, image) => {
@@ -105,6 +107,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
     setSelectedImage(image);
   }}
 />
+
   <div style={{ marginTop: 8, fontSize: 12, opacity: 0.8 }}>
   cor: {selectedColor} <br />
   img: {selectedImage}
@@ -139,16 +142,14 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                 </p>
               </div>
 
-              <ProductCustomizer
-                product={product as any}
-                onVariantChange={(v: any) => {
-                  console.log("VARIANT", v);
-                  if (v?.color) setSelectedColor(v.color)
-                  // 🔥 aqui é o principal: a imagem TEM que vir do customizer (color_images)
-                  if (v?.image) setSelectedImage(v.image)
-                  else if (v?.color) setSelectedImage(getImageForColor(v.color))
-                }}
-              />
+           <ProductCustomizer
+  product={product as any}
+  onVariantChange={(v: any) => {
+    if (v?.color) setSelectedColor(v.color)
+    // NÃO deixa o customizer sobrescrever a imagem
+  }}
+/>
+
             </div>
           </div>
 
