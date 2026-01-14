@@ -83,6 +83,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
             <div>
             <Product3DViewer
+              key={selectedImage}
   productName={
     (product as any).name?.[locale] ||
     (product as any).name_pt ||
