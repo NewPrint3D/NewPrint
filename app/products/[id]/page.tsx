@@ -1,3 +1,4 @@
+"use client";
 import type { Metadata } from "next"
 import { getProductById, getProductsByCategory } from "@/lib/db-products"
 import { notFound } from "next/navigation"
