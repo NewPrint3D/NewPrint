@@ -44,7 +44,6 @@ function normalizeProduct(raw: any): Product {
     raw?.mainImage ??
     ""
 
-  const colors = Array.isArray(raw?.colors) ? raw.colors : []
   const sizes = Array.isArray(raw?.sizes) ? raw.sizes : []
   const materials = Array.isArray(raw?.materials) ? raw.materials : []
 
@@ -68,6 +67,19 @@ function normalizeProduct(raw: any): Product {
     }
   }
 
+  // ✅ PRIORIDADE DE CORES:
+  // 1) raw.colors (se vier OK)
+  // 2) cores derivadas de color_images (chaves do imagesByColor)
+  // 3) fallback
+  const rawColors = Array.isArray(raw?.colors) ? raw.colors : []
+  const derivedColors = Object.keys(imagesByColor)
+  const colors =
+    rawColors.length >= derivedColors.length && rawColors.length > 0
+      ? rawColors
+      : derivedColors.length > 0
+        ? derivedColors
+        : ["#000000"]
+
   return {
     id: raw?.id,
     name,
@@ -76,7 +88,7 @@ function normalizeProduct(raw: any): Product {
     featured: Boolean(raw?.featured),
     basePrice,
     image: image || "/placeholder.svg",
-    colors: colors.length ? colors : ["#000000"],
+    colors,
     sizes: sizes.length ? sizes : ["Standard"],
     materials: materials.length ? materials : ["PLA"],
     ...(Object.keys(imagesByColor).length ? { imagesByColor } : {}),
@@ -90,9 +102,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const raw = await getProductById(resolvedParams.id)
   const product = raw ? normalizeProduct(raw as any) : null
 
-  if (!product) {
-    return { title: "Product Not Found" }
-  }
+  if (!product) return { title: "Product Not Found" }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://newprint3d.com"
   const productUrl = `${baseUrl}/products/${product.id}`
@@ -113,9 +123,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: product.description.en,
       images: product.image ? [product.image] : [],
     },
-    alternates: {
-      canonical: productUrl,
-    },
+    alternates: { canonical: productUrl },
   }
 }
 
