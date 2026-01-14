@@ -203,7 +203,7 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
         <div>
           <Label className="text-base font-bold mb-3 block">{t.customizer.size}</Label>
           <RadioGroup value={selectedSize} onValueChange={handleSizeChange} className="flex flex-wrap gap-3">
-            {sizes.map((size) => (
+            {sizes.map((size: string) => (
               <div key={size} className="relative">
                 <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" />
                 <Label
