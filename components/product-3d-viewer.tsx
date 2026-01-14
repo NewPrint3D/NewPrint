@@ -9,13 +9,15 @@ import { useLanguage } from "@/contexts/language-context"
 interface Product3DViewerProps {
   productImage: string
   productName: string
-  selectedColor: string
+  selectedColor: string // mantido para compatibilidade, mas NÃO aplicamos mais overlay de cor
 }
 
-export function Product3DViewer({ productImage, productName, selectedColor }: Product3DViewerProps) {
+export function Product3DViewer({ productImage, productName }: Product3DViewerProps) {
   const { t } = useLanguage()
   const [rotation, setRotation] = useState(0)
   const [zoom, setZoom] = useState(1)
+
+  const src = productImage?.trim() ? productImage : "/placeholder.svg"
 
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
@@ -26,18 +28,12 @@ export function Product3DViewer({ productImage, productName, selectedColor }: Pr
             transform: `rotate(${rotation}deg) scale(${zoom})`,
           }}
         >
-          <div
-            className="absolute inset-0 bg-gradient-to-br opacity-20 rounded-2xl animate-pulse-glow"
-            style={{ backgroundColor: selectedColor }}
-          />
+          {/* ✅ Sem overlays de cor. A cor do produto vem 100% da URL da imagem. */}
           <img
-            src={productImage || "/placeholder.svg"}
+            src={src}
             alt={productName}
-            className="w-full h-full object-contain drop-shadow-2xl relative z-10"
-          />
-          <div
-            className="absolute inset-0 mix-blend-multiply opacity-40 transition-colors duration-300 pointer-events-none z-20"
-            style={{ backgroundColor: selectedColor }}
+            className="w-full h-full object-contain drop-shadow-2xl"
+            loading="eager"
           />
         </div>
 
@@ -47,22 +43,27 @@ export function Product3DViewer({ productImage, productName, selectedColor }: Pr
             variant="secondary"
             className="rounded-full bg-background/80 backdrop-blur-sm"
             onClick={() => setRotation((r) => r + 90)}
+            aria-label="Rotate"
           >
             <RotateCw className="w-4 h-4" />
           </Button>
+
           <Button
             size="icon"
             variant="secondary"
             className="rounded-full bg-background/80 backdrop-blur-sm"
-            onClick={() => setZoom((z) => Math.min(2, z + 0.2))}
+            onClick={() => setZoom((z) => Math.min(2, Number((z + 0.2).toFixed(2))))}
+            aria-label="Zoom in"
           >
             <ZoomIn className="w-4 h-4" />
           </Button>
+
           <Button
             size="icon"
             variant="secondary"
             className="rounded-full bg-background/80 backdrop-blur-sm"
-            onClick={() => setZoom((z) => Math.max(0.5, z - 0.2))}
+            onClick={() => setZoom((z) => Math.max(0.5, Number((z - 0.2).toFixed(2))))}
+            aria-label="Zoom out"
           >
             <ZoomOut className="w-4 h-4" />
           </Button>
