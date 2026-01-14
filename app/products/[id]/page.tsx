@@ -5,7 +5,7 @@ import { ProductDetailClient } from "./product-detail-client"
 import type { Product } from "@/lib/db-products"
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 function toNumber(v: unknown, fallback = 0) {
@@ -18,7 +18,6 @@ function toNumber(v: unknown, fallback = 0) {
 }
 
 function normalizeProduct(raw: any): Product {
-  // ✅ suporta tanto o formato "novo" (camelCase) quanto o "snake_case" do admin/API
   const name =
     raw?.name && typeof raw.name === "object"
       ? raw.name
@@ -43,7 +42,6 @@ function normalizeProduct(raw: any): Product {
     raw?.imageUrl ??
     raw?.main_image ??
     raw?.mainImage ??
-    raw?.imageUrl ??
     ""
 
   const colors = Array.isArray(raw?.colors) ? raw.colors : []
@@ -53,11 +51,14 @@ function normalizeProduct(raw: any): Product {
   const basePrice =
     raw?.basePrice != null
       ? toNumber(raw.basePrice, 0)
-      : toNumber(raw?.base_price ?? raw?.basePrice ?? raw?.price ?? 0, 0)
+      : toNumber(raw?.base_price ?? raw?.price ?? 0, 0)
 
-  // opcional: transforma color_images (array) em map para o ProductDetailClient usar
-  // aceita { color, url } ou { color_hex, image_url } etc
-  const colorImagesArray = Array.isArray(raw?.color_images) ? raw.color_images : Array.isArray(raw?.colorImages) ? raw.colorImages : []
+  const colorImagesArray = Array.isArray(raw?.color_images)
+    ? raw.color_images
+    : Array.isArray(raw?.colorImages)
+      ? raw.colorImages
+      : []
+
   const imagesByColor: Record<string, string> = {}
   for (const item of colorImagesArray) {
     const c = item?.color ?? item?.color_hex ?? item?.hex ?? item?.colorHex
@@ -75,10 +76,9 @@ function normalizeProduct(raw: any): Product {
     featured: Boolean(raw?.featured),
     basePrice,
     image: image || "/placeholder.svg",
-    colors: colors.length ? colors : ["#000000"], // garante pelo menos 1 cor
-    sizes: sizes.length ? sizes : ["Standard"], // garante pelo menos 1 tamanho
-    materials: materials.length ? materials : ["PLA"], // garante pelo menos 1 material
-    // extras opcionais (não quebram o type no runtime; se o type for estrito, mantém via cast no final)
+    colors: colors.length ? colors : ["#000000"],
+    sizes: sizes.length ? sizes : ["Standard"],
+    materials: materials.length ? materials : ["PLA"],
     ...(Object.keys(imagesByColor).length ? { imagesByColor } : {}),
     ...(colorImagesArray?.length ? { color_images: colorImagesArray } : {}),
     ...(Array.isArray(raw?.variants) ? { variants: raw.variants } : {}),
@@ -86,7 +86,8 @@ function normalizeProduct(raw: any): Product {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const raw = await getProductById(params.id)
+  const resolvedParams = await params
+  const raw = await getProductById(resolvedParams.id)
   const product = raw ? normalizeProduct(raw as any) : null
 
   if (!product) {
@@ -119,7 +120,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProductDetailPage({ params }: Props) {
-  const raw = await getProductById(params.id)
+  const resolvedParams = await params
+  const raw = await getProductById(resolvedParams.id)
 
   if (!raw) notFound()
 
