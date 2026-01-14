@@ -126,6 +126,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
               <ProductCustomizer
                 product={product as any}
                 onVariantChange={(v: any) => {
+                  console.log("VARIANT", v);
                   if (v?.color) setSelectedColor(v.color)
                   // 🔥 aqui é o principal: a imagem TEM que vir do customizer (color_images)
                   if (v?.image) setSelectedImage(v.image)
