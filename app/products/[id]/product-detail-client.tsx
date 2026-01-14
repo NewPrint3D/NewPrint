@@ -44,7 +44,7 @@ function toArray(value: unknown): string[] {
 }
 
 function getMainImage(p: any): string {
-  // ✅ seu backend usa image_url https://res.cloudinary.com/dsul3h36i/image/upload/v1768361980/foto_vaso_para_configurar_cores_gbsj62.webp
+  // ✅ seu backend usa image_url 
   return (p?.image || p?.image_url || p?.main_image || p?.mainImage || "/placeholder.svg") as string
 }
 
