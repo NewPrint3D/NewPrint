@@ -18,22 +18,61 @@ interface ProductDetailClientProps {
 }
 
 type ColorImageRow = {
+  // seu formato real (console)
+  color?: string
+  url?: string
+
+  // formatos possíveis/antigos (mantém compatibilidade)
   color_hex?: string
   colorHex?: string
   hex?: string
   image_url?: string
   imageUrl?: string
-  url?: string
+  image?: string
 }
 
 function normalizeHex(input?: string) {
-  const v = (input || "").trim().toLowerCase()
+  const v = (input || "").trim()
   if (!v) return ""
-  return v.startsWith("#") ? v : `#${v}`
+  const low = v.toLowerCase()
+  return low.startsWith("#") ? low : `#${low}`
+}
+
+function toArray(value: unknown): string[] {
+  if (Array.isArray(value)) return value.map(String).map((s) => s.trim()).filter(Boolean)
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+  }
+  return []
+}
+
+function getMainImage(p: any): string {
+  return (
+    p?.image ||
+    p?.image_url ||
+    p?.imageUrl ||
+    p?.main_image ||
+    p?.mainImage ||
+    p?.image_url ||
+    ""
+  )
 }
 
 function buildColorImageMap(product: any): Record<string, string> {
-  // 1) formatos antigos (se existirem)
+  // 1) formato do seu console: color_images: [{ url, color }]
+  const arr: ColorImageRow[] = Array.isArray(product?.color_images) ? product.color_images : []
+  const out: Record<string, string> = {}
+
+  for (const row of arr) {
+    const hex = normalizeHex(row.color || row.color_hex || row.colorHex || row.hex)
+    const url = String(row.url || row.image_url || row.imageUrl || row.image || "").trim()
+    if (hex && url) out[hex] = url
+  }
+
+  // 2) fallback para mapas antigos, se existirem
   const map =
     product?.imagesByColor ||
     product?.colorImages ||
@@ -41,56 +80,42 @@ function buildColorImageMap(product: any): Record<string, string> {
     null
 
   if (map && typeof map === "object" && !Array.isArray(map)) {
-    const out: Record<string, string> = {}
     for (const [k, v] of Object.entries(map)) {
       const key = normalizeHex(String(k))
       const val = String(v || "")
       if (key && val) out[key] = val
     }
-    return out
-  }
-
-  // 2) formato da sua API atual: color_images: [{ color_hex, image_url }]
-  const arr: ColorImageRow[] = Array.isArray(product?.color_images) ? product.color_images : []
-  const out: Record<string, string> = {}
-
-  for (const row of arr) {
-    const hex = normalizeHex(row.color_hex || row.colorHex || row.hex)
-    const url = String(row.image_url || row.imageUrl || row.url || "").trim()
-    if (hex && url) out[hex] = url
   }
 
   return out
 }
 
-function getMainImage(product: any): string {
-  // sua API parece usar image_url
-  return (
-    product?.image ||
-    product?.image_url ||
-    product?.main_image ||
-    product?.mainImage ||
-    ""
-  )
-}
-
 export function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
   const { t, locale } = useLanguage()
+  const storageKey = `np3d:product:${(product as any).id}:variant`
 
-  const storageKey = `np3d:product:${product.id}:variant`
+  // ✅ normaliza o produto (porque sua API manda colors como string)
+  const normalizedProduct = useMemo(() => {
+    const p: any = product
+    return {
+      ...p,
+      colors: toArray(p?.colors),
+      sizes: toArray(p?.sizes),
+      materials: toArray(p?.materials),
+    }
+  }, [product])
 
-  const colorImageMap = useMemo(() => buildColorImageMap(product as any), [product])
+  const colorImageMap = useMemo(() => buildColorImageMap(normalizedProduct), [normalizedProduct])
 
   const getImageForColor = (color?: string) => {
     const key = normalizeHex(color)
     if (key && colorImageMap[key]) return colorImageMap[key]
-    return getMainImage(product as any) || "/placeholder.svg"
+    return getMainImage(normalizedProduct) || "/placeholder.svg"
   }
 
-  const colors = Array.isArray((product as any)?.colors) ? (product as any).colors : []
-  const initialColor = colors[0] || "#000000"
+  const initialColor = normalizedProduct.colors?.[0] || "#000000"
 
-  const [selectedColor, setSelectedColor] = useState<string>(initialColor)
+  const [selectedColor, setSelectedColor] = useState<string>(normalizeHex(initialColor))
   const [selectedImage, setSelectedImage] = useState<string>(getImageForColor(initialColor))
 
   // Carrega seleção salva
@@ -100,9 +125,8 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
       if (!saved) return
       const parsed = JSON.parse(saved) as { color?: string; image?: string }
       const savedColor = parsed?.color ? normalizeHex(parsed.color) : ""
-      if (savedColor) setSelectedColor(savedColor)
 
-      // se tiver imagem salva, usa ela; senão recalcula pelo mapa
+      if (savedColor) setSelectedColor(savedColor)
       if (parsed?.image) setSelectedImage(parsed.image)
       else if (savedColor) setSelectedImage(getImageForColor(savedColor))
     } catch {
@@ -120,11 +144,11 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
     }
   }, [selectedColor, selectedImage, storageKey])
 
-  // Sempre que a cor mudar, atualiza a imagem pela regra (color_images -> image_url)
+  // Sempre que a cor mudar, troca a imagem pelo mapa color_images
   useEffect(() => {
     setSelectedImage(getImageForColor(selectedColor))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedColor])
+  }, [selectedColor, colorImageMap])
 
   return (
     <main className="min-h-screen">
@@ -136,7 +160,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
             <div>
               <Product3DViewer
                 productImage={selectedImage}
-                productName={(product as any)?.name?.[locale] || (product as any)?.name?.en || "Product"}
+                productName={normalizedProduct?.name?.[locale] || normalizedProduct?.name?.en || "Product"}
                 selectedColor={selectedColor}
               />
             </div>
@@ -145,15 +169,15 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="secondary" className="capitalize">
-                    {(product as any).category}
+                    {normalizedProduct.category}
                   </Badge>
-                  {(product as any).featured && (
+                  {normalizedProduct.featured && (
                     <Badge className="bg-accent text-accent-foreground">{t.common.featured}</Badge>
                   )}
                 </div>
 
                 <h1 className="text-4xl font-bold mb-4 text-balance">
-                  {(product as any)?.name?.[locale] || (product as any)?.name?.en}
+                  {normalizedProduct?.name?.[locale] || normalizedProduct?.name?.en}
                 </h1>
 
                 <div className="flex items-center gap-2 mb-4">
@@ -166,18 +190,16 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                 </div>
 
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  {(product as any)?.description?.[locale] || (product as any)?.description?.en}
+                  {normalizedProduct?.description?.[locale] || normalizedProduct?.description?.en}
                 </p>
               </div>
 
               <ProductCustomizer
-                product={product as any}
+                product={normalizedProduct}
                 onVariantChange={(v: any) => {
-                  // O ProductCustomizer manda pelo menos a cor.
                   if (v?.color) {
                     const c = normalizeHex(v.color)
                     setSelectedColor(c)
-                    // imagem vem do map color_images, então não precisamos depender de v.image
                     setSelectedImage(getImageForColor(c))
                   }
                 }}
@@ -195,7 +217,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
             <TabsContent value="description" className="mt-6">
               <div className="prose prose-lg max-w-none">
                 <p className="text-muted-foreground leading-relaxed">
-                  {(product as any)?.description?.[locale] || (product as any)?.description?.en}
+                  {normalizedProduct?.description?.[locale] || normalizedProduct?.description?.en}
                 </p>
               </div>
             </TabsContent>
@@ -205,25 +227,18 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                 <div className="p-4 rounded-lg bg-muted/50">
                   <h4 className="font-bold mb-2">{t.product.details.availableColors}</h4>
                   <p className="text-muted-foreground">
-                    {t.product.details.colorCount.replace(
-                      "{count}",
-                      String(Array.isArray((product as any)?.colors) ? (product as any).colors.length : 0)
-                    )}
+                    {t.product.details.colorCount.replace("{count}", String(normalizedProduct.colors?.length || 0))}
                   </p>
                 </div>
 
                 <div className="p-4 rounded-lg bg-muted/50">
                   <h4 className="font-bold mb-2">{t.product.details.availableSizes}</h4>
-                  <p className="text-muted-foreground">
-                    {Array.isArray((product as any)?.sizes) ? (product as any).sizes.join(", ") : ""}
-                  </p>
+                  <p className="text-muted-foreground">{(normalizedProduct.sizes || []).join(", ")}</p>
                 </div>
 
                 <div className="p-4 rounded-lg bg-muted/50">
                   <h4 className="font-bold mb-2">{t.product.details.materials}</h4>
-                  <p className="text-muted-foreground">
-                    {Array.isArray((product as any)?.materials) ? (product as any).materials.join(", ") : ""}
-                  </p>
+                  <p className="text-muted-foreground">{(normalizedProduct.materials || []).join(", ")}</p>
                 </div>
 
                 <div className="p-4 rounded-lg bg-muted/50">
@@ -258,8 +273,8 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
             <div>
               <h2 className="text-3xl font-bold mb-8 text-center">{t.product.related}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {relatedProducts.map((relatedProduct) => (
-                  <ProductCard key={(relatedProduct as any).id} product={relatedProduct as any} />
+                {relatedProducts.map((rp: any) => (
+                  <ProductCard key={rp.id} product={rp} />
                 ))}
               </div>
             </div>
