@@ -154,7 +154,7 @@ onVariantChange={(v: any) => {
     setSelectedImage(v.image)
   }
 }}
-
+/>
             </div>
           </div>
 
