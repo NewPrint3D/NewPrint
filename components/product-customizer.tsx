@@ -95,9 +95,9 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
 
   // ✅ quando as opções mudarem (ex.: admin atualizou), garante defaults válidos
   useEffect(() => {
-    setSelectedColor((c) => (colors.includes(c) ? c : colors[0]))
-    setSelectedSize((s) => (sizes.includes(s) ? s : sizes[0]))
-    setSelectedMaterial((m) => (materials.includes(m) ? m : materials[0]))
+   setSelectedColor((c: string) => (colors.includes(c) ? c : colors[0]))
+   setSelectedSize((s: string) => (sizes.includes(s) ? s : sizes[0]))
+   setSelectedMaterial((m: string) => (materials.includes(m) ? m : materials[0]))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [colors.join("|"), sizes.join("|"), materials.join("|")])
 
