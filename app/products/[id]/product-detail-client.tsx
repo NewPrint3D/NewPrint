@@ -18,17 +18,8 @@ interface ProductDetailClientProps {
 }
 
 type ColorImageRow = {
-  // seu formato real (console)
   color?: string
   url?: string
-
-  // formatos possíveis/antigos (mantém compatibilidade)
-  color_hex?: string
-  colorHex?: string
-  hex?: string
-  image_url?: string
-  imageUrl?: string
-  image?: string
 }
 
 function normalizeHex(input?: string) {
@@ -39,52 +30,33 @@ function normalizeHex(input?: string) {
 }
 
 function toArray(value: unknown): string[] {
+  // ✅ seu backend pode mandar colors como string: "#000000,#FF0000"
   if (Array.isArray(value)) return value.map(String).map((s) => s.trim()).filter(Boolean)
+
   if (typeof value === "string") {
     return value
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean)
   }
+
   return []
 }
 
 function getMainImage(p: any): string {
-  return (
-    p?.image ||
-    p?.image_url ||
-    p?.imageUrl ||
-    p?.main_image ||
-    p?.mainImage ||
-    p?.image_url ||
-    ""
-  )
+  // ✅ seu backend usa image_url
+  return (p?.image || p?.image_url || p?.main_image || p?.mainImage || "/placeholder.svg") as string
 }
 
-function buildColorImageMap(product: any): Record<string, string> {
-  // 1) formato do seu console: color_images: [{ url, color }]
-  const arr: ColorImageRow[] = Array.isArray(product?.color_images) ? product.color_images : []
+function buildColorImageMap(p: any): Record<string, string> {
+  // ✅ formato real (console): color_images: [{ color: "#000000", url: "https://..." }]
+  const arr: ColorImageRow[] = Array.isArray(p?.color_images) ? p.color_images : []
   const out: Record<string, string> = {}
 
   for (const row of arr) {
-    const hex = normalizeHex(row.color || row.color_hex || row.colorHex || row.hex)
-    const url = String(row.url || row.image_url || row.imageUrl || row.image || "").trim()
+    const hex = normalizeHex(row?.color)
+    const url = String(row?.url || "").trim()
     if (hex && url) out[hex] = url
-  }
-
-  // 2) fallback para mapas antigos, se existirem
-  const map =
-    product?.imagesByColor ||
-    product?.colorImages ||
-    product?.imagesByVariantColor ||
-    null
-
-  if (map && typeof map === "object" && !Array.isArray(map)) {
-    for (const [k, v] of Object.entries(map)) {
-      const key = normalizeHex(String(k))
-      const val = String(v || "")
-      if (key && val) out[key] = val
-    }
   }
 
   return out
@@ -92,70 +64,59 @@ function buildColorImageMap(product: any): Record<string, string> {
 
 export function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
   const { t, locale } = useLanguage()
+
   const storageKey = `np3d:product:${(product as any).id}:variant`
 
-  // ✅ normaliza o produto (porque sua API manda colors como string)
+  // ✅ normaliza o product para garantir arrays (colors/sizes/materials)
   const normalizedProduct = useMemo(() => {
     const p: any = product
     return {
       ...p,
-      colors: toArray(p?.colors),
+      colors: toArray(p?.colors).map(normalizeHex),
       sizes: toArray(p?.sizes),
       materials: toArray(p?.materials),
     }
   }, [product])
 
+  // ✅ mapa HEX -> URL
   const colorImageMap = useMemo(() => buildColorImageMap(normalizedProduct), [normalizedProduct])
 
   const getImageForColor = (color?: string) => {
-  const p: any = product
-
-  // ✅ seu backend manda isso:
-  // color_images: [{ color: "#000000", url: "https://..." }, ...]
-  const arr = Array.isArray(p.color_images) ? p.color_images : []
-
-  if (color && arr.length) {
-    const hit = arr.find((x: any) => (x?.color || "").toLowerCase() === color.toLowerCase())
-    if (hit?.url) return hit.url
+    const key = normalizeHex(color)
+    if (key && colorImageMap[key]) return colorImageMap[key]
+    return getMainImage(normalizedProduct)
   }
 
-  // fallback para imagem principal (se existir em campos diferentes)
-  return p.image || p.image_url || p.main_image || "/placeholder.svg"
-}
-
-
   const initialColor = normalizedProduct.colors?.[0] || "#000000"
-
   const [selectedColor, setSelectedColor] = useState<string>(normalizeHex(initialColor))
   const [selectedImage, setSelectedImage] = useState<string>(getImageForColor(initialColor))
 
-  // Carrega seleção salva
+  // ✅ ao carregar, tenta recuperar do localStorage, mas sempre recalcula imagem usando o mapa
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey)
       if (!saved) return
-      const parsed = JSON.parse(saved) as { color?: string; image?: string }
+      const parsed = JSON.parse(saved) as { color?: string }
       const savedColor = parsed?.color ? normalizeHex(parsed.color) : ""
-
-      if (savedColor) setSelectedColor(savedColor)
-      if (parsed?.image) setSelectedImage(parsed.image)
-      else if (savedColor) setSelectedImage(getImageForColor(savedColor))
+      if (!savedColor) return
+      setSelectedColor(savedColor)
+      setSelectedImage(getImageForColor(savedColor))
     } catch {
       // ignore
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Persiste seleção
+  // ✅ salva somente a cor (a imagem é derivada do mapa)
   useEffect(() => {
     try {
-      localStorage.setItem(storageKey, JSON.stringify({ color: selectedColor, image: selectedImage }))
+      localStorage.setItem(storageKey, JSON.stringify({ color: selectedColor }))
     } catch {
       // ignore
     }
-  }, [selectedColor, selectedImage, storageKey])
+  }, [selectedColor, storageKey])
 
-  // Sempre que a cor mudar, troca a imagem pelo mapa color_images
+  // ✅ sempre que a cor mudar, troca a imagem pela URL cadastrada
   useEffect(() => {
     setSelectedImage(getImageForColor(selectedColor))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -182,6 +143,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                   <Badge variant="secondary" className="capitalize">
                     {normalizedProduct.category}
                   </Badge>
+
                   {normalizedProduct.featured && (
                     <Badge className="bg-accent text-accent-foreground">{t.common.featured}</Badge>
                   )}
@@ -266,11 +228,13 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                   <h4 className="font-bold mb-2">{t.product.shippingHighlights.fast.title}</h4>
                   <p className="text-sm text-muted-foreground">{t.product.shippingHighlights.fast.description}</p>
                 </div>
+
                 <div className="flex flex-col items-center text-center p-6 rounded-lg bg-muted/50">
                   <Shield className="w-12 h-12 text-primary mb-4" />
                   <h4 className="font-bold mb-2">{t.product.shippingHighlights.quality.title}</h4>
                   <p className="text-sm text-muted-foreground">{t.product.shippingHighlights.quality.description}</p>
                 </div>
+
                 <div className="flex flex-col items-center text-center p-6 rounded-lg bg-muted/50">
                   <RefreshCw className="w-12 h-12 text-primary mb-4" />
                   <h4 className="font-bold mb-2">{t.product.shippingHighlights.returns.title}</h4>
