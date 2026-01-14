@@ -20,6 +20,13 @@ interface ProductDetailClientProps {
 type ColorImageRow = {
   color?: string
   url?: string
+  // extras caso venha diferente
+  color_hex?: string
+  colorHex?: string
+  hex?: string
+  image_url?: string
+  imageUrl?: string
+  image?: string
 }
 
 function normalizeHex(input?: string) {
@@ -30,33 +37,51 @@ function normalizeHex(input?: string) {
 }
 
 function toArray(value: unknown): string[] {
-  // ✅ seu backend pode mandar colors como string: "#000000,#FF0000"
   if (Array.isArray(value)) return value.map(String).map((s) => s.trim()).filter(Boolean)
-
   if (typeof value === "string") {
     return value
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean)
   }
-
   return []
 }
 
 function getMainImage(p: any): string {
-  // ✅ seu backend usa image_url 
-  return (p?.image || p?.image_url || p?.main_image || p?.mainImage || "/placeholder.svg") as string
+  return (
+    p?.image ||
+    p?.image_url ||
+    p?.imageUrl ||
+    p?.main_image ||
+    p?.mainImage ||
+    "/placeholder.svg"
+  )
 }
 
 function buildColorImageMap(p: any): Record<string, string> {
-  // ✅ formato real (console): color_images: [{ color: "#000000", url: "https://..." }]
-  const arr: ColorImageRow[] = Array.isArray(p?.color_images) ? p.color_images : []
   const out: Record<string, string> = {}
 
+  // Formato A: color_images: [{ color, url }]
+  const arr: ColorImageRow[] = Array.isArray(p?.color_images) ? p.color_images : []
   for (const row of arr) {
-    const hex = normalizeHex(row?.color)
-    const url = String(row?.url || "").trim()
+    const hex = normalizeHex(row?.color || row?.color_hex || row?.colorHex || row?.hex)
+    const url = String(row?.url || row?.image_url || row?.imageUrl || row?.image || "").trim()
     if (hex && url) out[hex] = url
+  }
+
+  // Formato B: alguns backends mandam "imagesByColor" como objeto
+  const obj =
+    p?.imagesByColor ||
+    p?.colorImages ||
+    p?.imagesByVariantColor ||
+    null
+
+  if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+    for (const [k, v] of Object.entries(obj)) {
+      const hex = normalizeHex(String(k))
+      const url = String(v || "").trim()
+      if (hex && url) out[hex] = url
+    }
   }
 
   return out
@@ -67,7 +92,6 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
   const storageKey = `np3d:product:${(product as any).id}:variant`
 
-  // ✅ normaliza o product para garantir arrays (colors/sizes/materials)
   const normalizedProduct = useMemo(() => {
     const p: any = product
     return {
@@ -78,7 +102,6 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
     }
   }, [product])
 
-  // ✅ mapa HEX -> URL
   const colorImageMap = useMemo(() => buildColorImageMap(normalizedProduct), [normalizedProduct])
 
   const getImageForColor = (color?: string) => {
@@ -88,35 +111,48 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
   }
 
   const initialColor = normalizedProduct.colors?.[0] || "#000000"
+
   const [selectedColor, setSelectedColor] = useState<string>(normalizeHex(initialColor))
   const [selectedImage, setSelectedImage] = useState<string>(getImageForColor(initialColor))
 
-  // ✅ ao carregar, tenta recuperar do localStorage, mas sempre recalcula imagem usando o mapa
+  // ✅ DEBUG: mostra exatamente o que chegou
+  useEffect(() => {
+    console.log("=== NP3D DEBUG START ===")
+    console.log("NP3D product.id:", (product as any)?.id)
+    console.log("NP3D raw colors:", (product as any)?.colors)
+    console.log("NP3D normalized colors:", (normalizedProduct as any)?.colors)
+    console.log("NP3D raw color_images:", (product as any)?.color_images)
+    console.log("NP3D normalized color_images:", (normalizedProduct as any)?.color_images)
+    console.log("NP3D colorImageMap keys:", Object.keys(colorImageMap || {}))
+    console.log("NP3D colorImageMap:", colorImageMap)
+    console.log("NP3D main image:", getMainImage(normalizedProduct))
+    console.log("NP3D selectedColor init:", selectedColor)
+    console.log("NP3D selectedImage init:", selectedImage)
+    console.log("=== NP3D DEBUG END ===")
+  }, [product, normalizedProduct, colorImageMap]) // proposital
+
+  // recupera seleção salva (só cor)
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey)
       if (!saved) return
       const parsed = JSON.parse(saved) as { color?: string }
-      const savedColor = parsed?.color ? normalizeHex(parsed.color) : ""
-      if (!savedColor) return
-      setSelectedColor(savedColor)
-      setSelectedImage(getImageForColor(savedColor))
-    } catch {
-      // ignore
-    }
+      const c = parsed?.color ? normalizeHex(parsed.color) : ""
+      if (!c) return
+      setSelectedColor(c)
+      setSelectedImage(getImageForColor(c))
+    } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ✅ salva somente a cor (a imagem é derivada do mapa)
+  // salva seleção (cor)
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify({ color: selectedColor }))
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [selectedColor, storageKey])
 
-  // ✅ sempre que a cor mudar, troca a imagem pela URL cadastrada
+  // sempre que muda cor, troca imagem
   useEffect(() => {
     setSelectedImage(getImageForColor(selectedColor))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -143,7 +179,6 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                   <Badge variant="secondary" className="capitalize">
                     {normalizedProduct.category}
                   </Badge>
-
                   {normalizedProduct.featured && (
                     <Badge className="bg-accent text-accent-foreground">{t.common.featured}</Badge>
                   )}
@@ -170,10 +205,17 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
               <ProductCustomizer
                 product={normalizedProduct}
                 onVariantChange={(v: any) => {
+                  console.log("NP3D onVariantChange v:", v)
+
                   if (v?.color) {
                     const c = normalizeHex(v.color)
+                    const img = getImageForColor(c)
+
+                    console.log("NP3D clicked color:", c)
+                    console.log("NP3D img for color:", img)
+
                     setSelectedColor(c)
-                    setSelectedImage(getImageForColor(c))
+                    setSelectedImage(img)
                   }
                 }}
               />
