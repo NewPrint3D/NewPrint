@@ -10,25 +10,10 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, Check, CheckCircle } from "lucide-react"
-import type { Product } from "@/lib/products"
 
 interface ProductCustomizerProps {
   product: any
-  onVariantChange?: (v: { color: string; size: string; material: string; price: number }) => void
-}
-
-const getColorName = (hex: string): string => {
-  const colorMap: Record<string, string> = {
-    "#8B5CF6": "Purple",
-    "#06B6D4": "Cyan",
-    "#10B981": "Green",
-    "#F59E0B": "Orange",
-    "#EF4444": "Red",
-    "#3B82F6": "Blue",
-    "#EC4899": "Pink",
-    "#F97316": "Orange",
-  }
-  return colorMap[hex] || hex
+  onVariantChange?: (v: { color: string; size: string; material: string; price: number; image?: string }) => void
 }
 
 const safeNumber = (v: unknown) => {
@@ -50,24 +35,38 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
   const { t, locale } = useLanguage()
   const { addItem } = useCart()
 
-  // ✅ garante arrays (evita .map quebrar)
-  const colors = useMemo(() => (Array.isArray(product?.colors) ? product.colors : []), [product])
-  const sizes = useMemo(() => (Array.isArray(product?.sizes) ? product.sizes : []), [product])
-  const materials = useMemo(() => (Array.isArray(product?.materials) ? product.materials : []), [product])
+  const p = product ?? {}
 
-  // ✅ defaults seguros (evita [0] quebrar)
-  const defaultColor = colors[0] ?? "#88CFC6"
-  const defaultSize = sizes[0] ?? "Standard"
-  const defaultMaterial = materials[0] ?? "PLA"
+  // ✅ pega cores também do color_images (quando colors vier incompleto)
+  const colorImageMap = useMemo(() => {
+    const map: Record<string, string> = {}
+    if (Array.isArray(p.color_images)) {
+      for (const item of p.color_images) {
+        if (item?.color && item?.url) map[String(item.color)] = String(item.url)
+      }
+    }
+    return map
+  }, [p.color_images])
 
-  const [selectedColor, setSelectedColor] = useState<string>(defaultColor)
-  const [selectedSize, setSelectedSize] = useState<string>(defaultSize)
-  const [selectedMaterial, setSelectedMaterial] = useState<string>(defaultMaterial)
+  const colors = useMemo(() => {
+    const fromColors = Array.isArray(p.colors) ? p.colors.map(String) : []
+    const fromColorImages = Array.isArray(p.color_images)
+      ? p.color_images.map((c: any) => c?.color).filter(Boolean).map(String)
+      : []
+    const merged = [...fromColors, ...fromColorImages]
+    const unique = Array.from(new Set(merged))
+    return unique.length > 0 ? unique : ["#000000"]
+  }, [p.colors, p.color_images])
 
-  const [quantity, setQuantity] = useState(1)
-  const [isAdded, setIsAdded] = useState(false)
+  const sizes = useMemo(() => {
+    return Array.isArray(p.sizes) && p.sizes.length > 0 ? p.sizes.map(String) : ["Standard"]
+  }, [p.sizes])
 
-  const storageKey = `np3d:product:${product?.id ?? "unknown"}:variant`
+  const materials = useMemo(() => {
+    return Array.isArray(p.materials) && p.materials.length > 0 ? p.materials.map(String) : ["PLA"]
+  }, [p.materials])
+
+  const basePrice = safeNumber(p.basePrice ?? p.base_price)
 
   const materialPrices: Record<string, number> = {
     PLA: 0,
@@ -80,88 +79,84 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
     Medium: 5,
     Large: 10,
     Standard: 0,
+    "19cm": 0,
   }
-
-const basePrice = safeNumber(product?.basePrice ?? product?.base_price)
 
   const getMaterialExtra = (material: string) => materialPrices[material] ?? 0
   const getSizeExtra = (size: string) => sizePrices[size] ?? 0
+
+  const storageKey = `np3d:product:${p?.id ?? "unknown"}:variant`
+
+  const [selectedColor, setSelectedColor] = useState(colors[0])
+  const [selectedSize, setSelectedSize] = useState(sizes[0])
+  const [selectedMaterial, setSelectedMaterial] = useState(materials[0])
+  const [quantity, setQuantity] = useState(1)
+  const [isAdded, setIsAdded] = useState(false)
+
+  // ✅ quando as opções mudarem (ex.: admin atualizou), garante defaults válidos
+  useEffect(() => {
+    setSelectedColor((c) => (colors.includes(c) ? c : colors[0]))
+    setSelectedSize((s) => (sizes.includes(s) ? s : sizes[0]))
+    setSelectedMaterial((m) => (materials.includes(m) ? m : materials[0]))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colors.join("|"), sizes.join("|"), materials.join("|")])
 
   const totalPrice = basePrice + getMaterialExtra(selectedMaterial) + getSizeExtra(selectedSize)
 
   const notifyVariantChange = (color: string, size: string, material: string) => {
     const price = basePrice + getMaterialExtra(material) + getSizeExtra(size)
-    onVariantChange?.({ color, size, material, price })
+    const image = colorImageMap[color] // ✅ manda imagem da cor selecionada
+    onVariantChange?.({ color, size, material, price, image })
   }
 
-  // ✅ quando o produto muda e chegam arrays diferentes, ajusta os selecionados
-  useEffect(() => {
-    // cor
-    if (colors.length > 0 && !colors.includes(selectedColor)) {
-      setSelectedColor(colors[0])
-      notifyVariantChange(colors[0], selectedSize, selectedMaterial)
-    }
-    // size
-    if (sizes.length > 0 && !sizes.includes(selectedSize)) {
-      setSelectedSize(sizes[0])
-      notifyVariantChange(selectedColor, sizes[0], selectedMaterial)
-    }
-    // material
-    if (materials.length > 0 && !materials.includes(selectedMaterial)) {
-      setSelectedMaterial(materials[0])
-      notifyVariantChange(selectedColor, selectedSize, materials[0])
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [colors.join("|"), sizes.join("|"), materials.join("|")])
-
+  // ✅ carrega do localStorage e sincroniza com a imagem
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey)
       if (!saved) return
-
       const parsed = JSON.parse(saved) as { color?: string; size?: string; material?: string }
+      const c = parsed.color && colors.includes(parsed.color) ? parsed.color : colors[0]
+      const s = parsed.size && sizes.includes(parsed.size) ? parsed.size : sizes[0]
+      const m = parsed.material && materials.includes(parsed.material) ? parsed.material : materials[0]
 
-      const c = parsed.color ?? selectedColor
-      const s = parsed.size ?? selectedSize
-      const m = parsed.material ?? selectedMaterial
-
-      // aplica só se fizer sentido
-      if (c) setSelectedColor(c)
-      if (s) setSelectedSize(s)
-      if (m) setSelectedMaterial(m)
+      setSelectedColor(c)
+      setSelectedSize(s)
+      setSelectedMaterial(m)
 
       notifyVariantChange(c, s, m)
-    } catch {}
+    } catch {
+      notifyVariantChange(colors[0], sizes[0], materials[0])
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const persist = (color: string, size: string, material: string) => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ color, size, material }))
+    } catch {}
+  }
+
   const handleColorChange = (color: string) => {
     setSelectedColor(color)
-    try {
-      localStorage.setItem(storageKey, JSON.stringify({ color, size: selectedSize, material: selectedMaterial }))
-    } catch {}
+    persist(color, selectedSize, selectedMaterial)
     notifyVariantChange(color, selectedSize, selectedMaterial)
   }
 
   const handleSizeChange = (size: string) => {
     setSelectedSize(size)
-    try {
-      localStorage.setItem(storageKey, JSON.stringify({ color: selectedColor, size, material: selectedMaterial }))
-    } catch {}
+    persist(selectedColor, size, selectedMaterial)
     notifyVariantChange(selectedColor, size, selectedMaterial)
   }
 
   const handleMaterialChange = (material: string) => {
     setSelectedMaterial(material)
-    try {
-      localStorage.setItem(storageKey, JSON.stringify({ color: selectedColor, size: selectedSize, material }))
-    } catch {}
+    persist(selectedColor, selectedSize, material)
     notifyVariantChange(selectedColor, selectedSize, material)
   }
 
   const handleAddToCart = () => {
     addItem({
-      product,
+      product: p,
       quantity,
       selectedColor,
       selectedSize,
@@ -175,90 +170,78 @@ const basePrice = safeNumber(product?.basePrice ?? product?.base_price)
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
       <CardContent className="p-6 space-y-6">
-        {/* ✅ COR */}
-        {colors.length > 0 && (
-          <div>
-            <Label className="text-base font-bold mb-3 block">{t.customizer.color}</Label>
-            <div className="flex flex-wrap gap-3" role="radiogroup" aria-label={t.customizer.color}>
-              {colors.map((color: string) => {
-                const colorName = getColorName(color)
-                const isSelected = selectedColor === color
-                return (
-                  <button
-                    key={color}
-                    type="button"
-                    role="radio"
-                    aria-checked={isSelected}
-                    aria-label={t.aria.selectColor.replace("{color}", colorName)}
-                    onClick={() => handleColorChange(color)}
-                    className={`relative w-12 h-12 rounded-full border-2 transition-all duration-200
-                      hover:scale-110 active:scale-95
-                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
-                      ${isSelected ? "border-primary ring-4 ring-primary/25 shadow-lg" : "border-border hover:shadow-md"}
-                    `}
-                    style={{ backgroundColor: color }}
-                  >
-                    {isSelected && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Check className={`w-6 h-6 drop-shadow-lg ${isLightHex(color) ? "text-black" : "text-white"}`} />
-                      </div>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
+        <div>
+          <Label className="text-base font-bold mb-3 block">{t.customizer.color}</Label>
+          <div className="flex flex-wrap gap-3" role="radiogroup" aria-label={t.customizer.color}>
+            {colors.map((color) => {
+              const isSelected = selectedColor === color
+              return (
+                <button
+                  key={color}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  onClick={() => handleColorChange(color)}
+                  className={`relative w-12 h-12 rounded-full border-2 transition-all duration-200
+                    hover:scale-110 active:scale-95
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+                    ${isSelected ? "border-primary ring-4 ring-primary/25 shadow-lg" : "border-border hover:shadow-md"}
+                  `}
+                  style={{ backgroundColor: color }}
+                >
+                  {isSelected && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Check className={`w-6 h-6 drop-shadow-lg ${isLightHex(color) ? "text-black" : "text-white"}`} />
+                    </div>
+                  )}
+                </button>
+              )
+            })}
           </div>
-        )}
+        </div>
 
-        {/* ✅ TAMANHO */}
-        {sizes.length > 0 && (
-          <div>
-            <Label className="text-base font-bold mb-3 block">{t.customizer.size}</Label>
-            <RadioGroup value={selectedSize} onValueChange={handleSizeChange} className="flex flex-wrap gap-3">
-              {sizes.map((size: string) => (
-                <div key={size} className="relative">
-                  <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" />
-                  <Label
-                    htmlFor={`size-${size}`}
-                    className="flex items-center justify-center px-4 py-2 rounded-lg border-2 border-border cursor-pointer transition-all duration-200 hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground"
-                  >
-                    {size}
-                    {(sizePrices[size] ?? 0) > 0 && (
-                      <Badge variant="secondary" className="ml-2">
-                        +{formatCurrency(sizePrices[size], locale)}
-                      </Badge>
-                    )}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-        )}
+        <div>
+          <Label className="text-base font-bold mb-3 block">{t.customizer.size}</Label>
+          <RadioGroup value={selectedSize} onValueChange={handleSizeChange} className="flex flex-wrap gap-3">
+            {sizes.map((size) => (
+              <div key={size} className="relative">
+                <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" />
+                <Label
+                  htmlFor={`size-${size}`}
+                  className="flex items-center justify-center px-4 py-2 rounded-lg border-2 border-border cursor-pointer transition-all duration-200 hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground"
+                >
+                  {size}
+                  {sizePrices[size] > 0 && (
+                    <Badge variant="secondary" className="ml-2">
+                      +{formatCurrency(sizePrices[size], locale)}
+                    </Badge>
+                  )}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
 
-        {/* ✅ MATERIAL */}
-        {materials.length > 0 && (
-          <div>
-            <Label className="text-base font-bold mb-3 block">{t.customizer.material}</Label>
-            <RadioGroup value={selectedMaterial} onValueChange={handleMaterialChange} className="space-y-3">
-              {materials.map((material: string) => (
-                <div key={material} className="relative">
-                  <RadioGroupItem value={material} id={`material-${material}`} className="peer sr-only" />
-                  <Label
-                    htmlFor={`material-${material}`}
-                    className="flex items-center justify-between p-4 rounded-lg border-2 border-border cursor-pointer transition-all duration-200 hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
-                  >
-                    <span className="font-medium">{material}</span>
-                    {(materialPrices[material] ?? 0) > 0 && (
-                      <Badge variant="secondary">+{formatCurrency(materialPrices[material], locale)}</Badge>
-                    )}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-        )}
+        <div>
+          <Label className="text-base font-bold mb-3 block">{t.customizer.material}</Label>
+          <RadioGroup value={selectedMaterial} onValueChange={handleMaterialChange} className="space-y-3">
+            {materials.map((material) => (
+              <div key={material} className="relative">
+                <RadioGroupItem value={material} id={`material-${material}`} className="peer sr-only" />
+                <Label
+                  htmlFor={`material-${material}`}
+                  className="flex items-center justify-between p-4 rounded-lg border-2 border-border cursor-pointer transition-all duration-200 hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
+                >
+                  <span className="font-medium">{material}</span>
+                  {(materialPrices[material] ?? 0) > 0 && (
+                    <Badge variant="secondary">+{formatCurrency(materialPrices[material], locale)}</Badge>
+                  )}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
 
-        {/* ✅ QUANTIDADE */}
         <div>
           <Label className="text-base font-bold mb-3 block">{t.customizer.quantity}</Label>
           <div className="flex items-center gap-3">
@@ -274,7 +257,6 @@ const basePrice = safeNumber(product?.basePrice ?? product?.base_price)
           </div>
         </div>
 
-        {/* ✅ TOTAL + ADD */}
         <div className="border-t border-border pt-6">
           <div className="flex items-center justify-between mb-6">
             <span className="text-lg font-medium text-muted-foreground">{t.customizer.totalPrice}</span>
