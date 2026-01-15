@@ -1,9 +1,8 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { Product3DViewer } from "@/components/product-3d-viewer"
 import { ProductCustomizer } from "@/components/product-customizer"
 import { ProductCard } from "@/components/product-card"
 import { useLanguage } from "@/contexts/language-context"
@@ -18,18 +17,56 @@ interface ProductDetailClientProps {
   relatedProducts: Product[]
 }
 
+type MediaItem = { type: "image" | "video"; src: string; alt?: string }
+
+const normalizeHex = (hex?: string) => (hex || "").trim().toLowerCase()
+
+const toArray = (v: any): string[] => {
+  if (Array.isArray(v)) return v.filter(Boolean).map(String).map((s) => s.trim()).filter(Boolean)
+  if (typeof v === "string") return v.split(",").map((s) => s.trim()).filter(Boolean)
+  return []
+}
+
+/**
+ * Mapeia as cores (hex) para nomes de arquivo.
+ * Você pode expandir esse mapa quando adicionar novas cores.
+ */
+const COLOR_TO_FILENAME: Record<string, string> = {
+  "#000000": "preto.png",
+  "#ffffff": "branco.png",
+  "#212121": "cinza.png",
+  "#ff0000": "vermelho.png",
+}
+
 export function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
   const { t, locale } = useLanguage()
 
-  const [selectedColor, setSelectedColor] = useState("#000000")
+  const productId = String((product as any).id ?? (product as any).product_id ?? (product as any).slug ?? "6")
 
-  const media = [
-    { type: "video" as const, src: "/products/6/video.mp4" },
-    { type: "image" as const, src: "/products/6/preto.png", alt: "Vaso preto" },
-    { type: "image" as const, src: "/products/6/branco.png", alt: "Vaso branco" },
-    { type: "image" as const, src: "/products/6/cinza.png", alt: "Vaso cinza" },
-    { type: "image" as const, src: "/products/6/vermelho.png", alt: "Vaso vermelho" },
-  ]
+  const colors = useMemo(() => toArray((product as any).colors), [product])
+
+  const media: MediaItem[] = useMemo(() => {
+    const basePath = `/products/${productId}`
+
+    const items: MediaItem[] = []
+
+    // Sempre tenta carregar o vídeo principal (se existir)
+    items.push({ type: "video", src: `${basePath}/video.mp4` })
+
+    // Adiciona imagens conforme as cores do produto (se tiver mapeamento)
+    for (const c of colors) {
+      const key = normalizeHex(c)
+      const file = COLOR_TO_FILENAME[key]
+      if (file) {
+        items.push({ type: "image", src: `${basePath}/${file}`, alt: `Produto ${file.replace(".png", "")}` })
+      }
+    }
+
+    // Se não houver cores cadastradas, você pode colocar ao menos 1 imagem padrão:
+    // items.push({ type: "image", src: `${basePath}/preto.png`, alt: "Produto" })
+
+    return items
+  }, [productId, colors])
 
   return (
     <main className="min-h-screen">
@@ -48,13 +85,13 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                   <Badge variant="secondary" className="capitalize">
                     {(product as any).category}
                   </Badge>
+                  {(product as any).featured && (
+                    <Badge className="bg-accent text-accent-foreground">{t.common.featured}</Badge>
+                  )}
                 </div>
 
-                <h1 className="text-4xl font-bold mb-4">
-                  {(product as any).name?.[locale] ||
-                    (product as any).name_pt ||
-                    (product as any).name ||
-                    "Produto"}
+                <h1 className="text-4xl font-bold mb-4 text-balance">
+                  {(product as any).name?.[locale] || (product as any).name_pt || (product as any).name || "Produto"}
                 </h1>
 
                 <div className="flex items-center gap-2 mb-4">
@@ -63,9 +100,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                       <Star key={i} className="w-5 h-5 fill-primary text-primary" />
                     ))}
                   </div>
-                  <span className="text-muted-foreground">
-                    {t.product.reviewsCount.replace("{count}", "128")}
-                  </span>
+                  <span className="text-muted-foreground">{t.product.reviewsCount.replace("{count}", "128")}</span>
                 </div>
 
                 <p className="text-lg text-muted-foreground leading-relaxed">
@@ -76,12 +111,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                 </p>
               </div>
 
-              <ProductCustomizer
-                product={product as any}
-                onVariantChange={(v: any) => {
-                  if (v?.color) setSelectedColor(v.color)
-                }}
-              />
+              <ProductCustomizer product={product as any} onVariantChange={() => {}} />
             </div>
           </div>
 
@@ -102,39 +132,25 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
             </TabsContent>
 
             <TabsContent value="specifications" className="mt-6">
-              <p className="text-muted-foreground">
-                {t.product.details.printQualityValue}
-              </p>
+              <p className="text-muted-foreground">{t.product.details.printQualityValue}</p>
             </TabsContent>
 
             <TabsContent value="shipping" className="mt-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="flex flex-col items-center text-center p-6 rounded-lg bg-muted/50">
                   <Truck className="w-12 h-12 text-primary mb-4" />
-                  <h4 className="font-bold mb-2">
-                    {t.product.shippingHighlights.fast.title}
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {t.product.shippingHighlights.fast.description}
-                  </p>
+                  <h4 className="font-bold mb-2">{t.product.shippingHighlights.fast.title}</h4>
+                  <p className="text-sm text-muted-foreground">{t.product.shippingHighlights.fast.description}</p>
                 </div>
                 <div className="flex flex-col items-center text-center p-6 rounded-lg bg-muted/50">
                   <Shield className="w-12 h-12 text-primary mb-4" />
-                  <h4 className="font-bold mb-2">
-                    {t.product.shippingHighlights.quality.title}
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {t.product.shippingHighlights.quality.description}
-                  </p>
+                  <h4 className="font-bold mb-2">{t.product.shippingHighlights.quality.title}</h4>
+                  <p className="text-sm text-muted-foreground">{t.product.shippingHighlights.quality.description}</p>
                 </div>
                 <div className="flex flex-col items-center text-center p-6 rounded-lg bg-muted/50">
                   <RefreshCw className="w-12 h-12 text-primary mb-4" />
-                  <h4 className="font-bold mb-2">
-                    {t.product.shippingHighlights.returns.title}
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {t.product.shippingHighlights.returns.description}
-                  </p>
+                  <h4 className="font-bold mb-2">{t.product.shippingHighlights.returns.title}</h4>
+                  <p className="text-sm text-muted-foreground">{t.product.shippingHighlights.returns.description}</p>
                 </div>
               </div>
             </TabsContent>
@@ -142,15 +158,10 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
           {relatedProducts.length > 0 && (
             <div>
-              <h2 className="text-3xl font-bold mb-8 text-center">
-                {t.product.related}
-              </h2>
+              <h2 className="text-3xl font-bold mb-8 text-center">{t.product.related}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {relatedProducts.map((relatedProduct) => (
-                  <ProductCard
-                    key={(relatedProduct as any).id}
-                    product={relatedProduct as any}
-                  />
+                  <ProductCard key={(relatedProduct as any).id} product={relatedProduct as any} />
                 ))}
               </div>
             </div>
