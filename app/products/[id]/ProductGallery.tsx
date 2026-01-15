@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
 
 type MediaItem = {
@@ -13,8 +13,58 @@ type Props = {
   media: MediaItem[];
 };
 
+function getKeyForItem(item: MediaItem) {
+  // Para imagens: agrupa webp/png do mesmo "nome" (ex: /preto.webp e /preto.png)
+  if (item.type === "image") {
+    return item.src.replace(/\.webp$/i, "").replace(/\.png$/i, "");
+  }
+  // Para vídeo: chave fixa por src
+  return item.src;
+}
+
+function isWebp(src: string) {
+  return /\.webp$/i.test(src);
+}
+
 export default function ProductGallery({ media }: Props) {
-  const [active, setActive] = useState(media[0]);
+  // 1) Dedup: mantém 1 miniatura por imagem (preferindo webp)
+  const uniqueMedia = useMemo(() => {
+    const map = new Map<string, MediaItem>();
+
+    for (const item of media) {
+      const key = getKeyForItem(item);
+      const existing = map.get(key);
+
+      if (!existing) {
+        map.set(key, item);
+        continue;
+      }
+
+      // Se já existe e o novo é WEBP, substitui (preferência)
+      if (item.type === "image" && existing.type === "image") {
+        if (isWebp(item.src) && !isWebp(existing.src)) {
+          map.set(key, item);
+        }
+      }
+    }
+
+    // Mantém a ordem original: vídeo primeiro, depois imagens
+    const ordered: MediaItem[] = [];
+    for (const item of media) {
+      const key = getKeyForItem(item);
+      const chosen = map.get(key);
+      if (chosen && !ordered.includes(chosen)) ordered.push(chosen);
+    }
+
+    return ordered.length ? ordered : media;
+  }, [media]);
+
+  const [active, setActive] = useState<MediaItem>(uniqueMedia[0]);
+
+  // Se o media mudar (deploy, troca de produto), garante active válido
+  useEffect(() => {
+    setActive(uniqueMedia[0]);
+  }, [uniqueMedia]);
 
   return (
     <div>
@@ -24,28 +74,32 @@ export default function ProductGallery({ media }: Props) {
           <video
             src={active.src}
             controls
+            playsInline
             style={{ width: "100%", borderRadius: 8 }}
           />
         ) : (
           <Image
             src={active.src}
             alt={active.alt || "Produto"}
-            width={600}
-            height={600}
+            width={900}
+            height={900}
             priority
-            style={{ borderRadius: 8 }}
+            style={{ borderRadius: 8, width: "100%", height: "auto" }}
           />
         )}
       </div>
 
       {/* Miniaturas embaixo */}
       <div style={{ display: "flex", gap: 12 }}>
-        {media.map((item, index) => (
+        {uniqueMedia.map((item, index) => (
           <button
-            key={index}
+            key={`${item.type}-${item.src}-${index}`}
             onClick={() => setActive(item)}
             style={{
-              border: active.src === item.src ? "2px solid #00ffff" : "1px solid #444",
+              border:
+                active.type === item.type && active.src === item.src
+                  ? "2px solid #00ffff"
+                  : "1px solid #444",
               padding: 2,
               borderRadius: 6,
               cursor: "pointer",
@@ -56,7 +110,13 @@ export default function ProductGallery({ media }: Props) {
               <video
                 src={item.src}
                 muted
-                style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 4 }}
+                playsInline
+                style={{
+                  width: 60,
+                  height: 60,
+                  objectFit: "cover",
+                  borderRadius: 4,
+                }}
               />
             ) : (
               <Image
@@ -64,7 +124,7 @@ export default function ProductGallery({ media }: Props) {
                 alt={item.alt || "Miniatura"}
                 width={60}
                 height={60}
-                style={{ borderRadius: 4 }}
+                style={{ borderRadius: 4, width: 60, height: 60, objectFit: "cover" }}
               />
             )}
           </button>
