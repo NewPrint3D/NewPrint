@@ -67,8 +67,9 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
     // Adiciona imagens conforme as cores do produto (se tiver mapeamento)
     for (const c of colors) {
       const key = normalizeHex(c)
-      const file = COLOR_TO_FILENAME[key]
-      if (file) {
+    const candidates = mediaForColor(basePath, key)
+if (candidates) items.push(...candidates)
+
         const candidates = mediaForColor(basePath, key)
 if (candidates) items.push(...candidates)
 
