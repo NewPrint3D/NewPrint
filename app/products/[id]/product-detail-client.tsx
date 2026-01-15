@@ -17,74 +17,58 @@ interface ProductDetailClientProps {
   relatedProducts: Product[]
 }
 
-type MediaItem = { type: "image" | "video"; src: string; alt?: string }
+type MediaItem = {
+  type: "image" | "video"
+  src: string
+  alt?: string
+}
 
-const normalizeHex = (hex?: string) => (hex || "").trim().toLowerCase()
+const normalizeHex = (hex?: string) =>
+  (hex || "").trim().toLowerCase().replace("#", "")
 
 const toArray = (v: any): string[] => {
-  if (Array.isArray(v)) return v.filter(Boolean).map(String).map((s) => s.trim()).filter(Boolean)
-  if (typeof v === "string") return v.split(",").map((s) => s.trim()).filter(Boolean)
+  if (Array.isArray(v)) return v.filter(Boolean).map(String)
+  if (typeof v === "string") return v.split(",").map(s => s.trim())
   return []
 }
-
-/**
- * Mapeia as cores (hex) para nomes de arquivo.
- * Você pode expandir esse mapa quando adicionar novas cores.
- */
-const COLOR_TO_BASENAME: Record<string, string> = {
-  "#000000": "preto",
-
-  // branco (você usa #F5F5F5 no admin)
-  "#ffffff": "branco",
-  "#f5f5f5": "branco",
-
-  "#212121": "cinza",
-
-  // vermelho (você usa #D32F2F no admin)
-  "#ff0000": "vermelho",
-  "#d32f2f": "vermelho",
-}
-
-
-function mediaForColor(basePath: string, hex: string) {
-  const name = COLOR_TO_BASENAME[hex]
-  if (!name) return null
-
-  return [
-    { type: "image" as const, src: `${basePath}/${name}.webp` },
-    { type: "image" as const, src: `${basePath}/${name}.png` },
-  ]
-}
-
 
 export function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
   const { t, locale } = useLanguage()
 
-  const productId = String((product as any).id ?? (product as any).product_id ?? (product as any).slug ?? "6")
+  const productId = String(
+    (product as any).id ??
+    (product as any).product_id ??
+    (product as any).slug
+  )
 
-  const colors = useMemo(() => toArray((product as any).colors), [product])
+  const colors = useMemo(
+    () => toArray((product as any).colors),
+    [product]
+  )
 
- const media = useMemo(() => {
-  const basePath = `/products/${productId}`
-  const items: MediaItem[] = []
+  const media: MediaItem[] = useMemo(() => {
+    const basePath = `/products/${productId}`
+    const items: MediaItem[] = []
 
-  // vídeo principal
-  items.push({ type: "video", src: `${basePath}/video.mp4` })
+    // Vídeo principal (opcional)
+    items.push({
+      type: "video",
+      src: `${basePath}/video.mp4`,
+    })
 
-  // imagens por cor (webp → png fallback)
-  for (const c of colors) {
-    const key = normalizeHex(c)
-    const baseName = COLOR_TO_BASENAME[key]
-    if (!baseName) continue
+    // Imagens por cor (HEX automático)
+    for (const c of colors) {
+      const hex = normalizeHex(c)
+      if (!hex) continue
 
-    items.push(
-      { type: "image", src: `${basePath}/${baseName}.webp` },
-      { type: "image", src: `${basePath}/${baseName}.png` }
-    )
-  }
+      items.push(
+        { type: "image", src: `${basePath}/colors/${hex}.webp` },
+        { type: "image", src: `${basePath}/colors/${hex}.png` } // fallback
+      )
+    }
 
-  return items
-}, [productId, colors])
+    return items
+  }, [productId, colors])
 
   return (
     <main className="min-h-screen">
@@ -103,13 +87,13 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                   <Badge variant="secondary" className="capitalize">
                     {(product as any).category}
                   </Badge>
-                  {(product as any).featured && (
-                    <Badge className="bg-accent text-accent-foreground">{t.common.featured}</Badge>
-                  )}
                 </div>
 
-                <h1 className="text-4xl font-bold mb-4 text-balance">
-                  {(product as any).name?.[locale] || (product as any).name_pt || (product as any).name || "Produto"}
+                <h1 className="text-4xl font-bold mb-4">
+                  {(product as any).name?.[locale] ||
+                    (product as any).name_pt ||
+                    (product as any).name ||
+                    "Produto"}
                 </h1>
 
                 <div className="flex items-center gap-2 mb-4">
@@ -118,10 +102,12 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                       <Star key={i} className="w-5 h-5 fill-primary text-primary" />
                     ))}
                   </div>
-                  <span className="text-muted-foreground">{t.product.reviewsCount.replace("{count}", "128")}</span>
+                  <span className="text-muted-foreground">
+                    {t.product.reviewsCount.replace("{count}", "128")}
+                  </span>
                 </div>
 
-                <p className="text-lg text-muted-foreground leading-relaxed">
+                <p className="text-lg text-muted-foreground">
                   {(product as any).description?.[locale] ||
                     (product as any).description_pt ||
                     (product as any).description ||
@@ -141,16 +127,12 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
             </TabsList>
 
             <TabsContent value="description" className="mt-6">
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground">
                 {(product as any).description?.[locale] ||
                   (product as any).description_pt ||
                   (product as any).description ||
                   ""}
               </p>
-            </TabsContent>
-
-            <TabsContent value="specifications" className="mt-6">
-              <p className="text-muted-foreground">{t.product.details.printQualityValue}</p>
             </TabsContent>
 
             <TabsContent value="shipping" className="mt-6">
