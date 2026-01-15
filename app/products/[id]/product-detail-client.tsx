@@ -33,10 +33,18 @@ const toArray = (v: any): string[] => {
  */
 const COLOR_TO_BASENAME: Record<string, string> = {
   "#000000": "preto",
+
+  // branco (você usa #F5F5F5 no admin)
   "#ffffff": "branco",
+  "#f5f5f5": "branco",
+
   "#212121": "cinza",
+
+  // vermelho (você usa #D32F2F no admin)
   "#ff0000": "vermelho",
+  "#d32f2f": "vermelho",
 }
+
 
 function mediaForColor(basePath: string, hex: string) {
   const name = COLOR_TO_BASENAME[hex]
