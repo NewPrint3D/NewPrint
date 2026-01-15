@@ -31,12 +31,23 @@ const toArray = (v: any): string[] => {
  * Mapeia as cores (hex) para nomes de arquivo.
  * Você pode expandir esse mapa quando adicionar novas cores.
  */
-const COLOR_TO_FILENAME: Record<string, string> = {
-  "#000000": "preto.png",
-  "#ffffff": "branco.png",
-  "#212121": "cinza.png",
-  "#ff0000": "vermelho.png",
+const COLOR_TO_BASENAME: Record<string, string> = {
+  "#000000": "preto",
+  "#ffffff": "branco",
+  "#212121": "cinza",
+  "#ff0000": "vermelho",
 }
+
+function mediaForColor(basePath: string, hex: string) {
+  const name = COLOR_TO_BASENAME[hex]
+  if (!name) return null
+
+  return [
+    { type: "image" as const, src: `${basePath}/${name}.webp` },
+    { type: "image" as const, src: `${basePath}/${name}.png` },
+  ]
+}
+
 
 export function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
   const { t, locale } = useLanguage()
@@ -58,7 +69,9 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
       const key = normalizeHex(c)
       const file = COLOR_TO_FILENAME[key]
       if (file) {
-        items.push({ type: "image", src: `${basePath}/${file}`, alt: `Produto ${file.replace(".png", "")}` })
+        const candidates = mediaForColor(basePath, key)
+if (candidates) items.push(...candidates)
+
       }
     }
 
