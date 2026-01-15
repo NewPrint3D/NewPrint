@@ -56,31 +56,27 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
   const colors = useMemo(() => toArray((product as any).colors), [product])
 
-  const media: MediaItem[] = useMemo(() => {
-    const basePath = `/products/${productId}`
+ const media = useMemo(() => {
+  const basePath = `/products/${productId}`
+  const items: MediaItem[] = []
 
-    const items: MediaItem[] = []
+  // vídeo principal
+  items.push({ type: "video", src: `${basePath}/video.mp4` })
 
-    // Sempre tenta carregar o vídeo principal (se existir)
-    items.push({ type: "video", src: `${basePath}/video.mp4` })
+  // imagens por cor (webp → png fallback)
+  for (const c of colors) {
+    const key = normalizeHex(c)
+    const baseName = COLOR_TO_BASENAME[key]
+    if (!baseName) continue
 
-    // Adiciona imagens conforme as cores do produto (se tiver mapeamento)
-    for (const c of colors) {
-      const key = normalizeHex(c)
-    const candidates = mediaForColor(basePath, key)
-if (candidates) items.push(...candidates)
+    items.push(
+      { type: "image", src: `${basePath}/${baseName}.webp` },
+      { type: "image", src: `${basePath}/${baseName}.png` }
+    )
+  }
 
-        const candidates = mediaForColor(basePath, key)
-if (candidates) items.push(...candidates)
-
-      }
-    }
-
-    // Se não houver cores cadastradas, você pode colocar ao menos 1 imagem padrão:
-    // items.push({ type: "image", src: `${basePath}/preto.png`, alt: "Produto" })
-
-    return items
-  }, [productId, colors])
+  return items
+}, [productId, colors])
 
   return (
     <main className="min-h-screen">
