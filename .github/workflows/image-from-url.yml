@@ -4,15 +4,21 @@ on:
   workflow_dispatch:
     inputs:
       image_url:
-        description: 'Cole aqui a URL da imagem'
+        description: "Cole aqui a URL da imagem"
         required: true
+
+      product_id:
+        description: "ID do produto (ex: 6)"
+        required: true
+
       file_name:
-        description: 'Nome do arquivo (sem extensão)'
+        description: "Nome do arquivo (sem extensão) - ex: 000000"
         required: true
+
       format:
-        description: 'Formato final (png, jpg ou webp)'
+        description: "Formato final (png, jpg ou webp)"
         required: true
-        default: 'webp'
+        default: "webp"
 
 jobs:
   convert-image:
@@ -29,15 +35,23 @@ jobs:
         run: |
           curl -L "${{ github.event.inputs.image_url }}" -o temp_image
 
-      - name: Converter imagem
+      - name: Converter imagem e salvar no caminho correto
         run: |
-          mkdir -p public/images
-          convert temp_image public/images/${{ github.event.inputs.file_name }}.${{ github.event.inputs.format }}
+          mkdir -p public/products/${{ github.event.inputs.product_id }}/colors
+          convert temp_image public/products/${{ github.event.inputs.product_id }}/colors/${{ github.event.inputs.file_name }}.${{ github.event.inputs.format }}
 
       - name: Commit da imagem convertida
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add public/images/
-          git commit -m "Add image ${{ github.event.inputs.file_name }}.${{ github.event.inputs.format }}"
+
+          git add public/products/
+
+          # evita falhar se não houver mudanças
+          if git diff --cached --quiet; then
+            echo "Nenhuma mudança para commitar."
+            exit 0
+          fi
+
+          git commit -m "Add product ${{ github.event.inputs.product_id }} color image ${{ github.event.inputs.file_name }}.${{ github.event.inputs.format }}"
           git push
