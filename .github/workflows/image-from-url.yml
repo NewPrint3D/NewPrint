@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       image_url:
-        description: "Cole aqui a URL da imagem"
+        description: "Cole aqui a URL direta da imagem (http/https)"
         required: true
 
       product_id:
@@ -12,7 +12,7 @@ on:
         required: true
 
       file_name:
-        description: "Nome do arquivo (sem extensão) - ex: 000000"
+        description: "Nome do arquivo (sem extensão) - ex: 000000, f5f5f5, d32f2f"
         required: true
 
       format:
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar o repositório
+      - name: Baixar o repositorio
         uses: actions/checkout@v4
 
       - name: Instalar ImageMagick
@@ -47,11 +47,10 @@ jobs:
 
           git add public/products/
 
-          # evita falhar se não houver mudanças
           if git diff --cached --quiet; then
             echo "Nenhuma mudança para commitar."
             exit 0
           fi
 
-          git commit -m "Add product ${{ github.event.inputs.product_id }} color image ${{ github.event.inputs.file_name }}.${{ github.event.inputs.format }}"
+          git commit -m "Add product ${{ github.event.inputs.product_id }} color ${{ github.event.inputs.file_name }}.${{ github.event.inputs.format }}"
           git push
