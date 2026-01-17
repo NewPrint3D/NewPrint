@@ -21,6 +21,9 @@ export const translations = {
       cart: "Cart",
      navLink: "Link", 
     },
+    auth: {
+    welcome: "Welcome",
+    },
     hero: {
       title: "Transform Your Ideas",
       subtitle: "Into Reality",
@@ -204,7 +207,10 @@ export const translations = {
       about: "Sobre",
       contact: "Contato",
       cart: "Carrinho",
-       navLink: "Link",
+      navLink: "Link",
+    },
+      auth: {
+      welcome: "Bem-vindo",
     },
     hero: {
       title: "Transforme Suas Ideias",
@@ -337,7 +343,10 @@ export const translations = {
       cart: "Carrito",
       navLink: "Enlace",
     },
-    hero: {
+      auth: {
+      welcome: "Bienvenido",
+    },
+   hero: {
       title: "Transforma Tus Ideas",
       subtitle: "En Realidad",
       description: "Servicios premium de impresión 3D con infinitas posibilidades de personalización",
