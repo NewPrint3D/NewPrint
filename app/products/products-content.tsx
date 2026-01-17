@@ -13,8 +13,6 @@ export function ProductsContent() {
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // Mantém leitura de URL (se alguém acessar /products?category=...),
-  // mas como removemos os filtros da UI, isso fica "passivo".
   const [filterState] = useState({
     category: searchParams.get("category") || "all",
     priceRange: [
@@ -42,27 +40,24 @@ export function ProductsContent() {
     fetchProducts()
   }, [locale])
 
-  // Mantém a URL "limpa" (evita ficar preso em parâmetros antigos)
   useEffect(() => {
-    const newURL = "/products"
-    router.replace(newURL, { scroll: false })
+    router.replace("/products", { scroll: false })
   }, [router])
 
   const filteredProducts = products.filter((product) => {
-    if (filterState.category !== "all" && product.category !== filterState.category) {
-      return false
-    }
-    if (product.basePrice < filterState.priceRange[0] || product.basePrice > filterState.priceRange[1]) {
-      return false
-    }
+    if (filterState.category !== "all" && product.category !== filterState.category) return false
+    if (product.basePrice < filterState.priceRange[0] || product.basePrice > filterState.priceRange[1]) return false
+
     if (filterState.colors.length > 0) {
       const hasMatchingColor = product.colors.some((color) => filterState.colors.includes(color))
       if (!hasMatchingColor) return false
     }
+
     if (filterState.materials.length > 0) {
       const hasMatchingMaterial = product.materials.some((material) => filterState.materials.includes(material))
       if (!hasMatchingMaterial) return false
     }
+
     return true
   })
 
@@ -84,9 +79,17 @@ export function ProductsContent() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div
+        className={[
+          "grid gap-6",
+          "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3",
+          filteredProducts.length === 1 ? "justify-items-center" : "",
+        ].join(" ")}
+      >
         {filteredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <div key={product.id} className={filteredProducts.length === 1 ? "w-full max-w-sm" : ""}>
+            <ProductCard product={product} />
+          </div>
         ))}
       </div>
 
