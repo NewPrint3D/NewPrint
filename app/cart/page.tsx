@@ -9,6 +9,21 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Trash2, ShoppingBag, ArrowRight } from "lucide-react"
 import Link from "next/link"
+const COLOR_NAME_MAP: Record<string, string> = {
+  "#000000": "Preto",
+  "#ffffff": "Branco",
+  "#f5f5f5": "Branco",
+
+  "#212121": "Cinza",
+  "#808080": "Cinza",
+
+  "#ff0000": "Vermelho",
+  "#d32f2f": "Vermelho",
+}
+function getColorName(color?: string) {
+  if (!color) return ""
+  return COLOR_NAME_MAP[color.toLowerCase()] ?? color
+}
 
 export default function CartPage() {
   const { t, locale } = useLanguage()
@@ -124,7 +139,7 @@ export default function CartPage() {
                               {t.cart.color}:
                             </span>{" "}
                             <span className="font-medium">
-                              {item.selectedColor}
+                            {getColorName(item.selectedColor)}
                             </span>
                           </div>
 
