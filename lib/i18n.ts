@@ -291,6 +291,36 @@ export const translations = {
       zipCode: "CEP",
       country: "País",
     },
+
+    orders: {
+      title: "Meus Pedidos",
+      noOrders: "Nenhum pedido ainda",
+      noOrdersDescription: "Comece a comprar para ver seus pedidos aqui",
+    },
+
+    contact: {
+      title: "Entre em Contato",
+      subtitle: "Tem um projeto em mente? Vamos tirar do papel juntos",
+      form: {
+        name: "Seu Nome",
+        email: "Seu E-mail",
+        subject: "Assunto",
+        message: "Sua Mensagem",
+        send: "Enviar Mensagem",
+        sending: "Enviando...",
+        success: "Mensagem enviada com sucesso!",
+      },
+      info: {
+        title: "Informações de Contato",
+        email: "contacto@newprint3d.com",
+        hours: "Seg - Sex: 9:00 - 18:00",
+      },
+      quickResponse: {
+        title: "Resposta Rápida",
+        description: "Normalmente respondemos em até 24 horas (dias úteis)",
+      },
+    },
+
     aria: {
       loading: "Carregando",
     },
@@ -392,6 +422,36 @@ export const translations = {
       zipCode: "Código Postal",
       country: "País",
     },
+
+    orders: {
+      title: "Mis Pedidos",
+      noOrders: "Aún no hay pedidos",
+      noOrdersDescription: "Empieza a comprar para ver tus pedidos aquí",
+    },
+
+    contact: {
+      title: "Ponte en Contacto",
+      subtitle: "¿Tienes un proyecto en mente? Vamos a hacerlo realidad juntos",
+      form: {
+        name: "Tu Nombre",
+        email: "Tu Correo",
+        subject: "Asunto",
+        message: "Tu Mensaje",
+        send: "Enviar Mensaje",
+        sending: "Enviando...",
+        success: "¡Mensaje enviado con éxito!",
+      },
+      info: {
+        title: "Información de Contacto",
+        email: "contacto@newprint3d.com",
+        hours: "Lun - Vie: 9:00 - 18:00",
+      },
+      quickResponse: {
+        title: "Respuesta Rápida",
+        description: "Normalmente respondemos en 24 horas (días hábiles)",
+      },
+    },
+
     aria: {
       loading: "Cargando",
     },
