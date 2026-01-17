@@ -18,8 +18,8 @@ import { useLanguage } from "@/contexts/language-context"
 
 type CartItem = {
   product?: {
-    name?: { en?: string; pt?: string; es?: string } | string
-    description?: { en?: string; pt?: string; es?: string } | string
+    name?: { en?: string } | string
+    description?: { en?: string } | string
     imageUrl?: string
   }
   price: number | string
@@ -148,16 +148,14 @@ export default function CheckoutPage() {
           })),
           userId: null,
           shippingInfo: formData,
-          locale, // ✅ AQUI
+          // ✅ importante: também envia o idioma atual
+          locale,
         }),
       })
 
       const data = await response.json()
 
-      if (!response.ok) {
-        throw new Error(data?.error || "Failed to create Stripe checkout.")
-      }
-
+      if (!response.ok) throw new Error(data?.error || "Failed to create Stripe checkout.")
       if (!data?.url) {
         console.log("Stripe response:", data)
         throw new Error("Stripe checkout URL is missing.")
@@ -205,16 +203,14 @@ export default function CheckoutPage() {
           })),
           userId: null,
           shippingInfo: formData,
-          locale, // ✅ (não atrapalha e ajuda se você usar depois)
+          // ✅ aqui é o que faz o PayPal seguir o idioma do checkout
+          locale,
         }),
       })
 
       const data = await response.json()
 
-      if (!response.ok) {
-        throw new Error(data?.error || "Failed to create PayPal order.")
-      }
-
+      if (!response.ok) throw new Error(data?.error || "Failed to create PayPal order.")
       if (!data?.approveUrl) {
         console.log("PayPal response:", data)
         throw new Error("PayPal approval URL is missing.")
@@ -329,7 +325,9 @@ export default function CheckoutPage() {
                         <div key={idx} className="flex items-center justify-between gap-3">
                           <div className="text-sm">
                             <div className="font-medium">{name || "Product"}</div>
-                            <div className="opacity-70">Qty: {qty} × € {to2(price)}</div>
+                            <div className="opacity-70">
+                              Qty: {qty} × € {to2(price)}
+                            </div>
                           </div>
                           <div className="font-medium">€ {to2(price * qty)}</div>
                         </div>
@@ -377,9 +375,7 @@ export default function CheckoutPage() {
                   {!canSubmit ? (
                     <p className="text-xs opacity-70">Fill in all fields to enable payment.</p>
                   ) : (
-                    <p className="text-xs text-center text-muted-foreground">
-                      🔒 Secure payment • Encrypted checkout • No card data stored
-                    </p>
+                    <p className="text-xs text-center text-muted-foreground">🔒 Secure payment • Encrypted checkout • No card data stored</p>
                   )}
                 </CardContent>
               </Card>
