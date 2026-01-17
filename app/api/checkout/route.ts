@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { stripe } from "@/lib/stripe"
+import type Stripe from "stripe"
 
 export async function POST(req: Request) {
   try {
@@ -10,7 +11,8 @@ export async function POST(req: Request) {
     const { items, shippingInfo, locale } = await req.json()
 
     // Stripe Checkout language (follow site language)
-    const stripeLocale = locale === "pt" ? "pt-PT" : locale === "es" ? "es" : "en"
+    const stripeLocale: Stripe.Checkout.SessionCreateParams.Locale =
+      locale === "pt" ? "pt-BR" : locale === "es" ? "es" : "en"
 
     const line_items = items.map((item: any) => ({
       price_data: {
