@@ -226,7 +226,10 @@ export function ProductCustomizer({
             {colorName ? (
               <span className="font-medium text-foreground">{colorName}</span>
             ) : (
-              <span className="italic">{t.product?.selectColorHint ?? "Selecione uma cor pelas imagens."}</span>
+            <span className="italic">
+  {t.products.selectColorHint}
+</span>
+
             )}
           </div>
 
