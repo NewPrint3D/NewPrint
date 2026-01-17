@@ -1,74 +1,77 @@
-"use client";
+"use client"
 
-import { useMemo, useState, useEffect } from "react";
-import Image from "next/image";
+import { useMemo, useState, useEffect } from "react"
+import Image from "next/image"
 
 type MediaItem = {
-  type: "image" | "video";
-  src: string;
-  alt?: string;
-};
+  type: "image" | "video"
+  src: string
+  alt?: string
+  hex?: string
+  colorName?: { pt: string; en: string; es: string }
+}
 
 type Props = {
-  media: MediaItem[];
-};
+  media: MediaItem[]
+  onSelectItem?: (item: MediaItem) => void
+}
 
 function getKeyForItem(item: MediaItem) {
-  // Para imagens: agrupa webp/png do mesmo "nome" (ex: /preto.webp e /preto.png)
   if (item.type === "image") {
-    return item.src.replace(/\.webp$/i, "").replace(/\.png$/i, "");
+    return item.src.replace(/\.webp$/i, "").replace(/\.png$/i, "")
   }
-  // Para vídeo: chave fixa por src
-  return item.src;
+  return item.src
 }
 
 function isWebp(src: string) {
-  return /\.webp$/i.test(src);
+  return /\.webp$/i.test(src)
 }
 
-export default function ProductGallery({ media }: Props) {
-  // 1) Dedup: mantém 1 miniatura por imagem (preferindo webp)
+export default function ProductGallery({ media, onSelectItem }: Props) {
   const uniqueMedia = useMemo(() => {
-    const map = new Map<string, MediaItem>();
+    const map = new Map<string, MediaItem>()
 
     for (const item of media) {
-      const key = getKeyForItem(item);
-      const existing = map.get(key);
+      const key = getKeyForItem(item)
+      const existing = map.get(key)
 
       if (!existing) {
-        map.set(key, item);
-        continue;
+        map.set(key, item)
+        continue
       }
 
-      // Se já existe e o novo é WEBP, substitui (preferência)
       if (item.type === "image" && existing.type === "image") {
         if (isWebp(item.src) && !isWebp(existing.src)) {
-          map.set(key, item);
+          map.set(key, item)
         }
       }
     }
 
-    // Mantém a ordem original: vídeo primeiro, depois imagens
-    const ordered: MediaItem[] = [];
+    const ordered: MediaItem[] = []
     for (const item of media) {
-      const key = getKeyForItem(item);
-      const chosen = map.get(key);
-      if (chosen && !ordered.includes(chosen)) ordered.push(chosen);
+      const key = getKeyForItem(item)
+      const chosen = map.get(key)
+      if (chosen && !ordered.includes(chosen)) ordered.push(chosen)
     }
 
-    return ordered.length ? ordered : media;
-  }, [media]);
+    return ordered.length ? ordered : media
+  }, [media])
 
-  const [active, setActive] = useState<MediaItem>(uniqueMedia[0]);
+  const [active, setActive] = useState<MediaItem | null>(null)
 
-  // Se o media mudar (deploy, troca de produto), garante active válido
   useEffect(() => {
-    setActive(uniqueMedia[0]);
-  }, [uniqueMedia]);
+    if (uniqueMedia.length) {
+      setActive(uniqueMedia[0])
+      onSelectItem?.(uniqueMedia[0])
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uniqueMedia])
+
+  if (!active) return null
 
   return (
     <div>
-      {/* Mídia principal */}
+      {/* mídia principal */}
       <div style={{ marginBottom: 16 }}>
         {active.type === "video" ? (
           <video
@@ -89,15 +92,18 @@ export default function ProductGallery({ media }: Props) {
         )}
       </div>
 
-      {/* Miniaturas embaixo */}
+      {/* miniaturas */}
       <div style={{ display: "flex", gap: 12 }}>
         {uniqueMedia.map((item, index) => (
           <button
             key={`${item.type}-${item.src}-${index}`}
-            onClick={() => setActive(item)}
+            onClick={() => {
+              setActive(item)
+              onSelectItem?.(item)
+            }}
             style={{
               border:
-                active.type === item.type && active.src === item.src
+                active.src === item.src
                   ? "2px solid #00ffff"
                   : "1px solid #444",
               padding: 2,
@@ -124,12 +130,17 @@ export default function ProductGallery({ media }: Props) {
                 alt={item.alt || "Miniatura"}
                 width={60}
                 height={60}
-                style={{ borderRadius: 4, width: 60, height: 60, objectFit: "cover" }}
+                style={{
+                  borderRadius: 4,
+                  width: 60,
+                  height: 60,
+                  objectFit: "cover",
+                }}
               />
             )}
           </button>
         ))}
       </div>
     </div>
-  );
+  )
 }
