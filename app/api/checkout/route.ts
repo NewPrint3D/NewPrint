@@ -8,11 +8,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Stripe not configured" }, { status: 500 })
     }
 
-    const { items, shippingInfo, locale } = await req.json()
+    const body = await req.json()
+    const items = body?.items ?? []
+    const shippingInfo = body?.shippingInfo
+    const localeRaw = body?.locale
 
-    // Stripe Checkout language (follow site language)
+    // ✅ garante locale vindo do frontend
+    const locale = (localeRaw === "pt" || localeRaw === "es" || localeRaw === "en") ? localeRaw : "en"
+
+    // ✅ idioma do Stripe Checkout (tipo correto do Stripe)
     const stripeLocale: Stripe.Checkout.SessionCreateParams.Locale =
       locale === "pt" ? "pt-BR" : locale === "es" ? "es" : "en"
+
+    // ✅ nome do frete traduzido
+    const shippingLabel =
+      locale === "pt" ? "Envio" : locale === "es" ? "Envío" : "Shipping"
 
     const line_items = items.map((item: any) => ({
       price_data: {
@@ -32,12 +42,11 @@ export async function POST(req: Request) {
 
     const shippingAmount = subtotal >= 50 ? 0 : 5.99
 
-    // Add shipping only if not free
     if (shippingAmount > 0) {
       line_items.push({
         price_data: {
           currency: "eur",
-          product_data: { name: "Shipping" },
+          product_data: { name: shippingLabel },
           unit_amount: Math.round(shippingAmount * 100),
         },
         quantity: 1,
