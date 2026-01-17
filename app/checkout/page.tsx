@@ -15,12 +15,11 @@ import { useToast } from "@/components/ui/use-toast"
 
 import { useCart } from "@/contexts/cart-context"
 import { useLanguage } from "@/contexts/language-context"
-import { formatCurrency } from "@/lib/intl"
 
 type CartItem = {
   product?: {
-    name?: { en?: string } | string
-    description?: { en?: string } | string
+    name?: { en?: string; pt?: string; es?: string } | string
+    description?: { en?: string; pt?: string; es?: string } | string
     imageUrl?: string
   }
   price: number | string
@@ -64,18 +63,10 @@ export default function CheckoutPage() {
         : "Pay by Card (Credit/Debit)"
 
   const payPalLabel =
-    locale === "pt"
-      ? "Pagar com PayPal"
-      : locale === "es"
-        ? "Pagar con PayPal"
-        : "Pay with PayPal"
+    locale === "pt" ? "Pagar com PayPal" : locale === "es" ? "Pagar con PayPal" : "Pay with PayPal"
 
   const processingLabel =
-    locale === "pt"
-      ? "Processando..."
-      : locale === "es"
-        ? "Procesando..."
-        : "Processing..."
+    locale === "pt" ? "Processando..." : locale === "es" ? "Procesando..." : "Processing..."
 
   const { items } = useCart() as { items: CartItem[] }
   const [isProcessing, setIsProcessing] = useState(false)
@@ -105,9 +96,7 @@ export default function CheckoutPage() {
     }, 0)
   }, [items])
 
-  const freeShippingThreshold = 50
-  const shipping = subtotal >= freeShippingThreshold ? 0 : 5.99
-  const missingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal)
+  const shipping = subtotal >= 50 ? 0 : 5.99
   const total = useMemo(() => subtotal + shipping, [subtotal, shipping])
 
   const canSubmit = useMemo(() => {
@@ -130,6 +119,9 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, [id]: value }))
   }
 
+  // =========================
+  // STRIPE (DO NOT TOUCH API)
+  // =========================
   const handleCheckout = async () => {
     if (!canSubmit) {
       toast({
@@ -156,6 +148,7 @@ export default function CheckoutPage() {
           })),
           userId: null,
           shippingInfo: formData,
+          locale, // ✅ AQUI
         }),
       })
 
@@ -183,6 +176,9 @@ export default function CheckoutPage() {
     }
   }
 
+  // =========================
+  // PAYPAL (DO NOT TOUCH API)
+  // =========================
   const handlePayPalCheckout = async () => {
     if (!canSubmit) {
       toast({
@@ -209,6 +205,7 @@ export default function CheckoutPage() {
           })),
           userId: null,
           shippingInfo: formData,
+          locale, // ✅ (não atrapalha e ajuda se você usar depois)
         }),
       })
 
@@ -315,35 +312,10 @@ export default function CheckoutPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                  {/* MENSAGEM FRETE GRÁTIS */}
-                  <div className="rounded-2xl border bg-muted/30 p-4">
-                    {missingForFreeShipping > 0 ? (
-                      <div className="flex items-start gap-3">
-                        <div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary" />
-                        <div className="text-sm">
-                          <p className="font-medium">
-                            {t.cart.missingForFreeShipping} {formatCurrency(missingForFreeShipping, locale)}
-                          </p>
-                          <p className="text-muted-foreground">{t.cart.freeShippingAbove50}</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-start gap-3">
-                        <div className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                        <div className="text-sm">
-                          <p className="font-medium">{t.cart.freeShippingApplied}</p>
-                          <p className="text-muted-foreground">{t.cart.freeShippingAbove50}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
                   <div className="space-y-3">
                     {items.map((it, idx) => {
                       type NameObj = { en?: string; pt?: string; es?: string }
-                      const loc = (
-                        locale === "pt" || locale === "es" || locale === "en" ? locale : "en"
-                      ) as keyof NameObj
+                      const loc = (locale === "pt" || locale === "es" || locale === "en" ? locale : "en") as keyof NameObj
 
                       const name =
                         typeof it.product?.name === "object"
@@ -368,18 +340,18 @@ export default function CheckoutPage() {
                   <div className="border-t pt-4 space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>{t.cart.subtotal}</span>
-                      <span>{formatCurrency(subtotal, locale)}</span>
+                      <span>€ {to2(subtotal)}</span>
                     </div>
 
                     <div className="flex justify-between">
                       <span>{t.cart.shipping}</span>
-                      <span>{formatCurrency(shipping, locale)}</span>
+                      <span>€ {to2(shipping)}</span>
                     </div>
                   </div>
 
                   <div className="border-t pt-4 flex justify-between items-center">
                     <span className="text-lg font-semibold">Total</span>
-                    <span className="text-xl font-bold">{formatCurrency(total, locale)}</span>
+                    <span className="text-xl font-bold">€ {to2(total)}</span>
                   </div>
 
                   <div className="space-y-3 pt-2">
