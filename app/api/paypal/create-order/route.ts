@@ -33,6 +33,15 @@ function safeNumber(v: unknown) {
   return Number.isFinite(n) ? n : 0
 }
 
+function mapSiteLocaleToPayPalLocale(siteLocale?: string) {
+  // PayPal espera locale tipo "es-ES", "en-US", "pt-BR/pt-PT"
+  const l = (siteLocale || "").toLowerCase()
+  if (l === "es") return "es-ES"
+  if (l === "pt") return "pt-PT"
+  if (l === "en") return "en-US"
+  return "es-ES" // fallback: seu foco principal
+}
+
 async function getPayPalAccessToken() {
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
   const clientSecret = process.env.PAYPAL_CLIENT_SECRET
@@ -73,13 +82,11 @@ export async function POST(req: Request) {
 
     const items: CartItem[] = Array.isArray(body?.items) ? body.items : []
     const customerData: CustomerData = body?.customerData || body?.shippingInfo || {}
+    const siteLocale: string | undefined = body?.locale // ✅ vem do checkout
 
     if (!items.length) {
       return NextResponse.json({ error: "No items in cart" }, { status: 400 })
     }
-
-    // ✅ FOCO PRINCIPAL: sempre abrir em espanhol no PayPal
-    const PAYPAL_LOCALE = "es-ES"
 
     // total dos itens
     const itemTotal = items.reduce((sum, it) => {
@@ -101,13 +108,13 @@ export async function POST(req: Request) {
     const paypalItems = items.map((it) => {
       const name =
         (typeof it.product?.name === "object"
-          ? it.product?.name?.es || it.product?.name?.en || it.product?.name?.pt
-          : it.product?.name) || "Producto impreso en 3D"
+          ? (it.product?.name?.es || it.product?.name?.en || it.product?.name?.pt)
+          : it.product?.name) || "3D Printed Product"
 
       const descRaw =
         (typeof it.product?.description === "object"
-          ? it.product?.description?.es || it.product?.description?.en || it.product?.description?.pt
-          : it.product?.description) || "Producto impreso en 3D"
+          ? (it.product?.description?.es || it.product?.description?.en || it.product?.description?.pt)
+          : it.product?.description) || "3D Printed Product"
 
       const price = safeNumber(it.price)
       const qty = Math.max(1, Math.floor(safeNumber(it.quantity)))
@@ -145,7 +152,8 @@ export async function POST(req: Request) {
       ],
       application_context: {
         brand_name: "NewPrint3D",
-        locale: PAYPAL_LOCALE, // ✅ espanhol sempre
+        // ✅ AQUI: PayPal segue o idioma do checkout
+        locale: mapSiteLocaleToPayPalLocale(siteLocale),
         landing_page: "BILLING",
         user_action: "PAY_NOW",
         return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/order-success`,
@@ -158,7 +166,6 @@ export async function POST(req: Request) {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
-        "Accept-Language": PAYPAL_LOCALE, // ✅ força idioma no PayPal
       },
       body: JSON.stringify(orderPayload),
       cache: "no-store",
