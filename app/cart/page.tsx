@@ -32,7 +32,9 @@ export default function CartPage() {
                 </div>
 
                 <h1 className="text-3xl font-bold mb-4">{t.cart.empty}</h1>
-                <p className="text-muted-foreground mb-8">{t.cart.emptyDescription}</p>
+                <p className="text-muted-foreground mb-8">
+                  {t.cart.emptyDescription}
+                </p>
 
                 <Button asChild size="lg">
                   <Link href="/products">
@@ -52,6 +54,7 @@ export default function CartPage() {
   return (
     <main className="min-h-screen">
       <Navbar />
+
       <div className="pt-24 pb-12">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-8">{t.cart.title}</h1>
@@ -64,10 +67,19 @@ export default function CartPage() {
                 >
                   <CardContent className="p-6">
                     <div className="flex gap-6">
+                      {/* IMAGEM CORRETA DA VARIAÇÃO */}
                       <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                         <img
-                          src={item.product.image || "/placeholder.svg"}
-                          alt={item.product.name?.[locale] ?? item.product.name?.en ?? "Product"}
+                          src={
+                            (item as any).selectedImage ||
+                            item.product.image ||
+                            "/placeholder.svg"
+                          }
+                          alt={
+                            item.product.name?.[locale] ??
+                            item.product.name?.en ??
+                            "Product"
+                          }
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -76,8 +88,11 @@ export default function CartPage() {
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <h3 className="font-bold text-lg mb-1">
-                              {item.product.name?.[locale] ?? item.product.name?.en ?? "Product"}
+                              {item.product.name?.[locale] ??
+                                item.product.name?.en ??
+                                "Product"}
                             </h3>
+
                             <p className="text-sm text-muted-foreground">
                               {item.product.description?.[locale] ??
                                 item.product.description?.en ??
@@ -102,23 +117,33 @@ export default function CartPage() {
                           </Button>
                         </div>
 
+                        {/* VARIAÇÕES */}
                         <div className="flex flex-wrap gap-4 mb-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">{t.cart.color}:</span>
-                            <div
-                              className="w-5 h-5 rounded-full border-2 border-border"
-                              style={{ backgroundColor: item.selectedColor }}
-                            />
+                          <div>
+                            <span className="text-muted-foreground">
+                              {t.cart.color}:
+                            </span>{" "}
+                            <span className="font-medium">
+                              {item.selectedColor}
+                            </span>
                           </div>
 
                           <div>
-                            <span className="text-muted-foreground">{t.cart.size}:</span>{" "}
-                            <span className="font-medium">{item.selectedSize}</span>
+                            <span className="text-muted-foreground">
+                              {t.cart.size}:
+                            </span>{" "}
+                            <span className="font-medium">
+                              {item.selectedSize}
+                            </span>
                           </div>
 
                           <div>
-                            <span className="text-muted-foreground">{t.cart.material}:</span>{" "}
-                            <span className="font-medium">{item.selectedMaterial}</span>
+                            <span className="text-muted-foreground">
+                              {t.cart.material}:
+                            </span>{" "}
+                            <span className="font-medium">
+                              {item.selectedMaterial}
+                            </span>
                           </div>
                         </div>
 
@@ -141,7 +166,9 @@ export default function CartPage() {
                               -
                             </Button>
 
-                            <span className="font-medium w-8 text-center">{item.quantity}</span>
+                            <span className="font-medium w-8 text-center">
+                              {item.quantity}
+                            </span>
 
                             <Button
                               variant="outline"
@@ -163,10 +190,14 @@ export default function CartPage() {
 
                           <div className="text-right">
                             <p className="text-sm text-muted-foreground">
-                              {formatCurrency(item.price, locale)} {t.cart.perItem}
+                              {formatCurrency(item.price, locale)}{" "}
+                              {t.cart.perItem}
                             </p>
                             <p className="text-xl font-bold text-primary">
-                              {formatCurrency(item.price * item.quantity, locale)}
+                              {formatCurrency(
+                                item.price * item.quantity,
+                                locale
+                              )}
                             </p>
                           </div>
                         </div>
@@ -177,6 +208,7 @@ export default function CartPage() {
               ))}
             </div>
 
+            {/* RESUMO */}
             <div className="lg:col-span-1">
               <Card className="sticky top-24">
                 <CardContent className="p-6 space-y-4">
@@ -184,37 +216,32 @@ export default function CartPage() {
                     {t.cart.orderSummary ?? t.checkout.orderSummary}
                   </h2>
 
-                  <div className="mb-4 rounded-lg border p-3 text-sm">
-                    <div className="font-medium">🚚 {t.cart.freeShippingAbove50}</div>
-
-                    {missingForFreeShipping > 0 ? (
-                      <div className="text-muted-foreground mt-1">
-                        💡 {t.cart.missingForFreeShipping}{" "}
-                        {formatCurrency(missingForFreeShipping, locale)}
-                      </div>
-                    ) : (
-                      <div className="text-muted-foreground mt-1">
-                        ✅ {t.cart.freeShippingApplied}
-                      </div>
-                    )}
-                  </div>
-
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{t.cart.subtotal}</span>
-                      <span className="font-medium">{formatCurrency(totalPrice, locale)}</span>
+                      <span className="text-muted-foreground">
+                        {t.cart.subtotal}
+                      </span>
+                      <span className="font-medium">
+                        {formatCurrency(totalPrice, locale)}
+                      </span>
                     </div>
 
                     {shipping > 0 && (
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">{t.cart.shipping}</span>
-                        <span className="font-medium">{formatCurrency(shipping, locale)}</span>
+                        <span className="text-muted-foreground">
+                          {t.cart.shipping}
+                        </span>
+                        <span className="font-medium">
+                          {formatCurrency(shipping, locale)}
+                        </span>
                       </div>
                     )}
 
                     <div className="border-t border-border pt-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold">{t.cart.orderTotal}</span>
+                        <span className="text-lg font-bold">
+                          {t.cart.orderTotal}
+                        </span>
                         <span className="text-2xl font-bold text-primary">
                           {formatCurrency(orderTotal, locale)}
                         </span>
@@ -222,18 +249,21 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  <Button asChild size="lg" className="w-full group relative overflow-hidden mt-6">
+                  <Button asChild size="lg" className="w-full mt-6">
                     <Link href="/checkout">
-                      <span className="relative z-10 flex items-center justify-center gap-2">
-                        {t.cart.proceedToCheckout}
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
-                      </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      {t.cart.proceedToCheckout}
                     </Link>
                   </Button>
 
-                  <Button asChild variant="outline" size="lg" className="w-full bg-transparent">
-                    <Link href="/products">{t.cart.continueShopping}</Link>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    className="w-full bg-transparent"
+                  >
+                    <Link href="/products">
+                      {t.cart.continueShopping}
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -241,6 +271,7 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+
       <Footer />
     </main>
   )
