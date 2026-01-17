@@ -58,6 +58,7 @@ export const translations = {
       addToCart: "Add to Cart",
       viewDetails: "View Details",
       from: "From",
+      selectColorHint: "Select the color by clicking on the image",
     },
     footer: {
       description: "Your trusted partner for custom 3D printed products",
@@ -498,6 +499,7 @@ export const translations = {
       addToCart: "Adicionar ao Carrinho",
       viewDetails: "Ver Detalhes",
       from: "A partir de",
+      selectColorHint: "Selecione a cor clicando na imagem",
     },
     footer: {
       description: "Seu parceiro confiável para produtos impressos em 3D personalizados",
@@ -933,6 +935,7 @@ export const translations = {
       addToCart: "Añadir al Carrito",
       viewDetails: "Ver Detalles",
       from: "Desde",
+      selectColorHint: "Selecciona el color haciendo clic en la imagen",
     },
     footer: {
       description: "Tu socio confiable para productos impresos en 3D personalizados",
