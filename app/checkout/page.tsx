@@ -15,6 +15,8 @@ import { useToast } from "@/components/ui/use-toast"
 
 import { useCart } from "@/contexts/cart-context"
 import { useLanguage } from "@/contexts/language-context"
+import { formatCurrency } from "@/lib/intl"
+
 type CartItem = {
   product?: {
     name?: { en?: string } | string
@@ -53,27 +55,28 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { t, locale } = useLanguage()
- const payCardLabel =
-  locale === "pt"
-    ? "Pagar com Cartão (Crédito/Débito)"
-    : locale === "es"
-      ? "Pagar con Tarjeta (Crédito/Débito)"
-      : "Pay by Card (Credit/Debit)"
 
-const payPalLabel =
-  locale === "pt"
-    ? "Pagar com PayPal"
-    : locale === "es"
-      ? "Pagar con PayPal"
-      : "Pay with PayPal"
+  const payCardLabel =
+    locale === "pt"
+      ? "Pagar com Cartão (Crédito/Débito)"
+      : locale === "es"
+        ? "Pagar con Tarjeta (Crédito/Débito)"
+        : "Pay by Card (Credit/Debit)"
 
-const processingLabel =
-  locale === "pt"
-    ? "Processando..."
-    : locale === "es"
-      ? "Procesando..."
-      : "Processing..."
- 
+  const payPalLabel =
+    locale === "pt"
+      ? "Pagar com PayPal"
+      : locale === "es"
+        ? "Pagar con PayPal"
+        : "Pay with PayPal"
+
+  const processingLabel =
+    locale === "pt"
+      ? "Processando..."
+      : locale === "es"
+        ? "Procesando..."
+        : "Processing..."
+
   const { items } = useCart() as { items: CartItem[] }
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -102,7 +105,9 @@ const processingLabel =
     }, 0)
   }, [items])
 
-  const shipping = subtotal >= 50 ? 0 : 5.99
+  const freeShippingThreshold = 50
+  const shipping = subtotal >= freeShippingThreshold ? 0 : 5.99
+  const missingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal)
   const total = useMemo(() => subtotal + shipping, [subtotal, shipping])
 
   const canSubmit = useMemo(() => {
@@ -257,98 +262,52 @@ const processingLabel =
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                     <Label htmlFor="firstName">{t.checkout.firstName}</Label>
-                      <Input
-                        id="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        required
-                      />
+                      <Label htmlFor="firstName">{t.checkout.firstName}</Label>
+                      <Input id="firstName" value={formData.firstName} onChange={handleInputChange} required />
                     </div>
 
                     <div>
                       <Label htmlFor="lastName">{t.checkout.lastName}</Label>
-                      <Input
-                        id="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        required
-                      />
+                      <Input id="lastName" value={formData.lastName} onChange={handleInputChange} required />
                     </div>
                   </div>
 
                   <div>
                     <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Input id="email" type="email" value={formData.email} onChange={handleInputChange} required />
                   </div>
 
                   <div>
                     <Label htmlFor="phone">{t.checkout.phone}</Label>
-                    <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Input id="phone" value={formData.phone} onChange={handleInputChange} required />
                   </div>
 
                   <div>
                     <Label htmlFor="address">{t.checkout.address}</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      required
-                    />
+                    <Input id="address" value={formData.address} onChange={handleInputChange} required />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="city">{t.checkout.city}</Label>
-                      <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        required
-                      />
+                      <Input id="city" value={formData.city} onChange={handleInputChange} required />
                     </div>
 
                     <div>
                       <Label htmlFor="state">{t.checkout.state}</Label>
-                      <Input
-                        id="state"
-                        value={formData.state}
-                        onChange={handleInputChange}
-                        required
-                      />
+                      <Input id="state" value={formData.state} onChange={handleInputChange} required />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="zipCode">{t.checkout.zipCode}</Label>
-                      <Input
-                        id="zipCode"
-                        value={formData.zipCode}
-                        onChange={handleInputChange}
-                        required
-                      />
+                      <Input id="zipCode" value={formData.zipCode} onChange={handleInputChange} required />
                     </div>
 
                     <div>
                       <Label htmlFor="country">{t.checkout.country}</Label>
-                      <Input
-                        id="country"
-                        value={formData.country}
-                        onChange={handleInputChange}
-                        required
-                      />
+                      <Input id="country" value={formData.country} onChange={handleInputChange} required />
                     </div>
                   </div>
                 </CardContent>
@@ -362,30 +321,53 @@ const processingLabel =
                 </CardHeader>
 
                 <CardContent className="space-y-4">
+                  {/* MENSAGEM FRETE GRÁTIS (INSERIDA AQUI) */}
+                  <div className="rounded-2xl border bg-muted/30 p-4">
+                    {missingForFreeShipping > 0 ? (
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary" />
+                        <div className="text-sm">
+                          <p className="font-medium">
+                            Falta {formatCurrency(missingForFreeShipping, locale)} para ganhar frete grátis
+                          </p>
+                          <p className="text-muted-foreground">
+                            Compras acima de {formatCurrency(freeShippingThreshold, locale)} têm frete grátis.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                        <div className="text-sm">
+                          <p className="font-medium">Frete grátis aplicado ✅</p>
+                          <p className="text-muted-foreground">
+                            Você atingiu {formatCurrency(freeShippingThreshold, locale)} ou mais.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="space-y-3">
                     {items.map((it, idx) => {
-                   type NameObj = { en?: string; pt?: string; es?: string }
-                   const loc = (locale === "pt" || locale === "es" || locale === "en" ? locale : "en") as keyof NameObj
+                      type NameObj = { en?: string; pt?: string; es?: string }
+                      const loc = (
+                        locale === "pt" || locale === "es" || locale === "en" ? locale : "en"
+                      ) as keyof NameObj
 
-                   const name =
-                     typeof it.product?.name === "object"
-                      ? ((it.product?.name as NameObj)[loc] ?? (it.product?.name as NameObj).en ?? "")
-                       : (it.product?.name ?? "")
-
+                      const name =
+                        typeof it.product?.name === "object"
+                          ? ((it.product?.name as NameObj)[loc] ?? (it.product?.name as NameObj).en ?? "")
+                          : (it.product?.name ?? "")
 
                       const qty = safeNumber(it.quantity)
                       const price = safeNumber(it.price)
 
                       return (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between gap-3"
-                        >
+                        <div key={idx} className="flex items-center justify-between gap-3">
                           <div className="text-sm">
                             <div className="font-medium">{name || "Product"}</div>
-                            <div className="opacity-70">
-                              Qty: {qty} × € {to2(price)}
-                            </div>
+                            <div className="opacity-70">Qty: {qty} × € {to2(price)}</div>
                           </div>
                           <div className="font-medium">€ {to2(price * qty)}</div>
                         </div>
@@ -395,50 +377,48 @@ const processingLabel =
 
                   <div className="border-t pt-4 space-y-2 text-sm">
                     <div className="flex justify-between">
-                     <span>{t.cart.subtotal}</span>
-                      <span>€ {to2(subtotal)}</span>
+                      <span>{t.cart.subtotal}</span>
+                      <span>{formatCurrency(subtotal, locale)}</span>
                     </div>
 
                     <div className="flex justify-between">
                       <span>{t.cart.shipping}</span>
-                      <span>€ {to2(shipping)}</span>
+                      <span>{formatCurrency(shipping, locale)}</span>
                     </div>
                   </div>
 
                   <div className="border-t pt-4 flex justify-between items-center">
                     <span className="text-lg font-semibold">Total</span>
-                    <span className="text-xl font-bold">€ {to2(total)}</span>
+                    <span className="text-xl font-bold">{formatCurrency(total, locale)}</span>
                   </div>
 
                   <div className="space-y-3 pt-2">
-                   <Button
-                   type="button"
-                   className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg"
-                     disabled={isProcessing || !canSubmit}
+                    <Button
+                      type="button"
+                      className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg"
+                      disabled={isProcessing || !canSubmit}
                       onClick={handleCheckout}
-                       >
-                        {isProcessing ? processingLabel : payCardLabel}
+                    >
+                      {isProcessing ? processingLabel : payCardLabel}
                     </Button>
 
                     <Button
-                    type="button"
-                     className="w-full h-12 bg-[#0070ba] hover:bg-[#003087] text-white font-semibold transition-all"
+                      type="button"
+                      className="w-full h-12 bg-[#0070ba] hover:bg-[#003087] text-white font-semibold transition-all"
                       disabled={isProcessing || !canSubmit}
                       onClick={handlePayPalCheckout}
-                         >
+                    >
                       {payPalLabel}
-                      </Button>
+                    </Button>
                   </div>
 
-                 {!canSubmit ? (
-                 <p className="text-xs opacity-70">
-                  Fill in all fields to enable payment.
-                  </p>
+                  {!canSubmit ? (
+                    <p className="text-xs opacity-70">Fill in all fields to enable payment.</p>
                   ) : (
-                  <p className="text-xs text-center text-muted-foreground">
-                  🔒 Secure payment • Encrypted checkout • No card data stored
-                  </p>
-                   )}
+                    <p className="text-xs text-center text-muted-foreground">
+                      🔒 Secure payment • Encrypted checkout • No card data stored
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </div>
