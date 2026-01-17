@@ -1,9 +1,28 @@
-import type { Locale } from "./i18n"
+export const translations = {
+  en: {
+    about: {},
+    admin: {},
+    auth: {},
+    checkout: {},
+    cart: {},
+    nav: {},
+  },
 
-export const translations: Record<Locale, any> = {
-  // ✅ COLE AQUI DENTRO O SEU OBJETO GIGANTE (en / pt / es)
-  // Exemplo:
-  // en: { ... },
-  // pt: { ... },
-  // es: { ... },
+  pt: {
+    about: {},
+    admin: {},
+    auth: {},
+    checkout: {},
+    cart: {},
+    nav: {},
+  },
+
+  es: {
+    about: {},
+    admin: {},
+    auth: {},
+    checkout: {},
+    cart: {},
+    nav: {},
+  },
 } as const
