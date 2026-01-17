@@ -26,7 +26,7 @@ export const translations = {
    },
     auth: {
     welcome: "Welcome",
-    }
+    },
     hero: {
       title: "Transform Your Ideas",
       subtitle: "Into Reality",
@@ -211,7 +211,7 @@ export const translations = {
       contact: "Contato",
       cart: "Carrinho",
       navLink: "Link",
-    }
+    },
       customProjects: {
       navLink: "Projetos Personalizados",
     },
