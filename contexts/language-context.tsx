@@ -1,44 +1,51 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { type Locale, defaultLocale, getTranslations } from "@/lib/i18n"
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react"
+import { defaultLocale, getTranslations, type Locale, locales } from "@/lib/i18n"
 
-interface LanguageContextType {
+type LanguageContextValue = {
   locale: Locale
-  setLocale: (locale: Locale) => void
+  setLocale: (next: Locale) => void
   t: ReturnType<typeof getTranslations>
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
+const LanguageContext = createContext<LanguageContextValue | null>(null)
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(defaultLocale)
-  const [t, setT] = useState(getTranslations(defaultLocale))
 
+  // carrega idioma salvo (se existir)
   useEffect(() => {
-    if (typeof window === "undefined") return
-    const savedLocale = localStorage.getItem("locale") as Locale
-    if (savedLocale) {
-      setLocaleState(savedLocale)
-      setT(getTranslations(savedLocale))
-    }
+    try {
+      const saved = localStorage.getItem("locale") as Locale | null
+      if (saved && locales.includes(saved)) setLocaleState(saved)
+    } catch {}
   }, [])
 
-  const setLocale = (newLocale: Locale) => {
-    setLocaleState(newLocale)
-    setT(getTranslations(newLocale))
-    if (typeof window !== "undefined") {
-      localStorage.setItem("locale", newLocale)
-    }
+  const setLocale = (next: Locale) => {
+    if (!locales.includes(next)) return
+    setLocaleState(next)
+    try {
+      localStorage.setItem("locale", next)
+    } catch {}
   }
 
-  return <LanguageContext.Provider value={{ locale, setLocale, t }}>{children}</LanguageContext.Provider>
+  const t = useMemo(() => getTranslations(locale), [locale])
+
+  const value = useMemo(
+    () => ({
+      locale,
+      setLocale,
+      t,
+    }),
+    [locale, t]
+  )
+
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }
 
 export function useLanguage() {
-  const context = useContext(LanguageContext)
-  if (context === undefined) {
-    throw new Error("useLanguage must be used within a LanguageProvider")
-  }
-  return context
+  const ctx = useContext(LanguageContext)
+  if (!ctx) throw new Error("useLanguage must be used within a LanguageProvider")
+  return ctx
 }
