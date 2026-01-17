@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Trash2, ShoppingBag, ArrowRight } from "lucide-react"
 import Link from "next/link"
+
 const COLOR_NAME_MAP: Record<string, string> = {
   "#000000": "Preto",
   "#ffffff": "Branco",
@@ -20,6 +21,7 @@ const COLOR_NAME_MAP: Record<string, string> = {
   "#ff0000": "Vermelho",
   "#d32f2f": "Vermelho",
 }
+
 function getColorName(color?: string) {
   if (!color) return ""
   return COLOR_NAME_MAP[color.toLowerCase()] ?? color
@@ -47,9 +49,7 @@ export default function CartPage() {
                 </div>
 
                 <h1 className="text-3xl font-bold mb-4">{t.cart.empty}</h1>
-                <p className="text-muted-foreground mb-8">
-                  {t.cart.emptyDescription}
-                </p>
+                <p className="text-muted-foreground mb-8">{t.cart.emptyDescription}</p>
 
                 <Button asChild size="lg">
                   <Link href="/products">
@@ -77,24 +77,14 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => (
-                <Card
-                  key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}-${item.selectedMaterial}`}
-                >
+                <Card key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}-${item.selectedMaterial}`}>
                   <CardContent className="p-6">
                     <div className="flex gap-6">
                       {/* IMAGEM CORRETA DA VARIAÇÃO */}
                       <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                         <img
-                          src={
-                            (item as any).selectedImage ||
-                            item.product.image ||
-                            "/placeholder.svg"
-                          }
-                          alt={
-                            item.product.name?.[locale] ??
-                            item.product.name?.en ??
-                            "Product"
-                          }
+                          src={(item as any).selectedImage || item.product.image || "/placeholder.svg"}
+                          alt={item.product.name?.[locale] ?? item.product.name?.en ?? "Product"}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -103,15 +93,11 @@ export default function CartPage() {
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <h3 className="font-bold text-lg mb-1">
-                              {item.product.name?.[locale] ??
-                                item.product.name?.en ??
-                                "Product"}
+                              {item.product.name?.[locale] ?? item.product.name?.en ?? "Product"}
                             </h3>
 
                             <p className="text-sm text-muted-foreground">
-                              {item.product.description?.[locale] ??
-                                item.product.description?.en ??
-                                ""}
+                              {item.product.description?.[locale] ?? item.product.description?.en ?? ""}
                             </p>
                           </div>
 
@@ -135,30 +121,18 @@ export default function CartPage() {
                         {/* VARIAÇÕES */}
                         <div className="flex flex-wrap gap-4 mb-4 text-sm">
                           <div>
-                            <span className="text-muted-foreground">
-                              {t.cart.color}:
-                            </span>{" "}
-                            <span className="font-medium">
-                            {getColorName(item.selectedColor)}
-                            </span>
+                            <span className="text-muted-foreground">{t.cart.color}:</span>{" "}
+                            <span className="font-medium">{getColorName(item.selectedColor)}</span>
                           </div>
 
                           <div>
-                            <span className="text-muted-foreground">
-                              {t.cart.size}:
-                            </span>{" "}
-                            <span className="font-medium">
-                              {item.selectedSize}
-                            </span>
+                            <span className="text-muted-foreground">{t.cart.size}:</span>{" "}
+                            <span className="font-medium">{item.selectedSize}</span>
                           </div>
 
                           <div>
-                            <span className="text-muted-foreground">
-                              {t.cart.material}:
-                            </span>{" "}
-                            <span className="font-medium">
-                              {item.selectedMaterial}
-                            </span>
+                            <span className="text-muted-foreground">{t.cart.material}:</span>{" "}
+                            <span className="font-medium">{item.selectedMaterial}</span>
                           </div>
                         </div>
 
@@ -181,9 +155,7 @@ export default function CartPage() {
                               -
                             </Button>
 
-                            <span className="font-medium w-8 text-center">
-                              {item.quantity}
-                            </span>
+                            <span className="font-medium w-8 text-center">{item.quantity}</span>
 
                             <Button
                               variant="outline"
@@ -205,14 +177,10 @@ export default function CartPage() {
 
                           <div className="text-right">
                             <p className="text-sm text-muted-foreground">
-                              {formatCurrency(item.price, locale)}{" "}
-                              {t.cart.perItem}
+                              {formatCurrency(item.price, locale)} {t.cart.perItem}
                             </p>
                             <p className="text-xl font-bold text-primary">
-                              {formatCurrency(
-                                item.price * item.quantity,
-                                locale
-                              )}
+                              {formatCurrency(item.price * item.quantity, locale)}
                             </p>
                           </div>
                         </div>
@@ -227,58 +195,61 @@ export default function CartPage() {
             <div className="lg:col-span-1">
               <Card className="sticky top-24">
                 <CardContent className="p-6 space-y-4">
-                  <h2 className="text-2xl font-bold mb-6">
-                    {t.cart.orderSummary ?? t.checkout.orderSummary}
-                  </h2>
+                  <h2 className="text-2xl font-bold mb-6">{t.cart.orderSummary ?? t.checkout.orderSummary}</h2>
+
+                  {/* MENSAGEM FRETE GRÁTIS (INSERIDA AQUI) */}
+                  <div className="rounded-2xl border bg-muted/30 p-4">
+                    {missingForFreeShipping > 0 ? (
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary" />
+                        <div className="text-sm">
+                          <p className="font-medium">
+                            Falta {formatCurrency(missingForFreeShipping, locale)} para ganhar frete grátis
+                          </p>
+                          <p className="text-muted-foreground">
+                            Compras acima de {formatCurrency(freeShippingThreshold, locale)} têm frete grátis.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                        <div className="text-sm">
+                          <p className="font-medium">Frete grátis aplicado ✅</p>
+                          <p className="text-muted-foreground">
+                            Você atingiu {formatCurrency(freeShippingThreshold, locale)} ou mais.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">
-                        {t.cart.subtotal}
-                      </span>
-                      <span className="font-medium">
-                        {formatCurrency(totalPrice, locale)}
-                      </span>
+                      <span className="text-muted-foreground">{t.cart.subtotal}</span>
+                      <span className="font-medium">{formatCurrency(totalPrice, locale)}</span>
                     </div>
 
-                    {shipping > 0 && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">
-                          {t.cart.shipping}
-                        </span>
-                        <span className="font-medium">
-                          {formatCurrency(shipping, locale)}
-                        </span>
-                      </div>
-                    )}
+                    {/* Sempre mostrar o frete (0,00 quando grátis) */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">{t.cart.shipping}</span>
+                      <span className="font-medium">{formatCurrency(shipping, locale)}</span>
+                    </div>
 
                     <div className="border-t border-border pt-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold">
-                          {t.cart.orderTotal}
-                        </span>
-                        <span className="text-2xl font-bold text-primary">
-                          {formatCurrency(orderTotal, locale)}
-                        </span>
+                        <span className="text-lg font-bold">{t.cart.orderTotal}</span>
+                        <span className="text-2xl font-bold text-primary">{formatCurrency(orderTotal, locale)}</span>
                       </div>
                     </div>
                   </div>
 
                   <Button asChild size="lg" className="w-full mt-6">
-                    <Link href="/checkout">
-                      {t.cart.proceedToCheckout}
-                    </Link>
+                    <Link href="/checkout">{t.cart.proceedToCheckout}</Link>
                   </Button>
 
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="lg"
-                    className="w-full bg-transparent"
-                  >
-                    <Link href="/products">
-                      {t.cart.continueShopping}
-                    </Link>
+                  <Button asChild variant="outline" size="lg" className="w-full bg-transparent">
+                    <Link href="/products">{t.cart.continueShopping}</Link>
                   </Button>
                 </CardContent>
               </Card>
