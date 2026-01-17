@@ -19,15 +19,24 @@ export const translations = {
       about: "About",
       contact: "Contact",
       cart: "Cart",
-     navLink: "Link", 
+      navLink: "Link",
     },
+
     customProjects: {
-  navLink: "Custom Projects",
-   },
-    auth: {
-    welcome: "Welcome",
-      email: "Email",
+      navLink: "Custom Projects",
     },
+
+    auth: {
+      welcome: "Welcome",
+      email: "Email",
+      password: "Password",
+      loginFailed: "Login failed",
+    },
+
+    placeholders: {
+      email: "Enter your email",
+    },
+
     hero: {
       title: "Transform Your Ideas",
       subtitle: "Into Reality",
@@ -42,6 +51,7 @@ export const translations = {
       viewProducts: "View Products",
       customProjects: "Custom Projects",
     },
+
     features: {
       title: "Why Choose Us",
       quality: {
@@ -61,6 +71,7 @@ export const translations = {
         description: "Monday to Friday · Business hours",
       },
     },
+
     products: {
       title: "Featured Products",
       customize: "Customize",
@@ -69,6 +80,7 @@ export const translations = {
       from: "From",
       selectColorHint: "Select the color by clicking on the image",
     },
+
     footer: {
       description: "Your trusted partner for custom 3D printed products",
       quickLinks: "Quick Links",
@@ -76,6 +88,7 @@ export const translations = {
       followUs: "Follow Us",
       rights: "All rights reserved",
     },
+
     cart: {
       title: "Shopping Cart",
       empty: "Your cart is empty",
@@ -101,6 +114,7 @@ export const translations = {
       material: "Material",
       perItem: "each",
     },
+
     checkout: {
       title: "Checkout",
       shippingInfo: "Shipping Information",
@@ -136,11 +150,13 @@ export const translations = {
       pagamentoFalhado: "Payment Failed",
       porFavorTenteDeNovo: "Please try again",
     },
+
     orders: {
       title: "My Orders",
       noOrders: "No orders yet",
       noOrdersDescription: "Start shopping to see your orders here",
     },
+
     about: {
       title: "About NewPrint3D",
       subtitle: "Pioneering the Future of 3D Printing",
@@ -177,6 +193,7 @@ export const translations = {
         countries: "Countries Served",
       },
     },
+
     contact: {
       title: "Get In Touch",
       subtitle: "Have a project in mind? Let's bring it to life together",
@@ -199,6 +216,7 @@ export const translations = {
         description: "We typically respond within 24 hours on business days",
       },
     },
+
     aria: {
       loading: "Loading",
     },
@@ -213,13 +231,22 @@ export const translations = {
       cart: "Carrinho",
       navLink: "Link",
     },
-      customProjects: {
+
+    customProjects: {
       navLink: "Projetos Personalizados",
     },
-      auth: {
+
+    auth: {
       welcome: "Bem-vindo",
-        email: "E-mail",
+      email: "E-mail",
+      password: "Senha",
+      loginFailed: "Falha no login",
     },
+
+    placeholders: {
+      email: "Digite seu e-mail",
+    },
+
     hero: {
       title: "Transforme Suas Ideias",
       subtitle: "Em Realidade",
@@ -234,6 +261,7 @@ export const translations = {
       viewProducts: "Ver Produtos",
       customProjects: "Projetos Personalizados",
     },
+
     features: {
       title: "Por Que Nos Escolher",
       quality: {
@@ -253,6 +281,7 @@ export const translations = {
         description: "Assistência especializada sempre que precisar",
       },
     },
+
     products: {
       title: "Produtos em Destaque",
       customize: "Personalizar",
@@ -261,6 +290,7 @@ export const translations = {
       from: "A partir de",
       selectColorHint: "Selecione a cor clicando na imagem",
     },
+
     footer: {
       description: "Seu parceiro confiável para produtos impressos em 3D personalizados",
       quickLinks: "Links Rápidos",
@@ -268,6 +298,7 @@ export const translations = {
       followUs: "Siga-nos",
       rights: "Todos os direitos reservados",
     },
+
     cart: {
       title: "Carrinho de Compras",
       empty: "Seu carrinho está vazio",
@@ -293,6 +324,7 @@ export const translations = {
       material: "Material",
       perItem: "cada",
     },
+
     checkout: {
       title: "Finalizar Compra",
       shippingInfo: "Informações de Envio",
@@ -306,35 +338,6 @@ export const translations = {
       state: "Estado",
       zipCode: "CEP",
       country: "País",
-    },
-
-    orders: {
-      title: "Meus Pedidos",
-      noOrders: "Nenhum pedido ainda",
-      noOrdersDescription: "Comece a comprar para ver seus pedidos aqui",
-    },
-
-    contact: {
-      title: "Entre em Contato",
-      subtitle: "Tem um projeto em mente? Vamos tirar do papel juntos",
-      form: {
-        name: "Seu Nome",
-        email: "Seu E-mail",
-        subject: "Assunto",
-        message: "Sua Mensagem",
-        send: "Enviar Mensagem",
-        sending: "Enviando...",
-        success: "Mensagem enviada com sucesso!",
-      },
-      info: {
-        title: "Informações de Contato",
-        email: "contacto@newprint3d.com",
-        hours: "Seg - Sex: 9:00 - 18:00",
-      },
-      quickResponse: {
-        title: "Resposta Rápida",
-        description: "Normalmente respondemos em até 24 horas (dias úteis)",
-      },
     },
 
     aria: {
@@ -351,14 +354,23 @@ export const translations = {
       cart: "Carrito",
       navLink: "Enlace",
     },
-      customProjects: {
+
+    customProjects: {
       navLink: "Proyectos Personalizados",
     },
-      auth: {
+
+    auth: {
       welcome: "Bienvenido",
-         email: "Correo electrónico",
+      email: "Correo electrónico",
+      password: "Contraseña",
+      loginFailed: "Error de inicio de sesión",
     },
-   hero: {
+
+    placeholders: {
+      email: "Escribe tu correo",
+    },
+
+    hero: {
       title: "Transforma Tus Ideas",
       subtitle: "En Realidad",
       description: "Servicios premium de impresión 3D con infinitas posibilidades de personalización",
@@ -373,6 +385,7 @@ export const translations = {
       viewProducts: "Ver Productos",
       customProjects: "Proyectos Personalizados",
     },
+
     features: {
       title: "Por Qué Elegirnos",
       quality: {
@@ -392,6 +405,7 @@ export const translations = {
         description: "Asistencia experta cuando la necesites",
       },
     },
+
     products: {
       title: "Productos Destacados",
       customize: "Personalizar",
@@ -400,6 +414,7 @@ export const translations = {
       from: "Desde",
       selectColorHint: "Selecciona el color haciendo clic en la imagen",
     },
+
     footer: {
       description: "Tu socio confiable para productos impresos en 3D personalizados",
       quickLinks: "Enlaces Rápidos",
@@ -407,6 +422,7 @@ export const translations = {
       followUs: "Síguenos",
       rights: "Todos los derechos reservados",
     },
+
     cart: {
       title: "Carrito de Compras",
       empty: "Tu carrito está vacío",
@@ -432,6 +448,7 @@ export const translations = {
       material: "Material",
       perItem: "cada",
     },
+
     checkout: {
       title: "Finalizar Compra",
       shippingInfo: "Información de Envío",
@@ -445,35 +462,6 @@ export const translations = {
       state: "Estado",
       zipCode: "Código Postal",
       country: "País",
-    },
-
-    orders: {
-      title: "Mis Pedidos",
-      noOrders: "Aún no hay pedidos",
-      noOrdersDescription: "Empieza a comprar para ver tus pedidos aquí",
-    },
-
-    contact: {
-      title: "Ponte en Contacto",
-      subtitle: "¿Tienes un proyecto en mente? Vamos a hacerlo realidad juntos",
-      form: {
-        name: "Tu Nombre",
-        email: "Tu Correo",
-        subject: "Asunto",
-        message: "Tu Mensaje",
-        send: "Enviar Mensaje",
-        sending: "Enviando...",
-        success: "¡Mensaje enviado con éxito!",
-      },
-      info: {
-        title: "Información de Contacto",
-        email: "contacto@newprint3d.com",
-        hours: "Lun - Vie: 9:00 - 18:00",
-      },
-      quickResponse: {
-        title: "Respuesta Rápida",
-        description: "Normalmente respondemos en 24 horas (días hábiles)",
-      },
     },
 
     aria: {
