@@ -9,7 +9,7 @@ export const localeNames: Record<Locale, string> = {
   en: "English",
   pt: "Português",
   es: "Español",
-}
+},
 
 export const translations = {
   en: {
@@ -26,6 +26,7 @@ export const translations = {
    },
     auth: {
     welcome: "Welcome",
+      email: "Email",
     },
     hero: {
       title: "Transform Your Ideas",
@@ -217,6 +218,7 @@ export const translations = {
     },
       auth: {
       welcome: "Bem-vindo",
+        email: "E-mail",
     },
     hero: {
       title: "Transforme Suas Ideias",
@@ -354,6 +356,7 @@ export const translations = {
     },
       auth: {
       welcome: "Bienvenido",
+         email: "Correo electrónico",
     },
    hero: {
       title: "Transforma Tus Ideas",
