@@ -1,33 +1,5 @@
 export const translations = {
   en: {
-    about: {},
-    admin: {},
-    auth: {},
-    checkout: {},
-    cart: {},
-    nav: {},
-  },
-
-  pt: {
-    about: {},
-    admin: {},
-    auth: {},
-    checkout: {},
-    cart: {},
-    nav: {},
-  },
-
-  es: {
-    about: {},
-    admin: {},
-    auth: {},
-    checkout: {},
-    cart: {},
-    nav: {},
-  },
-} as const
-export const translations = {
-  en: {
     nav: {
       home: "Home",
       products: "Products",
