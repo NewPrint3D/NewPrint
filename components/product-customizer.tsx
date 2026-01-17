@@ -9,32 +9,22 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Badge } from "@/components/ui/badge"
-import { ShoppingCart, Check, CheckCircle } from "lucide-react"
+import { ShoppingCart, CheckCircle } from "lucide-react"
 import type { Product } from "@/lib/products"
 
 type ColorImage = { color?: string; hex?: string; url?: string; imageUrl?: string; image_url?: string }
 
 interface ProductCustomizerProps {
   product: Product
-  onVariantChange?: (v: { color: string; size: string; material: string; price: number; image: string }) => void
-}
+  onVariantChange?: (v: { color: string; colorName: string; size: string; material: string; price: number; image: string }) => void
 
-const getColorName = (hex: string): string => {
-  const colorMap: Record<string, string> = {
-    "#8B5CF6": "Purple",
-    "#06B6D4": "Cyan",
-    "#10B981": "Green",
-    "#F59E0B": "Orange",
-    "#EF4444": "Red",
-    "#3B82F6": "Blue",
-    "#EC4899": "Pink",
-    "#F97316": "Orange",
-    "#000000": "Black",
-    "#F5F5F5": "White",
-    "#212121": "Dark Gray",
-    "#D32F2F": "Red",
-  }
-  return colorMap[hex?.toUpperCase()] || hex
+  // ✅ vindo da galeria (ProductDetailClient)
+  selectedColorHex?: string
+  selectedColorName?: string
+  selectedImageUrl?: string
+
+  // ✅ para esconder qualquer UI de cor
+  hideColorButtons?: boolean
 }
 
 const safeNumber = (v: unknown) => {
@@ -42,17 +32,7 @@ const safeNumber = (v: unknown) => {
   return Number.isFinite(n) ? n : 0
 }
 
-const isLightHex = (hex: string) => {
-  const h = (hex || "").replace("#", "")
-  if (h.length !== 6) return false
-  const r = parseInt(h.slice(0, 2), 16)
-  const g = parseInt(h.slice(2, 4), 16)
-  const b = parseInt(h.slice(4, 6), 16)
-  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
-  return luminance > 0.75
-}
-
-const normalizeHex = (hex?: string) => (hex || "").trim().toLowerCase()
+const normalizeHex = (hex?: string) => (hex || "").trim()
 
 const toArray = (v: any): string[] => {
   if (Array.isArray(v)) return v.filter(Boolean).map(String).map((s) => s.trim()).filter(Boolean)
@@ -60,7 +40,14 @@ const toArray = (v: any): string[] => {
   return []
 }
 
-export function ProductCustomizer({ product, onVariantChange }: ProductCustomizerProps) {
+export function ProductCustomizer({
+  product,
+  onVariantChange,
+  selectedColorHex,
+  selectedColorName,
+  selectedImageUrl,
+  hideColorButtons = true,
+}: ProductCustomizerProps) {
   const { t, locale } = useLanguage()
   const { addItem } = useCart()
 
@@ -83,14 +70,9 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
   }, [product])
 
   const getImageForColor = (hex: string) => {
-    const key = normalizeHex(hex)
-    const found = colorImages.find((ci) => normalizeHex(ci.color || ci.hex) === key)
-    return (
-      found?.url ||
-      found?.imageUrl ||
-      found?.image_url ||
-      baseImage
-    )
+    const key = normalizeHex(hex).toLowerCase()
+    const found = colorImages.find((ci) => normalizeHex(ci.color || ci.hex).toLowerCase() === key)
+    return found?.url || found?.imageUrl || found?.image_url || baseImage
   }
 
   const materialPrices: Record<string, number> = {
@@ -119,87 +101,115 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
   const defaultSize = sizes[0] || "Standard"
   const defaultMaterial = materials[0] || "PLA"
   const defaultImage = getImageForColor(defaultColor)
+  const defaultColorName = selectedColorName || ""
 
-  const [selectedColor, setSelectedColor] = useState<string>(defaultColor)
+  const [selectedColor, setSelectedColor] = useState<string>(selectedColorHex || defaultColor)
   const [selectedSize, setSelectedSize] = useState<string>(defaultSize)
   const [selectedMaterial, setSelectedMaterial] = useState<string>(defaultMaterial)
-  const [selectedImage, setSelectedImage] = useState<string>(defaultImage)
+  const [selectedImage, setSelectedImage] = useState<string>(selectedImageUrl || defaultImage)
+  const [colorName, setColorName] = useState<string>(selectedColorName || defaultColorName)
 
   const [quantity, setQuantity] = useState(1)
   const [isAdded, setIsAdded] = useState(false)
 
   const totalPrice = basePrice + getMaterialExtra(selectedMaterial) + getSizeExtra(selectedSize)
 
-  const notifyVariantChange = (color: string, size: string, material: string, image: string) => {
+  const notifyVariantChange = (color: string, cName: string, size: string, material: string, image: string) => {
     const price = basePrice + getMaterialExtra(material) + getSizeExtra(size)
-    onVariantChange?.({ color, size, material, price, image })
+    onVariantChange?.({ color, colorName: cName, size, material, price, image })
   }
 
-  // carrega localStorage (se existir) e sincroniza com pai
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey)
-      if (!saved) {
-        // dispara o default pro pai logo ao montar
-        notifyVariantChange(defaultColor, defaultSize, defaultMaterial, defaultImage)
-        return
-      }
-
-      const parsed = JSON.parse(saved) as { color?: string; size?: string; material?: string; image?: string }
-
-      const c = parsed.color && colors.includes(parsed.color) ? parsed.color : defaultColor
-      const s = parsed.size && sizes.includes(parsed.size) ? parsed.size : defaultSize
-      const m = parsed.material && materials.includes(parsed.material) ? parsed.material : defaultMaterial
-      const img = parsed.image || getImageForColor(c)
-
-      setSelectedColor(c)
-      setSelectedSize(s)
-      setSelectedMaterial(m)
-      setSelectedImage(img)
-
-      notifyVariantChange(c, s, m, img)
-    } catch {
-      notifyVariantChange(defaultColor, defaultSize, defaultMaterial, defaultImage)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const persist = (next: { color: string; size: string; material: string; image: string }) => {
+  const persist = (next: { color: string; colorName: string; size: string; material: string; image: string }) => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(next))
     } catch {}
   }
 
-  const handleColorChange = (color: string) => {
-    const img = getImageForColor(color)
-    setSelectedColor(color)
-    setSelectedImage(img)
-    persist({ color, size: selectedSize, material: selectedMaterial, image: img })
-    notifyVariantChange(color, selectedSize, selectedMaterial, img)
-  }
+  // ✅ 1) Ao montar: carrega do storage (se existir), mas PRIORIDADE é o que vem da galeria (props)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey)
+      if (!saved) {
+        const c = selectedColorHex || defaultColor
+        const img = selectedImageUrl || getImageForColor(c)
+        const cName = selectedColorName || ""
+        setSelectedColor(c)
+        setSelectedImage(img)
+        setColorName(cName)
+        notifyVariantChange(c, cName, defaultSize, defaultMaterial, img)
+        return
+      }
+
+      const parsed = JSON.parse(saved) as { color?: string; colorName?: string; size?: string; material?: string; image?: string }
+
+      const c = selectedColorHex || (parsed.color && colors.includes(parsed.color) ? parsed.color : defaultColor)
+      const s = parsed.size && sizes.includes(parsed.size) ? parsed.size : defaultSize
+      const m = parsed.material && materials.includes(parsed.material) ? parsed.material : defaultMaterial
+      const img = selectedImageUrl || parsed.image || getImageForColor(c)
+      const cName = selectedColorName || parsed.colorName || ""
+
+      setSelectedColor(c)
+      setSelectedSize(s)
+      setSelectedMaterial(m)
+      setSelectedImage(img)
+      setColorName(cName)
+
+      notifyVariantChange(c, cName, s, m, img)
+    } catch {
+      const c = selectedColorHex || defaultColor
+      const img = selectedImageUrl || getImageForColor(c)
+      const cName = selectedColorName || ""
+      notifyVariantChange(c, cName, defaultSize, defaultMaterial, img)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ✅ 2) Sempre que a galeria mudar a seleção (props), sincroniza aqui
+  useEffect(() => {
+    if (!selectedColorHex && !selectedImageUrl && !selectedColorName) return
+
+    const nextColor = selectedColorHex || selectedColor
+    const nextImage = selectedImageUrl || selectedImage
+    const nextName = selectedColorName || colorName
+
+    setSelectedColor(nextColor)
+    setSelectedImage(nextImage)
+    setColorName(nextName)
+
+    persist({
+      color: nextColor,
+      colorName: nextName,
+      size: selectedSize,
+      material: selectedMaterial,
+      image: nextImage,
+    })
+
+    notifyVariantChange(nextColor, nextName, selectedSize, selectedMaterial, nextImage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedColorHex, selectedImageUrl, selectedColorName])
 
   const handleSizeChange = (size: string) => {
     setSelectedSize(size)
-    persist({ color: selectedColor, size, material: selectedMaterial, image: selectedImage })
-    notifyVariantChange(selectedColor, size, selectedMaterial, selectedImage)
+    persist({ color: selectedColor, colorName, size, material: selectedMaterial, image: selectedImage })
+    notifyVariantChange(selectedColor, colorName, size, selectedMaterial, selectedImage)
   }
 
   const handleMaterialChange = (material: string) => {
     setSelectedMaterial(material)
-    persist({ color: selectedColor, size: selectedSize, material, image: selectedImage })
-    notifyVariantChange(selectedColor, selectedSize, material, selectedImage)
+    persist({ color: selectedColor, colorName, size: selectedSize, material, image: selectedImage })
+    notifyVariantChange(selectedColor, colorName, selectedSize, material, selectedImage)
   }
 
   const handleAddToCart = () => {
     addItem({
       product,
       quantity,
-      selectedColor,
+      selectedColor, // HEX
+      selectedColorName: colorName, // ✅ NOME (vermelho, preto...)
       selectedSize,
       selectedMaterial,
       price: totalPrice,
-      // 🔥 ESSENCIAL: mandar a imagem selecionada pro carrinho
-      selectedImage,
+      selectedImage, // ✅ IMAGEM DA COR
     } as any)
 
     setIsAdded(true)
@@ -209,38 +219,23 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
       <CardContent className="p-6 space-y-6">
+        {/* ✅ Sem bolinhas de cor. Só mostramos o nome da cor escolhida (vindo da imagem). */}
         <div>
-          <Label className="text-base font-bold mb-3 block">{t.customizer.color}</Label>
-
-          <div className="flex flex-wrap gap-3" role="radiogroup" aria-label={t.customizer.color}>
-            {colors.map((color) => {
-              const colorName = getColorName(color)
-              const isSelected = selectedColor === color
-
-              return (
-                <button
-                  key={color}
-                  type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  aria-label={t.aria.selectColor.replace("{color}", colorName)}
-                  onClick={() => handleColorChange(color)}
-                  className={`relative w-12 h-12 rounded-full border-2 transition-all duration-200
-                    hover:scale-110 active:scale-95
-                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
-                    ${isSelected ? "border-primary ring-4 ring-primary/25 shadow-lg" : "border-border hover:shadow-md"}
-                  `}
-                  style={{ backgroundColor: color }}
-                >
-                  {isSelected && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Check className={`w-6 h-6 drop-shadow-lg ${isLightHex(color) ? "text-black" : "text-white"}`} />
-                    </div>
-                  )}
-                </button>
-              )
-            })}
+          <Label className="text-base font-bold mb-2 block">{t.customizer.color}</Label>
+          <div className="text-sm text-muted-foreground">
+            {colorName ? (
+              <span className="font-medium text-foreground">{colorName}</span>
+            ) : (
+              <span className="italic">{t.product?.selectColorHint ?? "Selecione uma cor pelas imagens."}</span>
+            )}
           </div>
+
+          {/* Se você quiser manter “ver” o hex internamente, pode deixar isso escondido */}
+          {!hideColorButtons && (
+            <div className="mt-3 text-xs text-muted-foreground">
+              HEX: <span className="font-mono">{selectedColor}</span>
+            </div>
+          )}
         </div>
 
         <div>
@@ -288,7 +283,12 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
         <div>
           <Label className="text-base font-bold mb-3 block">{t.customizer.quantity}</Label>
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="icon" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="h-10 w-10">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              className="h-10 w-10"
+            >
               -
             </Button>
             <div className="flex-1 text-center">
@@ -303,7 +303,9 @@ export function ProductCustomizer({ product, onVariantChange }: ProductCustomize
         <div className="border-t border-border pt-6">
           <div className="flex items-center justify-between mb-6">
             <span className="text-lg font-medium text-muted-foreground">{t.customizer.totalPrice}</span>
-            <span className="text-3xl font-bold text-primary">{formatCurrency(totalPrice * quantity, locale)}</span>
+            <span className="text-3xl font-bold text-primary">
+              {formatCurrency(totalPrice * quantity, locale)}
+            </span>
           </div>
 
           <Button size="lg" className="w-full group relative overflow-hidden" onClick={handleAddToCart} disabled={isAdded}>
