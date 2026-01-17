@@ -130,9 +130,6 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, [id]: value }))
   }
 
-  // =========================
-  // STRIPE (DO NOT TOUCH API)
-  // =========================
   const handleCheckout = async () => {
     if (!canSubmit) {
       toast({
@@ -186,9 +183,6 @@ export default function CheckoutPage() {
     }
   }
 
-  // =========================
-  // PAYPAL (DO NOT TOUCH API)
-  // =========================
   const handlePayPalCheckout = async () => {
     if (!canSubmit) {
       toast({
@@ -321,28 +315,24 @@ export default function CheckoutPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                  {/* MENSAGEM FRETE GRÁTIS (INSERIDA AQUI) */}
+                  {/* MENSAGEM FRETE GRÁTIS */}
                   <div className="rounded-2xl border bg-muted/30 p-4">
                     {missingForFreeShipping > 0 ? (
                       <div className="flex items-start gap-3">
                         <div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary" />
                         <div className="text-sm">
                           <p className="font-medium">
-                            Falta {formatCurrency(missingForFreeShipping, locale)} para ganhar frete grátis
+                            {t.cart.missingForFreeShipping} {formatCurrency(missingForFreeShipping, locale)}
                           </p>
-                          <p className="text-muted-foreground">
-                            Compras acima de {formatCurrency(freeShippingThreshold, locale)} têm frete grátis.
-                          </p>
+                          <p className="text-muted-foreground">{t.cart.freeShippingAbove50}</p>
                         </div>
                       </div>
                     ) : (
                       <div className="flex items-start gap-3">
                         <div className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-500" />
                         <div className="text-sm">
-                          <p className="font-medium">Frete grátis aplicado ✅</p>
-                          <p className="text-muted-foreground">
-                            Você atingiu {formatCurrency(freeShippingThreshold, locale)} ou mais.
-                          </p>
+                          <p className="font-medium">{t.cart.freeShippingApplied}</p>
+                          <p className="text-muted-foreground">{t.cart.freeShippingAbove50}</p>
                         </div>
                       </div>
                     )}
