@@ -19,6 +19,7 @@ export const translations = {
       about: "About",
       contact: "Contact",
       cart: "Cart",
+     navLink: "Link", 
     },
     hero: {
       title: "Transform Your Ideas",
@@ -203,6 +204,7 @@ export const translations = {
       about: "Sobre",
       contact: "Contato",
       cart: "Carrinho",
+       navLink: "Link",
     },
     hero: {
       title: "Transforme Suas Ideias",
@@ -333,6 +335,7 @@ export const translations = {
       about: "Acerca",
       contact: "Contacto",
       cart: "Carrito",
+      navLink: "Enlace",
     },
     hero: {
       title: "Transforma Tus Ideas",
