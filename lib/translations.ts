@@ -7,10 +7,15 @@ export const translations = {
       contact: "Contact",
       cart: "Cart",
     },
-    hero: {
-      title: "",
-      subtitle: "",
+    hero: { title: "", subtitle: "" },
+
+    contact: {
+      info: {
+        title: "Contact",
+        subtitle: "",
+      },
     },
+
     cart: {},
     checkout: {},
     about: {},
@@ -26,10 +31,15 @@ export const translations = {
       contact: "Contato",
       cart: "Carrinho",
     },
-    hero: {
-      title: "",
-      subtitle: "",
+    hero: { title: "", subtitle: "" },
+
+    contact: {
+      info: {
+        title: "Contato",
+        subtitle: "",
+      },
     },
+
     cart: {},
     checkout: {},
     about: {},
@@ -45,10 +55,15 @@ export const translations = {
       contact: "Contacto",
       cart: "Carrito",
     },
-    hero: {
-      title: "",
-      subtitle: "",
+    hero: { title: "", subtitle: "" },
+
+    contact: {
+      info: {
+        title: "Contacto",
+        subtitle: "",
+      },
     },
+
     cart: {},
     checkout: {},
     about: {},
