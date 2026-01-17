@@ -36,6 +36,36 @@ export default function CartPage() {
   const missingForFreeShipping = Math.max(0, freeShippingThreshold - totalPrice)
   const orderTotal = totalPrice + shipping
 
+  const thresholdText = formatCurrency(freeShippingThreshold, locale)
+  const missingText = formatCurrency(missingForFreeShipping, locale)
+
+  const fs = {
+    missingTitle:
+      locale === "pt"
+        ? `Faltam ${missingText} para ganhar frete grátis`
+        : locale === "es"
+          ? `Te faltan ${missingText} para conseguir envío gratis`
+          : `Add ${missingText} more to get free shipping`,
+    missingSubtitle:
+      locale === "pt"
+        ? `Compras acima de ${thresholdText} têm frete grátis.`
+        : locale === "es"
+          ? `Pedidos superiores a ${thresholdText} tienen envío gratis.`
+          : `Orders over ${thresholdText} ship free.`,
+    appliedTitle:
+      locale === "pt"
+        ? "Frete grátis aplicado ✅"
+        : locale === "es"
+          ? "Envío gratis aplicado ✅"
+          : "Free shipping applied ✅",
+    appliedSubtitle:
+      locale === "pt"
+        ? `Você atingiu ${thresholdText} ou mais.`
+        : locale === "es"
+          ? `Has alcanzado ${thresholdText} o más.`
+          : `You reached ${thresholdText} or more.`,
+  }
+
   if (items.length === 0) {
     return (
       <main className="min-h-screen">
@@ -80,7 +110,6 @@ export default function CartPage() {
                 <Card key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}-${item.selectedMaterial}`}>
                   <CardContent className="p-6">
                     <div className="flex gap-6">
-                      {/* IMAGEM CORRETA DA VARIAÇÃO */}
                       <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                         <img
                           src={(item as any).selectedImage || item.product.image || "/placeholder.svg"}
@@ -105,12 +134,7 @@ export default function CartPage() {
                             variant="ghost"
                             size="icon"
                             onClick={() =>
-                              removeItem(
-                                item.product.id,
-                                item.selectedColor,
-                                item.selectedSize,
-                                item.selectedMaterial
-                              )
+                              removeItem(item.product.id, item.selectedColor, item.selectedSize, item.selectedMaterial)
                             }
                             className="text-destructive hover:text-destructive"
                           >
@@ -118,7 +142,6 @@ export default function CartPage() {
                           </Button>
                         </div>
 
-                        {/* VARIAÇÕES */}
                         <div className="flex flex-wrap gap-4 mb-4 text-sm">
                           <div>
                             <span className="text-muted-foreground">{t.cart.color}:</span>{" "}
@@ -191,34 +214,26 @@ export default function CartPage() {
               ))}
             </div>
 
-            {/* RESUMO */}
             <div className="lg:col-span-1">
               <Card className="sticky top-24">
                 <CardContent className="p-6 space-y-4">
                   <h2 className="text-2xl font-bold mb-6">{t.cart.orderSummary ?? t.checkout.orderSummary}</h2>
 
-                  {/* MENSAGEM FRETE GRÁTIS (INSERIDA AQUI) */}
                   <div className="rounded-2xl border bg-muted/30 p-4">
                     {missingForFreeShipping > 0 ? (
                       <div className="flex items-start gap-3">
                         <div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary" />
                         <div className="text-sm">
-                          <p className="font-medium">
-                            Falta {formatCurrency(missingForFreeShipping, locale)} para ganhar frete grátis
-                          </p>
-                          <p className="text-muted-foreground">
-                            Compras acima de {formatCurrency(freeShippingThreshold, locale)} têm frete grátis.
-                          </p>
+                          <p className="font-medium">{fs.missingTitle}</p>
+                          <p className="text-muted-foreground">{fs.missingSubtitle}</p>
                         </div>
                       </div>
                     ) : (
                       <div className="flex items-start gap-3">
                         <div className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-500" />
                         <div className="text-sm">
-                          <p className="font-medium">Frete grátis aplicado ✅</p>
-                          <p className="text-muted-foreground">
-                            Você atingiu {formatCurrency(freeShippingThreshold, locale)} ou mais.
-                          </p>
+                          <p className="font-medium">{fs.appliedTitle}</p>
+                          <p className="text-muted-foreground">{fs.appliedSubtitle}</p>
                         </div>
                       </div>
                     )}
@@ -230,7 +245,6 @@ export default function CartPage() {
                       <span className="font-medium">{formatCurrency(totalPrice, locale)}</span>
                     </div>
 
-                    {/* Sempre mostrar o frete (0,00 quando grátis) */}
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">{t.cart.shipping}</span>
                       <span className="font-medium">{formatCurrency(shipping, locale)}</span>
