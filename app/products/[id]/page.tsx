@@ -17,6 +17,48 @@ function toNumber(v: unknown, fallback = 0) {
   return fallback
 }
 
+function normalizeHex(input: unknown): string | null {
+  if (typeof input !== "string") return null
+  const s = input.trim().toLowerCase()
+  if (!s) return null
+
+  // Accept: "#d32f2f" or "d32f2f"
+  const hex = s.startsWith("#") ? s.slice(1) : s
+  if (!/^[0-9a-f]{6}$/.test(hex)) return null
+
+  return `#${hex}`
+}
+
+function hexToFileName(hexWithHash: string): string {
+  return hexWithHash.replace("#", "").toLowerCase()
+}
+
+// Nomes “bons” para conversão (fallback elegante)
+function colorNameFromHex(hexWithHash: string) {
+  const hex = hexToFileName(hexWithHash)
+
+  const map: Record<
+    string,
+    { pt: string; en: string; es: string }
+  > = {
+    "000000": { pt: "Preto", en: "Black", es: "Negro" },
+    "ffffff": { pt: "Branco", en: "White", es: "Blanco" },
+    "f5f5f5": { pt: "Branco", en: "White", es: "Blanco" },
+    "d32f2f": { pt: "Vermelho", en: "Red", es: "Rojo" },
+    "ff0000": { pt: "Vermelho", en: "Red", es: "Rojo" },
+    "212121": { pt: "Cinza", en: "Gray", es: "Gris" },
+    "808080": { pt: "Cinza", en: "Gray", es: "Gris" },
+  }
+
+  return (
+    map[hex] ?? {
+      pt: "Cor selecionada",
+      en: "Selected color",
+      es: "Color seleccionada",
+    }
+  )
+}
+
 function normalizeProduct(raw: any): Product {
   const name =
     raw?.name && typeof raw.name === "object"
@@ -58,27 +100,51 @@ function normalizeProduct(raw: any): Product {
       ? raw.colorImages
       : []
 
-  const imagesByColor: Record<string, string> = {}
+  // 1) Captura do admin (se existir)
+  const imagesByColorFromAdmin: Record<string, string> = {}
   for (const item of colorImagesArray) {
-    const c = item?.color ?? item?.color_hex ?? item?.hex ?? item?.colorHex
+    const cRaw = item?.color ?? item?.color_hex ?? item?.hex ?? item?.colorHex
+    const c = normalizeHex(cRaw)
     const u = item?.url ?? item?.image_url ?? item?.imageUrl ?? item?.image
-    if (typeof c === "string" && typeof u === "string" && c && u) {
-      imagesByColor[c] = u
+    if (c && typeof u === "string" && u) {
+      imagesByColorFromAdmin[c] = u
     }
   }
 
-  // ✅ PRIORIDADE DE CORES:
-  // 1) raw.colors (se vier OK)
-  // 2) cores derivadas de color_images (chaves do imagesByColor)
-  // 3) fallback
+  // 2) Cores: prioridade
   const rawColors = Array.isArray(raw?.colors) ? raw.colors : []
-  const derivedColors = Object.keys(imagesByColor)
+  const normalizedRawColors = rawColors
+    .map((c: any) => normalizeHex(c))
+    .filter(Boolean) as string[]
+
+  const derivedColors = Object.keys(imagesByColorFromAdmin)
   const colors =
-    rawColors.length >= derivedColors.length && rawColors.length > 0
-      ? rawColors
+    normalizedRawColors.length >= derivedColors.length && normalizedRawColors.length > 0
+      ? normalizedRawColors
       : derivedColors.length > 0
         ? derivedColors
         : ["#000000"]
+
+  // 3) Fonte da verdade para imagens do site:
+  //    sempre aponta para /products/{id}/colors/{hex}.webp
+  //    (assim imagem e cor ficam “casadas” pelo HEX)
+  const imagesByColor: Record<string, string> = {}
+  for (const c of colors) {
+    const file = hexToFileName(c)
+    imagesByColor[c] = `/products/${raw?.id}/colors/${file}.webp`
+  }
+
+  // 4) Metadados de cor para UI e carrinho (nome + hex + imagem)
+  //    (o client vai usar isso para selecionar cor clicando na imagem, sem bolinhas)
+  const colorOptions = colors.map((c) => {
+    const names = colorNameFromHex(c)
+    return {
+      hex: c,
+      file: hexToFileName(c),
+      image: imagesByColor[c],
+      name: names, // {pt,en,es}
+    }
+  })
 
   return {
     id: raw?.id,
@@ -91,8 +157,16 @@ function normalizeProduct(raw: any): Product {
     colors,
     sizes: sizes.length ? sizes : ["Standard"],
     materials: materials.length ? materials : ["PLA"],
+
+    // Mantém compatibilidade com o client atual:
     ...(Object.keys(imagesByColor).length ? { imagesByColor } : {}),
+
+    // Mantém o que veio do admin (caso você queira usar em algum lugar):
     ...(colorImagesArray?.length ? { color_images: colorImagesArray } : {}),
+
+    // EXTRA (para a correção do fluxo de cor por imagem + carrinho):
+    ...(colorOptions.length ? ({ colorOptions } as any) : {}),
+
     ...(Array.isArray(raw?.variants) ? { variants: raw.variants } : {}),
   } as Product
 }
