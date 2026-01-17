@@ -97,9 +97,15 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
         {uniqueMedia.map((item, index) => (
           <button
             key={`${item.type}-${item.src}-${index}`}
-            onClick={() => {
-              setActive(item)
-              onSelectItem?.(item)
+          onClick={() => {
+  setActive(item)
+
+  // vídeo NÃO altera cor nem imagem selecionada
+  if (item.type === "image") {
+    onSelectItem?.(item)
+  }
+}}
+
             }}
             style={{
               border:
