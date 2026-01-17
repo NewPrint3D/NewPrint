@@ -1,14 +1,12 @@
 "use client"
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react"
-import { defaultLocale, getTranslations, locales, type Locale, translations } from "@/lib/i18n"
-
-type TranslationShape = typeof translations[typeof defaultLocale]
+import { defaultLocale, getTranslations, locales, type Locale } from "@/lib/i18n"
 
 type LanguageContextValue = {
   locale: Locale
-  setLocale: (l: Locale) => void
-  t: TranslationShape
+  setLocale: (next: Locale) => void
+  t: any
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null)
@@ -18,32 +16,30 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("locale")
-      if (saved && (locales as string[]).includes(saved)) {
-        setLocaleState(saved as Locale)
-      }
+      const saved = localStorage.getItem("locale") as Locale | null
+      if (saved && locales.includes(saved)) setLocaleState(saved)
     } catch {}
   }, [])
 
-  const setLocale = (l: Locale) => {
-    setLocaleState(l)
+  const setLocale = (next: Locale) => {
+    if (!locales.includes(next)) return
+    setLocaleState(next)
     try {
-      localStorage.setItem("locale", l)
+      localStorage.setItem("locale", next)
     } catch {}
   }
 
-  // 🔒 Força SEMPRE um tipo único (evita erro "Property 'admin' does not exist...")
-  const t = useMemo(() => getTranslations(locale) as TranslationShape, [locale])
+  const t = useMemo(() => getTranslations(locale), [locale])
 
-  const value = useMemo(() => ({ locale, setLocale, t }), [locale, t])
-
-  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
+  return (
+    <LanguageContext.Provider value={{ locale, setLocale, t }}>
+      {children}
+    </LanguageContext.Provider>
+  )
 }
 
 export function useLanguage() {
   const ctx = useContext(LanguageContext)
-  if (!ctx) {
-    throw new Error("useLanguage must be used within LanguageProvider")
-  }
+  if (!ctx) throw new Error("useLanguage must be used within a LanguageProvider")
   return ctx
 }
