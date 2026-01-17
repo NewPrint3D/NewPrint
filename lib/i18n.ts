@@ -58,6 +58,7 @@ export const translations = {
       addToCart: "Add to Cart",
       viewDetails: "View Details",
       from: "From",
+      // pode deixar ou remover — não atrapalha, mas o lugar “certo” é em product:
       selectColorHint: "Select the color by clicking on the image",
     },
     footer: {
@@ -311,6 +312,8 @@ export const translations = {
       specsTab: "Specifications",
       shippingTab: "Shipping",
       reviewsCount: "({count} reviews)",
+      // ✅ AQUI É O LUGAR CERTO (o seu código lê t.product.selectColorHint)
+      selectColorHint: "Select the color by clicking on the image",
       details: {
         availableColors: "Available Colors",
         availableSizes: "Available Sizes",
@@ -449,9 +452,6 @@ export const translations = {
     },
   },
 
-  // ======= PT e ES: mantive exatamente como você colou (sem mexer) =======
-  // (para não correr risco de quebrar outras partes do arquivo)
-
   pt: {
     nav: {
       home: "Início",
@@ -499,6 +499,7 @@ export const translations = {
       addToCart: "Adicionar ao Carrinho",
       viewDetails: "Ver Detalhes",
       from: "A partir de",
+      // pode deixar ou remover — não atrapalha, mas o lugar “certo” é em product:
       selectColorHint: "Selecione a cor clicando na imagem",
     },
     footer: {
@@ -748,6 +749,8 @@ export const translations = {
       specsTab: "Especificações",
       shippingTab: "Envio",
       reviewsCount: "({count} avaliações)",
+      // ✅ AQUI É O LUGAR CERTO (o seu código lê t.product.selectColorHint)
+      selectColorHint: "Selecione a cor clicando na imagem",
       details: {
         availableColors: "Cores Disponíveis",
         availableSizes: "Tamanhos Disponíveis",
@@ -935,6 +938,7 @@ export const translations = {
       addToCart: "Añadir al Carrito",
       viewDetails: "Ver Detalles",
       from: "Desde",
+      // pode deixar ou remover — não atrapalha, mas o lugar “certo” é em product:
       selectColorHint: "Selecciona el color haciendo clic en la imagen",
     },
     footer: {
@@ -1188,6 +1192,8 @@ export const translations = {
       specsTab: "Especificaciones",
       shippingTab: "Envío",
       reviewsCount: "({count} reseñas)",
+      // ✅ AQUI É O LUGAR CERTO (o seu código lê t.product.selectColorHint)
+      selectColorHint: "Selecciona el color haciendo clic en la imagen",
       details: {
         availableColors: "Colores Disponibles",
         availableSizes: "Tamaños Disponibles",
