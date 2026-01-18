@@ -29,6 +29,11 @@ export const translations = {
       viewAll: "View all",
     },
 
+    // ✅ usado na Home (evita crash: t.home.viewAll)
+    home: {
+      viewAll: "View all",
+    },
+
     categories: {
       homeDecor: "Home Decor",
       gifts: "Gifts",
@@ -272,6 +277,11 @@ export const translations = {
     },
 
     actions: {
+      viewAll: "Ver tudo",
+    },
+
+    // ✅ usado na Home (evita crash: t.home.viewAll)
+    home: {
       viewAll: "Ver tudo",
     },
 
@@ -520,6 +530,11 @@ export const translations = {
       viewAll: "Ver todo",
     },
 
+    // ✅ usado na Home (evita crash: t.home.viewAll)
+    home: {
+      viewAll: "Ver todo",
+    },
+
     categories: {
       homeDecor: "Decoración",
       gifts: "Regalos",
@@ -741,7 +756,7 @@ export const translations = {
     },
 
     admin: {
-      demoAuthWarning: "Modo demo: autenticação não configurada.",
+      demoAuthWarning: "Modo demo: autenticación no configurada.",
       failedToLoad: "No se pudo cargar",
       networkError: "Error de red",
       deleteConfirm: "¿Seguro que deseas eliminar?",
