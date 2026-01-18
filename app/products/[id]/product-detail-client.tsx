@@ -8,8 +8,7 @@ import { ProductCard } from "@/components/product-card"
 import { useLanguage } from "@/contexts/language-context"
 import type { Product } from "@/lib/db-products"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Star, Truck, Shield, RefreshCw } from "lucide-react"
+import { Star } from "lucide-react"
 import ProductGallery from "./ProductGallery"
 
 interface ProductDetailClientProps {
@@ -24,8 +23,7 @@ type MediaItem = {
   colorName?: { pt: string; en: string; es: string }
 }
 
-const normalizeHex = (hex?: string) =>
-  (hex || "").trim().toLowerCase().replace("#", "")
+const normalizeHex = (hex?: string) => (hex || "").trim().toLowerCase().replace("#", "")
 
 const colorNameFromHex = (hexNoHash: string) => {
   const h = (hexNoHash || "").toLowerCase()
@@ -48,9 +46,12 @@ const colorNameFromHex = (hexNoHash: string) => {
 export function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
   const { t, locale } = useLanguage()
 
-  const productId = String(
-    (product as any).id ?? (product as any).product_id ?? (product as any).slug
-  )
+  const ui = {
+    relatedTitle:
+      locale === "pt" ? "Produtos relacionados" : locale === "es" ? "Productos relacionados" : "Related products",
+  }
+
+  const productId = String((product as any).id ?? (product as any).product_id ?? (product as any).slug)
 
   const colorOptions = useMemo(() => {
     const fromServer = (product as any).colorOptions
@@ -61,14 +62,12 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
         name: o.name || colorNameFromHex(normalizeHex(o.hex)),
       }))
     }
-
     return []
   }, [product])
 
   const [selectedHex, setSelectedHex] = useState("")
   const [selectedImage, setSelectedImage] = useState("")
-  const [selectedColorName, setSelectedColorName] =
-    useState<{ pt: string; en: string; es: string } | null>(null)
+  const [selectedColorName, setSelectedColorName] = useState<{ pt: string; en: string; es: string } | null>(null)
 
   useEffect(() => {
     if (!colorOptions.length) return
@@ -80,7 +79,6 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
   const media: MediaItem[] = useMemo(() => {
     const items: MediaItem[] = []
-
     for (const opt of colorOptions) {
       items.push({
         type: "image",
@@ -89,7 +87,6 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
         colorName: opt.name,
       })
     }
-
     return items
   }, [colorOptions])
 
@@ -108,10 +105,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
             <div>
-              <ProductGallery
-                media={media}
-                {...({ onSelectItem: onSelectFromGallery } as any)}
-              />
+              <ProductGallery media={media} {...({ onSelectItem: onSelectFromGallery } as any)} />
             </div>
 
             <div className="space-y-6">
@@ -121,10 +115,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                 </Badge>
 
                 <h1 className="text-4xl font-bold mb-4">
-                  {(product as any).name?.[locale] ||
-                    (product as any).name_pt ||
-                    (product as any).name ||
-                    "Produto"}
+                  {(product as any).name?.[locale] || (product as any).name_pt || (product as any).name || "Produto"}
                 </h1>
 
                 <div className="flex items-center gap-2 mb-4">
@@ -145,8 +136,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                 product={product as any}
                 {...({
                   selectedColorHex: selectedHex,
-                  selectedColorName:
-                    selectedColorName?.[locale] ?? selectedColorName?.pt ?? "",
+                  selectedColorName: selectedColorName?.[locale] ?? selectedColorName?.pt ?? "",
                   selectedImageUrl: selectedImage,
                   hideColorButtons: true,
                 } as any)}
@@ -156,16 +146,11 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
           {relatedProducts.length > 0 && (
             <div>
-              <h2 className="text-3xl font-bold mb-8 text-center">
-                {t.product.related}
-              </h2>
+              <h2 className="text-3xl font-bold mb-8 text-center">{ui.relatedTitle}</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {relatedProducts.map((relatedProduct) => (
-                  <ProductCard
-                    key={(relatedProduct as any).id}
-                    product={relatedProduct as any}
-                  />
+                  <ProductCard key={(relatedProduct as any).id} product={relatedProduct as any} />
                 ))}
               </div>
             </div>
