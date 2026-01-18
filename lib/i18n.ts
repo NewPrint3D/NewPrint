@@ -1,12 +1,12 @@
-export type Locale = "pt" | "es" | "en"
+export type Locale = "es" | "pt" | "en"
 
-export const locales: Locale[] = ["pt", "es", "en"]
+export const locales: Locale[] = ["es", "pt", "en"]
 
 export const defaultLocale: Locale = "es"
 
 export const localeNames: Record<Locale, string> = {
-  pt: "Português",
   es: "Español",
+  pt: "Português",
   en: "English",
 }
 
@@ -231,5 +231,5 @@ export const translations = {
 export type TranslationShape = typeof translations.es
 
 export function getTranslations(locale: Locale) {
-  return translations[locale] || translations[defaultLocale]
+  return translations[locale] ?? translations[defaultLocale]
 }
