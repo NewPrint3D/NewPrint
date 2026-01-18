@@ -2,7 +2,7 @@
 
 export type Locale = "en" | "pt" | "es"
 
-export const locales: Locale[] = ["en", "pt", "es"]
+export const locales = ["en", "pt", "es"] as const satisfies readonly Locale[]
 
 // ✅ idioma padrão do site (primeira visita) = espanhol
 export const defaultLocale: Locale = "es"
@@ -741,7 +741,7 @@ export const translations = {
     },
 
     admin: {
-      demoAuthWarning: "Modo demo: autenticación no configurada.",
+      demoAuthWarning: "Modo demo: autenticação não configurada.",
       failedToLoad: "No se pudo cargar",
       networkError: "Error de red",
       deleteConfirm: "¿Seguro que deseas eliminar?",
@@ -755,6 +755,32 @@ export const translations = {
 
 export type TranslationShape = (typeof translations)[typeof defaultLocale]
 
-export function getTranslations(locale: Locale) {
-  return translations[locale] || translations[defaultLocale]
+export function isLocale(value: unknown): value is Locale {
+  return typeof value === "string" && (locales as readonly string[]).includes(value)
+}
+
+/**
+ * Normaliza locale do Next/headers/cookies:
+ * - "pt-BR" -> "pt"
+ * - "es-ES" -> "es"
+ * - "en-US" -> "en"
+ */
+export function normalizeLocale(input: unknown): Locale {
+  if (isLocale(input)) return input
+
+  if (typeof input === "string" && input.length > 0) {
+    const base = input.toLowerCase().split("-")[0]
+    if (isLocale(base)) return base
+  }
+
+  return defaultLocale
+}
+
+/**
+ * Sempre retorna um dicionário válido (nunca undefined),
+ * evitando quebra no build/prerender quando locale vem inválido.
+ */
+export function getTranslations(locale: unknown): TranslationShape {
+  const normalized = normalizeLocale(locale)
+  return (translations[normalized] ?? translations[defaultLocale]) as TranslationShape
 }
