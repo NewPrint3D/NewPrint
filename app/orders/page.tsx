@@ -26,6 +26,10 @@ export default function OrdersPage() {
   const { t, locale } = useLanguage()
   const [orders, setOrders] = useState<Order[]>([])
 
+  const ui = {
+    orderLabel: locale === "pt" ? "Pedido" : locale === "es" ? "Pedido" : "Order",
+  }
+
   useEffect(() => {
     if (typeof window === "undefined") return
     const savedOrders = localStorage.getItem("orders")
@@ -39,13 +43,14 @@ export default function OrdersPage() {
       <Navbar />
       <div className="pt-24 pb-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-8">{t.orders?.title || "My Orders"}</h1>
+          <h1 className="text-4xl font-bold mb-8">{t.orders.title}</h1>
 
           {orders.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-xl text-muted-foreground">{t.orders?.noOrders || "No orders yet"}</p>
+                <p className="text-xl text-muted-foreground">{t.orders.noOrders}</p>
+                <p className="text-sm text-muted-foreground mt-2">{t.orders.noOrdersDescription}</p>
               </CardContent>
             </Card>
           ) : (
@@ -54,9 +59,12 @@ export default function OrdersPage() {
                 <Card key={order.id} className="overflow-hidden">
                   <CardHeader className="bg-muted/50">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{t.admin?.orderNumber || "Order"} #{order.id}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {ui.orderLabel} #{order.id}
+                      </CardTitle>
                       <Badge variant="default">{order.status}</Badge>
                     </div>
+
                     <div className="flex items-center gap-6 text-sm text-muted-foreground mt-2">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
@@ -68,6 +76,7 @@ export default function OrdersPage() {
                       </div>
                     </div>
                   </CardHeader>
+
                   <CardContent className="pt-6">
                     <div className="space-y-4">
                       {order.items.map((item, index) => (
@@ -77,8 +86,10 @@ export default function OrdersPage() {
                               src={item.product.image || "/placeholder.svg"}
                               alt={item.product.name[locale]}
                               className="w-full h-full object-cover"
+                              loading="lazy"
                             />
                           </div>
+
                           <div className="flex-1">
                             <p className="font-medium">{item.product.name[locale]}</p>
                             <p className="text-sm text-muted-foreground">
@@ -88,6 +99,7 @@ export default function OrdersPage() {
                               {t.cart.qtyLabel}: {item.quantity}
                             </p>
                           </div>
+
                           <p className="font-bold">{formatCurrency(item.price * item.quantity, locale)}</p>
                         </div>
                       ))}
@@ -98,13 +110,13 @@ export default function OrdersPage() {
                         <span className="text-muted-foreground">{t.cart.subtotal}</span>
                         <span>{formatCurrency(order.subtotal, locale)}</span>
                       </div>
+
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">{t.cart.shipping}</span>
                         <span>{formatCurrency(order.shipping, locale)}</span>
                       </div>
-                    <div className="flex justify-between text-sm">
-                      </div>
-                     <div className="flex justify-between text-lg font-bold pt-2 border-t border-border">
+
+                      <div className="flex justify-between text-lg font-bold pt-2 border-t border-border">
                         <span>{t.cart.total}</span>
                         <span className="text-primary">{formatCurrency(order.total, locale)}</span>
                       </div>
