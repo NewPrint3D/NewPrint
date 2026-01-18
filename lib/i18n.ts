@@ -62,6 +62,10 @@ export const translations = {
       noProducts: "Sin productos",
       noProductsHelper: "Agrega tu primer producto",
       orderNumber: "Pedido",
+
+      // ✅ NOVO: evita quebra de build quando o código usa essas chaves
+      failedToLoad: "Error al cargar",
+      networkError: "Error de red",
     },
 
     product: {
@@ -134,6 +138,10 @@ export const translations = {
       noProducts: "Nenhum produto",
       noProductsHelper: "Cadastre seu primeiro produto",
       orderNumber: "Pedido",
+
+      // ✅ NOVO: evita quebra de build quando o código usa essas chaves
+      failedToLoad: "Falha ao carregar",
+      networkError: "Erro de rede",
     },
 
     product: {
@@ -206,6 +214,10 @@ export const translations = {
       noProducts: "No products",
       noProductsHelper: "Add your first product",
       orderNumber: "Order",
+
+      // ✅ NOVO: evita quebra de build quando o código usa essas chaves
+      failedToLoad: "Failed to load",
+      networkError: "Network error",
     },
 
     product: {
