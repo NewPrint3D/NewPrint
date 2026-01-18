@@ -24,6 +24,11 @@ export const translations = {
       navLink: "Link",
     },
 
+    // ✅ ações comuns (botões)
+    actions: {
+      viewAll: "View all",
+    },
+
     categories: {
       homeDecor: "Home Decor",
       gifts: "Gifts",
@@ -80,6 +85,9 @@ export const translations = {
       viewDetails: "View Details",
       from: "From",
       selectColorHint: "Select the color by clicking on the image",
+
+      // ✅ chaves que a home costuma chamar
+      viewAll: "View all",
       homeDecor: "Home Decor",
     },
 
@@ -263,6 +271,10 @@ export const translations = {
       navLink: "Link",
     },
 
+    actions: {
+      viewAll: "Ver tudo",
+    },
+
     categories: {
       homeDecor: "Decoração",
       gifts: "Presentes",
@@ -319,6 +331,8 @@ export const translations = {
       viewDetails: "Ver Detalhes",
       from: "A partir de",
       selectColorHint: "Selecione a cor clicando na imagem",
+
+      viewAll: "Ver tudo",
       homeDecor: "Decoração",
     },
 
@@ -502,6 +516,10 @@ export const translations = {
       navLink: "Enlace",
     },
 
+    actions: {
+      viewAll: "Ver todo",
+    },
+
     categories: {
       homeDecor: "Decoración",
       gifts: "Regalos",
@@ -559,6 +577,8 @@ export const translations = {
       viewDetails: "Ver Detalles",
       from: "Desde",
       selectColorHint: "Selecciona el color haciendo clic en la imagen",
+
+      viewAll: "Ver todo",
       homeDecor: "Decoración",
     },
 
@@ -707,7 +727,7 @@ export const translations = {
       loginFailed: "Error al iniciar sesión",
       registerFailed: "Error al registrarse",
       alreadyHaveAccount: "¿Ya tienes una cuenta?",
-      dontHaveAccount: "¿No tienes una cuenta?",
+      dontHaveAccount: "¿No tienes una conta?",
       signIn: "Entrar",
       signUp: "Registrarse",
     },
