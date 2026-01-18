@@ -16,15 +16,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2 } from "lucide-react"
 
 export default function LoginPage() {
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
   const { login } = useAuth()
   const router = useRouter()
+
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
+
+  // Fallbacks para chaves que não existem no i18n atual
+  const ui = {
+    loggingIn: locale === "pt" ? "Entrando..." : locale === "es" ? "Iniciando..." : "Signing in...",
+    loginButton: t.auth.login, // já existe
+    noAccount: locale === "pt" ? "Não tem uma conta?" : locale === "es" ? "¿No tienes una cuenta?" : "Don’t have an account?",
+    signUpHere: t.auth.signUp, // já existe
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,6 +61,7 @@ export default function LoginPage() {
               <CardTitle className="text-2xl font-bold text-center">{t.auth.welcome}</CardTitle>
               <CardDescription className="text-center">{t.auth.login}</CardDescription>
             </CardHeader>
+
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
@@ -78,6 +88,7 @@ export default function LoginPage() {
                   <Input
                     id="password"
                     type="password"
+                    placeholder={t.placeholders.password}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
@@ -89,17 +100,17 @@ export default function LoginPage() {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {t.auth.loggingIn}
+                      {ui.loggingIn}
                     </>
                   ) : (
-                    t.auth.loginButton
+                    ui.loginButton
                   )}
                 </Button>
 
                 <p className="text-center text-sm text-muted-foreground">
-                  {t.auth.noAccount}{" "}
+                  {ui.noAccount}{" "}
                   <Link href="/register" className="text-primary hover:underline font-medium">
-                    {t.auth.signUpHere}
+                    {ui.signUpHere}
                   </Link>
                 </p>
               </form>
