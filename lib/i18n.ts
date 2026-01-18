@@ -24,27 +24,18 @@ export const translations = {
       navLink: "Link",
     },
 
+    categories: {
+      homeDecor: "Home Decor",
+      gifts: "Gifts",
+      accessories: "Accessories",
+      toys: "Toys",
+      others: "Others",
+    },
+
     customProjects: {
       navLink: "Custom Projects",
-    },
-
-    placeholders: {
-      email: "Enter your email",
-    },
-
-    auth: {
-      welcome: "Welcome",
-      email: "Email",
-      password: "Password",
-      loginFailed: "Login failed",
-      demoAuthWarning: "Demo mode: authentication is disabled in this environment.",
-    },
-
-    admin: {
-      failedToLoad: "Failed to load",
-      networkError: "Network error. Please try again.",
-      deleteConfirm: "Are you sure you want to delete?",
-      demoAuthWarning: "Demo mode: admin actions are disabled.",
+      title: "Custom Projects",
+      description: "Tell us what you need and we’ll make it real.",
     },
 
     hero: {
@@ -89,6 +80,7 @@ export const translations = {
       viewDetails: "View Details",
       from: "From",
       selectColorHint: "Select the color by clicking on the image",
+      homeDecor: "Home Decor",
     },
 
     footer: {
@@ -157,8 +149,8 @@ export const translations = {
       missingStripeUrlFromBackend: "The URL did not come from the backend. (Stripe)",
       paymentFailed: "Payment Failed",
       pleaseTryAgain: "Please try again",
-      pagamentoFalhado: "Payment Failed",
-      porFavorTenteDeNovo: "Please try again",
+      paypalRedirecting: "Redirecting to PayPal...",
+      paypalButton: "Pay with PayPal",
     },
 
     orders: {
@@ -227,6 +219,35 @@ export const translations = {
       },
     },
 
+    auth: {
+      welcome: "Welcome",
+      email: "Email",
+      password: "Password",
+      login: "Login",
+      register: "Create account",
+      loginFailed: "Login failed",
+      registerFailed: "Registration failed",
+      alreadyHaveAccount: "Already have an account?",
+      dontHaveAccount: "Don’t have an account?",
+      signIn: "Sign in",
+      signUp: "Sign up",
+    },
+
+    placeholders: {
+      email: "Enter your email",
+      password: "Enter your password",
+      name: "Enter your name",
+      subject: "Enter subject",
+      message: "Write your message",
+    },
+
+    admin: {
+      demoAuthWarning: "Demo mode: authentication is not configured.",
+      failedToLoad: "Failed to load",
+      networkError: "Network error",
+      deleteConfirm: "Are you sure you want to delete?",
+    },
+
     aria: {
       loading: "Loading",
     },
@@ -242,27 +263,18 @@ export const translations = {
       navLink: "Link",
     },
 
+    categories: {
+      homeDecor: "Decoração",
+      gifts: "Presentes",
+      accessories: "Acessórios",
+      toys: "Brinquedos",
+      others: "Outros",
+    },
+
     customProjects: {
       navLink: "Projetos Personalizados",
-    },
-
-    placeholders: {
-      email: "Digite seu e-mail",
-    },
-
-    auth: {
-      welcome: "Bem-vindo",
-      email: "E-mail",
-      password: "Senha",
-      loginFailed: "Falha no login",
-      demoAuthWarning: "Modo demo: autenticação desativada neste ambiente.",
-    },
-
-    admin: {
-      failedToLoad: "Falha ao carregar",
-      networkError: "Erro de rede. Tente novamente.",
-      deleteConfirm: "Tem certeza que deseja excluir?",
-      demoAuthWarning: "Modo demo: ações de admin desativadas.",
+      title: "Projetos Personalizados",
+      description: "Conte o que você precisa e a gente transforma em realidade.",
     },
 
     hero: {
@@ -296,7 +308,7 @@ export const translations = {
       },
       support: {
         title: "Suporte especializado",
-        description: "Segunda a sexta · horário comercial",
+        description: "Assistência especializada sempre que precisar",
       },
     },
 
@@ -307,6 +319,7 @@ export const translations = {
       viewDetails: "Ver Detalhes",
       from: "A partir de",
       selectColorHint: "Selecione a cor clicando na imagem",
+      homeDecor: "Decoração",
     },
 
     footer: {
@@ -360,23 +373,23 @@ export const translations = {
       cardNumber: "Número do Cartão",
       expiryDate: "Validade",
       cvv: "CVV",
-      placeOrder: "Finalizar Pedido",
+      placeOrder: "Finalizar",
       processing: "Processando...",
       success: "Pedido realizado com sucesso!",
       successMessage: "Seu pedido foi confirmado e salvo.",
-      cancelled: "Pagamento cancelado",
-      cancelledMessage: "Você cancelou o pagamento. Os itens do carrinho foram mantidos.",
+      cancelled: "Pagamento Cancelado",
+      cancelledMessage: "Você cancelou o pagamento. Seus itens continuam no carrinho.",
       paymentMethod: "Método de Pagamento",
       creditCard: "Cartão de Crédito",
       orPayWith: "Ou pague com",
       fillDetailsTitle: "Preencha os dados",
       fillDetailsDescription: "Complete o formulário antes de pagar",
-      failedToCreateStripeCheckout: "Falha ao criar checkout da Stripe.",
+      failedToCreateStripeCheckout: "Falha ao criar checkout do Stripe.",
       missingStripeUrlFromBackend: "A URL não veio do backend. (Stripe)",
-      paymentFailed: "Pagamento falhou",
-      pleaseTryAgain: "Por favor, tente novamente",
-      pagamentoFalhado: "Pagamento falhou",
-      porFavorTenteDeNovo: "Por favor, tente novamente",
+      paymentFailed: "Pagamento Falhou",
+      pleaseTryAgain: "Tente novamente",
+      paypalRedirecting: "Redirecionando para o PayPal...",
+      paypalButton: "Pagar com PayPal",
     },
 
     orders: {
@@ -387,30 +400,31 @@ export const translations = {
 
     about: {
       title: "Sobre a NewPrint3D",
-      subtitle: "Pioneirismo no futuro da impressão 3D",
+      subtitle: "Pioneirismo no Futuro da Impressão 3D",
       story: {
         title: "Nossa História",
         description:
-          "Fundada com paixão por inovação, a NewPrint3D está na vanguarda de soluções de impressão 3D personalizadas. Acreditamos em transformar ideias em realidade, camada por camada.",
+          "Fundada com paixão por inovação, a NewPrint3D está na vanguarda das soluções de impressão 3D personalizada. Acreditamos em transformar ideias em realidade, camada por camada.",
       },
       mission: {
         title: "Nossa Missão",
         description:
-          "Democratizar a tecnologia de impressão 3D e tornar a fabricação personalizada acessível a todos.",
+          "Democratizar a tecnologia de impressão 3D e tornar a manufatura personalizada acessível a todos, de hobbyistas a profissionais.",
       },
       vision: {
         title: "Nossa Visão",
-        description: "Um mundo onde qualquer pessoa possa dar vida às suas ideias com precisão, qualidade e sustentabilidade.",
+        description:
+          "Um mundo onde qualquer pessoa possa dar vida às suas ideias criativas com precisão, qualidade e sustentabilidade.",
       },
       values: {
         title: "Nossos Valores",
         innovation: "Inovação",
-        innovationDesc: "Sempre evoluindo",
+        innovationDesc: "Sempre ultrapassando limites",
         quality: "Qualidade",
         qualityDesc: "Excelência em cada impressão",
         sustainability: "Sustentabilidade",
-        sustainabilityDesc: "Materiais eco-friendly",
-        customer: "Cliente em primeiro lugar",
+        sustainabilityDesc: "Materiais ecológicos",
+        customer: "Cliente em Primeiro Lugar",
         customerDesc: "Seu sucesso é nossa prioridade",
       },
       stats: {
@@ -423,7 +437,7 @@ export const translations = {
 
     contact: {
       title: "Fale Conosco",
-      subtitle: "Tem um projeto em mente? Vamos torná-lo realidade",
+      subtitle: "Tem um projeto em mente? Vamos criar juntos",
       form: {
         name: "Seu Nome",
         email: "Seu E-mail",
@@ -436,12 +450,41 @@ export const translations = {
       info: {
         title: "Informações de Contato",
         email: "contacto@newprint3d.com",
-        hours: "Seg - Sex: 09:00 - 18:00",
+        hours: "Seg - Sex: 9:00 - 18:00",
       },
       quickResponse: {
         title: "Resposta Rápida",
         description: "Normalmente respondemos em até 24 horas (dias úteis)",
       },
+    },
+
+    auth: {
+      welcome: "Bem-vindo",
+      email: "E-mail",
+      password: "Senha",
+      login: "Entrar",
+      register: "Criar conta",
+      loginFailed: "Falha no login",
+      registerFailed: "Falha no cadastro",
+      alreadyHaveAccount: "Já tem uma conta?",
+      dontHaveAccount: "Não tem uma conta?",
+      signIn: "Entrar",
+      signUp: "Cadastrar",
+    },
+
+    placeholders: {
+      email: "Digite seu e-mail",
+      password: "Digite sua senha",
+      name: "Digite seu nome",
+      subject: "Digite o assunto",
+      message: "Escreva sua mensagem",
+    },
+
+    admin: {
+      demoAuthWarning: "Modo demo: autenticação não configurada.",
+      failedToLoad: "Falha ao carregar",
+      networkError: "Erro de rede",
+      deleteConfirm: "Tem certeza que deseja excluir?",
     },
 
     aria: {
@@ -459,27 +502,18 @@ export const translations = {
       navLink: "Enlace",
     },
 
+    categories: {
+      homeDecor: "Decoración",
+      gifts: "Regalos",
+      accessories: "Accesorios",
+      toys: "Juguetes",
+      others: "Otros",
+    },
+
     customProjects: {
       navLink: "Proyectos Personalizados",
-    },
-
-    placeholders: {
-      email: "Escribe tu correo",
-    },
-
-    auth: {
-      welcome: "Bienvenido",
-      email: "Correo electrónico",
-      password: "Contraseña",
-      loginFailed: "Error de inicio de sesión",
-      demoAuthWarning: "Modo demo: autenticación deshabilitada en este entorno.",
-    },
-
-    admin: {
-      failedToLoad: "No se pudo cargar",
-      networkError: "Error de red. Inténtalo de nuevo.",
-      deleteConfirm: "¿Seguro que quieres eliminar?",
-      demoAuthWarning: "Modo demo: acciones de admin deshabilitadas.",
+      title: "Proyectos Personalizados",
+      description: "Cuéntanos lo que necesitas y lo hacemos realidad.",
     },
 
     hero: {
@@ -492,7 +526,8 @@ export const translations = {
       readyForDelivery: "Productos Listos para Entrega",
       highQuality: "Alta Calidad",
       printing3d: "Impresión 3D de",
-      exclusiveProducts: "Productos exclusivos y personalizables con materiales biodegradables. De lo decorativo a lo funcional.",
+      exclusiveProducts:
+        "Productos exclusivos y personalizables con materiales biodegradables. De lo decorativo a lo funcional.",
       viewProducts: "Ver Productos",
       customProjects: "Proyectos Personalizados",
     },
@@ -513,7 +548,7 @@ export const translations = {
       },
       support: {
         title: "Soporte especializado",
-        description: "Lun a Vie · horario laboral",
+        description: "Asistencia experta cuando la necesites",
       },
     },
 
@@ -524,6 +559,7 @@ export const translations = {
       viewDetails: "Ver Detalles",
       from: "Desde",
       selectColorHint: "Selecciona el color haciendo clic en la imagen",
+      homeDecor: "Decoración",
     },
 
     footer: {
@@ -577,23 +613,23 @@ export const translations = {
       cardNumber: "Número de Tarjeta",
       expiryDate: "Caducidad",
       cvv: "CVV",
-      placeOrder: "Realizar Pedido",
+      placeOrder: "Finalizar",
       processing: "Procesando...",
       success: "¡Pedido realizado con éxito!",
       successMessage: "Tu pedido ha sido confirmado y guardado.",
-      cancelled: "Pago cancelado",
-      cancelledMessage: "Cancelaste el pago. Los artículos del carrito siguen guardados.",
+      cancelled: "Pago Cancelado",
+      cancelledMessage: "Has cancelado el pago. Tus artículos siguen en el carrito.",
       paymentMethod: "Método de Pago",
       creditCard: "Tarjeta de Crédito",
       orPayWith: "O paga con",
       fillDetailsTitle: "Completa los datos",
       fillDetailsDescription: "Completa el formulario antes de pagar",
-      failedToCreateStripeCheckout: "No se pudo crear el checkout de Stripe.",
+      failedToCreateStripeCheckout: "Error al crear checkout de Stripe.",
       missingStripeUrlFromBackend: "La URL no vino del backend. (Stripe)",
-      paymentFailed: "Pago fallido",
-      pleaseTryAgain: "Por favor, inténtalo de nuevo",
-      pagamentoFalhado: "Pago fallido",
-      porFavorTenteDeNovo: "Por favor, inténtalo de nuevo",
+      paymentFailed: "Pago Fallido",
+      pleaseTryAgain: "Inténtalo de nuevo",
+      paypalRedirecting: "Redirigiendo a PayPal...",
+      paypalButton: "Pagar con PayPal",
     },
 
     orders: {
@@ -604,19 +640,21 @@ export const translations = {
 
     about: {
       title: "Acerca de NewPrint3D",
-      subtitle: "Pioneros en el futuro de la impresión 3D",
+      subtitle: "Pioneros en el Futuro de la Impresión 3D",
       story: {
         title: "Nuestra Historia",
         description:
-          "Fundada con pasión por la innovación, NewPrint3D está a la vanguardia de soluciones de impresión 3D personalizadas. Creemos en transformar ideas en realidad, capa por capa.",
+          "Fundada con pasión por la innovación, NewPrint3D está a la vanguardia de soluciones de impresión 3D personalizada. Creemos en transformar ideas en realidad, capa por capa.",
       },
       mission: {
         title: "Nuestra Misión",
-        description: "Democratizar la tecnología de impresión 3D y hacer la fabricación personalizada accesible para todos.",
+        description:
+          "Democratizar la tecnología de impresión 3D y hacer la fabricación personalizada accesible para todos, desde aficionados hasta profesionales.",
       },
       vision: {
         title: "Nuestra Visión",
-        description: "Un mundo donde cualquiera pueda dar vida a sus ideas con precisión, calidad y sostenibilidad.",
+        description:
+          "Un mundo donde cualquiera pueda dar vida a sus ideas creativas con precisión, calidad y sostenibilidad.",
       },
       values: {
         title: "Nuestros Valores",
@@ -625,21 +663,21 @@ export const translations = {
         quality: "Calidad",
         qualityDesc: "Excelencia en cada impresión",
         sustainability: "Sostenibilidad",
-        sustainabilityDesc: "Materiales eco-friendly",
-        customer: "El cliente primero",
+        sustainabilityDesc: "Materiales ecológicos",
+        customer: "Cliente Primero",
         customerDesc: "Tu éxito es nuestra prioridad",
       },
       stats: {
         projects: "Proyectos Completados",
-        customers: "Clientes Satisfechos",
+        customers: "Clientes Felices",
         materials: "Materiales Disponibles",
         countries: "Países Atendidos",
       },
     },
 
     contact: {
-      title: "Ponte en Contacto",
-      subtitle: "¿Tienes un proyecto en mente? Vamos a hacerlo realidad",
+      title: "Contacto",
+      subtitle: "¿Tienes un proyecto en mente? Hagámoslo realidad juntos",
       form: {
         name: "Tu Nombre",
         email: "Tu Correo",
@@ -652,7 +690,7 @@ export const translations = {
       info: {
         title: "Información de Contacto",
         email: "contacto@newprint3d.com",
-        hours: "Lun - Vie: 09:00 - 18:00",
+        hours: "Lun - Vie: 9:00 - 18:00",
       },
       quickResponse: {
         title: "Respuesta Rápida",
@@ -660,11 +698,42 @@ export const translations = {
       },
     },
 
+    auth: {
+      welcome: "Bienvenido",
+      email: "Correo",
+      password: "Contraseña",
+      login: "Iniciar sesión",
+      register: "Crear cuenta",
+      loginFailed: "Error al iniciar sesión",
+      registerFailed: "Error al registrarse",
+      alreadyHaveAccount: "¿Ya tienes una cuenta?",
+      dontHaveAccount: "¿No tienes una cuenta?",
+      signIn: "Entrar",
+      signUp: "Registrarse",
+    },
+
+    placeholders: {
+      email: "Introduce tu correo",
+      password: "Introduce tu contraseña",
+      name: "Introduce tu nombre",
+      subject: "Introduce el asunto",
+      message: "Escribe tu mensaje",
+    },
+
+    admin: {
+      demoAuthWarning: "Modo demo: autenticación no configurada.",
+      failedToLoad: "No se pudo cargar",
+      networkError: "Error de red",
+      deleteConfirm: "¿Seguro que deseas eliminar?",
+    },
+
     aria: {
       loading: "Cargando",
     },
   },
 } as const
+
+export type TranslationShape = (typeof translations)[typeof defaultLocale]
 
 export function getTranslations(locale: Locale) {
   return translations[locale] || translations[defaultLocale]
