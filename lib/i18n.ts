@@ -1,3 +1,5 @@
+// /lib/i18n.ts
+
 export type Locale = "en" | "pt" | "es"
 
 export const locales: Locale[] = ["en", "pt", "es"]
@@ -26,15 +28,23 @@ export const translations = {
       navLink: "Custom Projects",
     },
 
+    placeholders: {
+      email: "Enter your email",
+    },
+
     auth: {
       welcome: "Welcome",
       email: "Email",
       password: "Password",
       loginFailed: "Login failed",
+      demoAuthWarning: "Demo mode: authentication is disabled in this environment.",
     },
 
-    placeholders: {
-      email: "Enter your email",
+    admin: {
+      failedToLoad: "Failed to load",
+      networkError: "Network error. Please try again.",
+      deleteConfirm: "Are you sure you want to delete?",
+      demoAuthWarning: "Demo mode: admin actions are disabled.",
     },
 
     hero: {
@@ -236,15 +246,23 @@ export const translations = {
       navLink: "Projetos Personalizados",
     },
 
+    placeholders: {
+      email: "Digite seu e-mail",
+    },
+
     auth: {
       welcome: "Bem-vindo",
       email: "E-mail",
       password: "Senha",
       loginFailed: "Falha no login",
+      demoAuthWarning: "Modo demo: autenticação desativada neste ambiente.",
     },
 
-    placeholders: {
-      email: "Digite seu e-mail",
+    admin: {
+      failedToLoad: "Falha ao carregar",
+      networkError: "Erro de rede. Tente novamente.",
+      deleteConfirm: "Tem certeza que deseja excluir?",
+      demoAuthWarning: "Modo demo: ações de admin desativadas.",
     },
 
     hero: {
@@ -278,7 +296,7 @@ export const translations = {
       },
       support: {
         title: "Suporte especializado",
-        description: "Assistência especializada sempre que precisar",
+        description: "Segunda a sexta · horário comercial",
       },
     },
 
@@ -328,6 +346,7 @@ export const translations = {
     checkout: {
       title: "Finalizar Compra",
       shippingInfo: "Informações de Envio",
+      paymentInfo: "Informações de Pagamento",
       orderSummary: "Resumo do Pedido",
       firstName: "Nome",
       lastName: "Sobrenome",
@@ -338,6 +357,91 @@ export const translations = {
       state: "Estado",
       zipCode: "CEP",
       country: "País",
+      cardNumber: "Número do Cartão",
+      expiryDate: "Validade",
+      cvv: "CVV",
+      placeOrder: "Finalizar Pedido",
+      processing: "Processando...",
+      success: "Pedido realizado com sucesso!",
+      successMessage: "Seu pedido foi confirmado e salvo.",
+      cancelled: "Pagamento cancelado",
+      cancelledMessage: "Você cancelou o pagamento. Os itens do carrinho foram mantidos.",
+      paymentMethod: "Método de Pagamento",
+      creditCard: "Cartão de Crédito",
+      orPayWith: "Ou pague com",
+      fillDetailsTitle: "Preencha os dados",
+      fillDetailsDescription: "Complete o formulário antes de pagar",
+      failedToCreateStripeCheckout: "Falha ao criar checkout da Stripe.",
+      missingStripeUrlFromBackend: "A URL não veio do backend. (Stripe)",
+      paymentFailed: "Pagamento falhou",
+      pleaseTryAgain: "Por favor, tente novamente",
+      pagamentoFalhado: "Pagamento falhou",
+      porFavorTenteDeNovo: "Por favor, tente novamente",
+    },
+
+    orders: {
+      title: "Meus Pedidos",
+      noOrders: "Ainda não há pedidos",
+      noOrdersDescription: "Comece a comprar para ver seus pedidos aqui",
+    },
+
+    about: {
+      title: "Sobre a NewPrint3D",
+      subtitle: "Pioneirismo no futuro da impressão 3D",
+      story: {
+        title: "Nossa História",
+        description:
+          "Fundada com paixão por inovação, a NewPrint3D está na vanguarda de soluções de impressão 3D personalizadas. Acreditamos em transformar ideias em realidade, camada por camada.",
+      },
+      mission: {
+        title: "Nossa Missão",
+        description:
+          "Democratizar a tecnologia de impressão 3D e tornar a fabricação personalizada acessível a todos.",
+      },
+      vision: {
+        title: "Nossa Visão",
+        description: "Um mundo onde qualquer pessoa possa dar vida às suas ideias com precisão, qualidade e sustentabilidade.",
+      },
+      values: {
+        title: "Nossos Valores",
+        innovation: "Inovação",
+        innovationDesc: "Sempre evoluindo",
+        quality: "Qualidade",
+        qualityDesc: "Excelência em cada impressão",
+        sustainability: "Sustentabilidade",
+        sustainabilityDesc: "Materiais eco-friendly",
+        customer: "Cliente em primeiro lugar",
+        customerDesc: "Seu sucesso é nossa prioridade",
+      },
+      stats: {
+        projects: "Projetos Concluídos",
+        customers: "Clientes Satisfeitos",
+        materials: "Materiais Disponíveis",
+        countries: "Países Atendidos",
+      },
+    },
+
+    contact: {
+      title: "Fale Conosco",
+      subtitle: "Tem um projeto em mente? Vamos torná-lo realidade",
+      form: {
+        name: "Seu Nome",
+        email: "Seu E-mail",
+        subject: "Assunto",
+        message: "Sua Mensagem",
+        send: "Enviar Mensagem",
+        sending: "Enviando...",
+        success: "Mensagem enviada com sucesso!",
+      },
+      info: {
+        title: "Informações de Contato",
+        email: "contacto@newprint3d.com",
+        hours: "Seg - Sex: 09:00 - 18:00",
+      },
+      quickResponse: {
+        title: "Resposta Rápida",
+        description: "Normalmente respondemos em até 24 horas (dias úteis)",
+      },
     },
 
     aria: {
@@ -359,15 +463,23 @@ export const translations = {
       navLink: "Proyectos Personalizados",
     },
 
+    placeholders: {
+      email: "Escribe tu correo",
+    },
+
     auth: {
       welcome: "Bienvenido",
       email: "Correo electrónico",
       password: "Contraseña",
       loginFailed: "Error de inicio de sesión",
+      demoAuthWarning: "Modo demo: autenticación deshabilitada en este entorno.",
     },
 
-    placeholders: {
-      email: "Escribe tu correo",
+    admin: {
+      failedToLoad: "No se pudo cargar",
+      networkError: "Error de red. Inténtalo de nuevo.",
+      deleteConfirm: "¿Seguro que quieres eliminar?",
+      demoAuthWarning: "Modo demo: acciones de admin deshabilitadas.",
     },
 
     hero: {
@@ -380,8 +492,7 @@ export const translations = {
       readyForDelivery: "Productos Listos para Entrega",
       highQuality: "Alta Calidad",
       printing3d: "Impresión 3D de",
-      exclusiveProducts:
-        "Productos exclusivos y personalizables con materiales biodegradables. De lo decorativo a lo funcional.",
+      exclusiveProducts: "Productos exclusivos y personalizables con materiales biodegradables. De lo decorativo a lo funcional.",
       viewProducts: "Ver Productos",
       customProjects: "Proyectos Personalizados",
     },
@@ -402,7 +513,7 @@ export const translations = {
       },
       support: {
         title: "Soporte especializado",
-        description: "Asistencia experta cuando la necesites",
+        description: "Lun a Vie · horario laboral",
       },
     },
 
@@ -452,6 +563,7 @@ export const translations = {
     checkout: {
       title: "Finalizar Compra",
       shippingInfo: "Información de Envío",
+      paymentInfo: "Información de Pago",
       orderSummary: "Resumen del Pedido",
       firstName: "Nombre",
       lastName: "Apellido",
@@ -462,13 +574,97 @@ export const translations = {
       state: "Estado",
       zipCode: "Código Postal",
       country: "País",
+      cardNumber: "Número de Tarjeta",
+      expiryDate: "Caducidad",
+      cvv: "CVV",
+      placeOrder: "Realizar Pedido",
+      processing: "Procesando...",
+      success: "¡Pedido realizado con éxito!",
+      successMessage: "Tu pedido ha sido confirmado y guardado.",
+      cancelled: "Pago cancelado",
+      cancelledMessage: "Cancelaste el pago. Los artículos del carrito siguen guardados.",
+      paymentMethod: "Método de Pago",
+      creditCard: "Tarjeta de Crédito",
+      orPayWith: "O paga con",
+      fillDetailsTitle: "Completa los datos",
+      fillDetailsDescription: "Completa el formulario antes de pagar",
+      failedToCreateStripeCheckout: "No se pudo crear el checkout de Stripe.",
+      missingStripeUrlFromBackend: "La URL no vino del backend. (Stripe)",
+      paymentFailed: "Pago fallido",
+      pleaseTryAgain: "Por favor, inténtalo de nuevo",
+      pagamentoFalhado: "Pago fallido",
+      porFavorTenteDeNovo: "Por favor, inténtalo de nuevo",
+    },
+
+    orders: {
+      title: "Mis Pedidos",
+      noOrders: "Aún no hay pedidos",
+      noOrdersDescription: "Empieza a comprar para ver tus pedidos aquí",
+    },
+
+    about: {
+      title: "Acerca de NewPrint3D",
+      subtitle: "Pioneros en el futuro de la impresión 3D",
+      story: {
+        title: "Nuestra Historia",
+        description:
+          "Fundada con pasión por la innovación, NewPrint3D está a la vanguardia de soluciones de impresión 3D personalizadas. Creemos en transformar ideas en realidad, capa por capa.",
+      },
+      mission: {
+        title: "Nuestra Misión",
+        description: "Democratizar la tecnología de impresión 3D y hacer la fabricación personalizada accesible para todos.",
+      },
+      vision: {
+        title: "Nuestra Visión",
+        description: "Un mundo donde cualquiera pueda dar vida a sus ideas con precisión, calidad y sostenibilidad.",
+      },
+      values: {
+        title: "Nuestros Valores",
+        innovation: "Innovación",
+        innovationDesc: "Siempre superando límites",
+        quality: "Calidad",
+        qualityDesc: "Excelencia en cada impresión",
+        sustainability: "Sostenibilidad",
+        sustainabilityDesc: "Materiales eco-friendly",
+        customer: "El cliente primero",
+        customerDesc: "Tu éxito es nuestra prioridad",
+      },
+      stats: {
+        projects: "Proyectos Completados",
+        customers: "Clientes Satisfechos",
+        materials: "Materiales Disponibles",
+        countries: "Países Atendidos",
+      },
+    },
+
+    contact: {
+      title: "Ponte en Contacto",
+      subtitle: "¿Tienes un proyecto en mente? Vamos a hacerlo realidad",
+      form: {
+        name: "Tu Nombre",
+        email: "Tu Correo",
+        subject: "Asunto",
+        message: "Tu Mensaje",
+        send: "Enviar Mensaje",
+        sending: "Enviando...",
+        success: "¡Mensaje enviado con éxito!",
+      },
+      info: {
+        title: "Información de Contacto",
+        email: "contacto@newprint3d.com",
+        hours: "Lun - Vie: 09:00 - 18:00",
+      },
+      quickResponse: {
+        title: "Respuesta Rápida",
+        description: "Normalmente respondemos en 24 horas (días hábiles)",
+      },
     },
 
     aria: {
       loading: "Cargando",
     },
   },
-}
+} as const
 
 export function getTranslations(locale: Locale) {
   return translations[locale] || translations[defaultLocale]
