@@ -39,6 +39,7 @@ export const translations = {
       shipping: "Envío",
       total: "Total",
       continueShopping: "Seguir comprando",
+      color: "Color",
     },
 
     auth: {
@@ -62,8 +63,6 @@ export const translations = {
       noProducts: "Sin productos",
       noProductsHelper: "Agrega tu primer producto",
       orderNumber: "Pedido",
-
-      // ✅ NOVO: evita quebra de build quando o código usa essas chaves
       failedToLoad: "Error al cargar",
       networkError: "Error de red",
     },
@@ -115,6 +114,7 @@ export const translations = {
       shipping: "Frete",
       total: "Total",
       continueShopping: "Continuar comprando",
+      color: "Cor",
     },
 
     auth: {
@@ -138,8 +138,6 @@ export const translations = {
       noProducts: "Nenhum produto",
       noProductsHelper: "Cadastre seu primeiro produto",
       orderNumber: "Pedido",
-
-      // ✅ NOVO: evita quebra de build quando o código usa essas chaves
       failedToLoad: "Falha ao carregar",
       networkError: "Erro de rede",
     },
@@ -191,6 +189,7 @@ export const translations = {
       shipping: "Shipping",
       total: "Total",
       continueShopping: "Continue shopping",
+      color: "Color",
     },
 
     auth: {
@@ -214,8 +213,6 @@ export const translations = {
       noProducts: "No products",
       noProductsHelper: "Add your first product",
       orderNumber: "Order",
-
-      // ✅ NOVO: evita quebra de build quando o código usa essas chaves
       failedToLoad: "Failed to load",
       networkError: "Network error",
     },
