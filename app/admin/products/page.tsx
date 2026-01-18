@@ -35,8 +35,33 @@ export default function AdminProductsPage() {
   const { isAdmin, isLoading } = useAuth()
   const { t, locale } = useLanguage()
   const router = useRouter()
+
   const [products, setProducts] = useState<AdminProduct[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Textos (fallbacks) — evita depender de chaves que não existem no i18n atual
+  const ui = {
+    title: locale === "pt" ? "Produtos" : locale === "es" ? "Productos" : "Products",
+    subtitle:
+      locale === "pt"
+        ? "Gerencie seu catálogo"
+        : locale === "es"
+          ? "Gestiona tu catálogo"
+          : "Manage your catalog",
+    addProduct: locale === "pt" ? "Adicionar produto" : locale === "es" ? "Añadir producto" : "Add product",
+    unnamed: locale === "pt" ? "Produto sem nome" : locale === "es" ? "Producto sin nombre" : "Unnamed product",
+    noImage: locale === "pt" ? "Sem imagem" : locale === "es" ? "Sin imagen" : "No image",
+    featured: locale === "pt" ? "Destaque" : locale === "es" ? "Destacado" : "Featured",
+    view: locale === "pt" ? "Ver" : locale === "es" ? "Ver" : "View",
+    edit: locale === "pt" ? "Editar" : locale === "es" ? "Editar" : "Edit",
+    noProducts: locale === "pt" ? "Nenhum produto" : locale === "es" ? "Sin productos" : "No products",
+    noProductsHelper:
+      locale === "pt"
+        ? "Crie seu primeiro produto para começar."
+        : locale === "es"
+          ? "Crea tu primer producto para empezar."
+          : "Create your first product to get started.",
+  }
 
   useEffect(() => {
     if (!isLoading && !isAdmin) {
@@ -58,18 +83,20 @@ export default function AdminProductsPage() {
         if (res.ok) {
           const data = await res.json()
           setProducts(data.products ?? [])
+        } else {
+          // usa chaves existentes
+          console.error(t.admin.failedToLoad)
         }
       } catch (error) {
-        console.error("Error fetching products:", error)
+        console.error(t.admin.networkError, error)
       } finally {
         setLoading(false)
       }
     }
 
-    if (isAdmin) {
-      fetchProducts()
-    }
-  }, [isAdmin])
+    if (isAdmin) fetchProducts()
+    else setLoading(false)
+  }, [isAdmin, t.admin.failedToLoad, t.admin.networkError])
 
   const handleDelete = async (id: string | number) => {
     if (!confirm(t.admin.deleteConfirm)) return
@@ -85,9 +112,11 @@ export default function AdminProductsPage() {
 
       if (res.ok) {
         setProducts((prev) => prev.filter((product) => String(product.id) !== String(id)))
+      } else {
+        console.error(t.admin.failedToLoad)
       }
     } catch (error) {
-      console.error("Error deleting product:", error)
+      console.error(t.admin.networkError, error)
     }
   }
 
@@ -103,7 +132,6 @@ export default function AdminProductsPage() {
   }
 
   const getPrice = (product: AdminProduct) => product.base_price ?? product.basePrice ?? 0
-
   const getImage = (product: AdminProduct) => product.image_url ?? product.image ?? "/placeholder.svg"
 
   if (isLoading || loading) {
@@ -123,13 +151,14 @@ export default function AdminProductsPage() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-              <h1 className="text-4xl font-bold mb-2">{t.admin.products}</h1>
-              <p className="text-muted-foreground">{t.admin.manageCatalog}</p>
+              <h1 className="text-4xl font-bold mb-2">{ui.title}</h1>
+              <p className="text-muted-foreground">{ui.subtitle}</p>
             </div>
+
             <Button asChild>
               <Link href="/admin/products/new">
                 <Plus className="h-4 w-4 mr-2" />
-                {t.admin.addProduct}
+                {ui.addProduct}
               </Link>
             </Button>
           </div>
@@ -145,34 +174,39 @@ export default function AdminProductsPage() {
                   <div className="aspect-square relative mb-4 rounded-lg overflow-hidden bg-muted">
                     <img
                       src={getImage(product)}
-                      alt={getProductName(product) || t.admin.noImage}
+                      alt={getProductName(product) || ui.noImage}
                       className="object-cover w-full h-full"
+                      loading="lazy"
                     />
                   </div>
-                  <CardTitle className="line-clamp-2">{getProductName(product) || t.admin.unnamedProduct}</CardTitle>
+
+                  <CardTitle className="line-clamp-2">{getProductName(product) || ui.unnamed}</CardTitle>
+
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-2xl font-bold text-primary">{formatCurrency(getPrice(product), locale)}</span>
+
                     {product.featured && (
-                      <span className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded">
-                        {t.common.featured}
-                      </span>
+                      <span className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded">{ui.featured}</span>
                     )}
                   </div>
                 </CardHeader>
+
                 <CardContent>
                   <div className="flex items-center gap-2">
                     <Button asChild variant="outline" size="sm" className="flex-1 bg-transparent">
                       <Link href={`/products/${product.id}`}>
                         <Eye className="h-4 w-4 mr-2" />
-                        {t.cta.view}
+                        {ui.view}
                       </Link>
                     </Button>
+
                     <Button asChild variant="outline" size="sm" className="flex-1 bg-transparent">
                       <Link href={`/admin/products/${product.id}/edit`}>
                         <Edit className="h-4 w-4 mr-2" />
-                        {t.cta.edit}
+                        {ui.edit}
                       </Link>
                     </Button>
+
                     <Button variant="destructive" size="sm" onClick={() => handleDelete(product.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -186,17 +220,21 @@ export default function AdminProductsPage() {
             <Card className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Package className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">{t.admin.noProducts}</h3>
-                <p className="text-muted-foreground mb-4">{t.admin.noProductsHelper}</p>
+                <h3 className="text-lg font-semibold mb-2">{ui.noProducts}</h3>
+                <p className="text-muted-foreground mb-4">{ui.noProductsHelper}</p>
+
                 <Button asChild>
                   <Link href="/admin/products/new">
                     <Plus className="h-4 w-4 mr-2" />
-                    {t.admin.addProduct}
+                    {ui.addProduct}
                   </Link>
                 </Button>
               </CardContent>
             </Card>
           )}
+
+          {/* Usa uma chave que existe no i18n (se você quiser um link "Ver tudo" aqui no futuro) */}
+          {/* <div className="mt-8 text-center">{t.actions.viewAll}</div> */}
         </div>
       </main>
       <Footer />
