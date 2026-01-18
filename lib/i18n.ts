@@ -41,6 +41,7 @@ export const translations = {
       continueShopping: "Seguir comprando",
       color: "Color",
       size: "Tamaño",
+      material: "Material",
     },
 
     auth: {
@@ -117,6 +118,7 @@ export const translations = {
       continueShopping: "Continuar comprando",
       color: "Cor",
       size: "Tamanho",
+      material: "Material",
     },
 
     auth: {
@@ -193,6 +195,7 @@ export const translations = {
       continueShopping: "Continue shopping",
       color: "Color",
       size: "Size",
+      material: "Material",
     },
 
     auth: {
