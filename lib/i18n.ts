@@ -47,6 +47,7 @@ const base = {
   cart: {
     title: "Cart",
     empty: "Your cart is empty",
+    emptyDescription: "Add some products to get started",
     qtyLabel: "Qty",
     subtotal: "Subtotal",
     shipping: "Shipping",
@@ -105,6 +106,7 @@ export const translations = {
     cart: {
       title: "Carrinho",
       empty: "Seu carrinho está vazio",
+      emptyDescription: "Adicione produtos para começar",
       qtyLabel: "Qtd",
       subtotal: "Subtotal",
       shipping: "Frete",
@@ -145,6 +147,7 @@ export const translations = {
     cart: {
       title: "Carrito",
       empty: "Tu carrito está vacío",
+      emptyDescription: "Agrega productos para comenzar",
       qtyLabel: "Cant.",
       subtotal: "Subtotal",
       shipping: "Envío",
