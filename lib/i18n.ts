@@ -40,6 +40,7 @@ export const translations = {
       total: "Total",
       continueShopping: "Seguir comprando",
       color: "Color",
+      size: "Tamaño",
     },
 
     auth: {
@@ -115,6 +116,7 @@ export const translations = {
       total: "Total",
       continueShopping: "Continuar comprando",
       color: "Cor",
+      size: "Tamanho",
     },
 
     auth: {
@@ -190,6 +192,7 @@ export const translations = {
       total: "Total",
       continueShopping: "Continue shopping",
       color: "Color",
+      size: "Size",
     },
 
     auth: {
