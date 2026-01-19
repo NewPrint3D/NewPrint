@@ -15,7 +15,9 @@ export default function ProductsPage() {
       <div className="pt-24 pb-12">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">{t.products.title}</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
+              {t.product.title}
+            </h1>
             <div className="w-20 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
           </div>
 
