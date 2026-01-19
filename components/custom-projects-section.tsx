@@ -63,10 +63,12 @@ const sentLabel =
         throw new Error(text || `Erro ao enviar (status ${res.status})`)
       }
 
-      toast({
-        title: t.customProjects.messageSent,
-        description: t.customProjects.messageDesc,
-      })
+     toast({
+  title: locale === "pt" ? "Mensagem Enviada" : "Mensaje Enviado",
+  description: locale === "pt" 
+    ? "Recebemos seu projeto e entraremos em contato em breve." 
+    : "Hemos recibido seu proyecto e nos pondremos en contacto pronto.",
+})
 
       setFormData({ name: "", email: "", phone: "", message: "", file: null })
       setPreview(null)
