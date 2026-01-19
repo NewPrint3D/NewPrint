@@ -217,7 +217,7 @@ export default function CartPage() {
             <div className="lg:col-span-1">
               <Card className="sticky top-24">
                 <CardContent className="p-6 space-y-4">
-                  <h2 className="text-2xl font-bold mb-6">{t.cart.orderSummary ?? t.checkout.orderSummary}</h2>
+                <h2 className="text-2xl font-bold mb-6">{t.checkout.orderSummary}</h2>
 
                   <div className="rounded-2xl border bg-muted/30 p-4">
                     {missingForFreeShipping > 0 ? (
