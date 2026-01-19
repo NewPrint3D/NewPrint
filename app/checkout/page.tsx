@@ -243,7 +243,7 @@ export default function CheckoutPage() {
             <div className="lg:col-span-2 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t.checkout.shippingInfo}</CardTitle>
+                  <CardTitle>Informações de Envio</CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
