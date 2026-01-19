@@ -1,389 +1,84 @@
 "use client"
 
-import React, { useEffect, useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
-
+import { useState } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-
-// shadcn/ui
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useLanguage } from "@/contexts/language-context"
+import { useCart } from "@/contexts/cart-context"
+import { formatCurrency } from "@/lib/intl"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/components/ui/use-toast"
-
-import { useCart } from "@/contexts/cart-context"
-import { useLanguage } from "@/contexts/language-context"
-
-type CartItem = {
-  product?: {
-    name?: { en?: string } | string
-    description?: { en?: string } | string
-    imageUrl?: string
-  }
-  price: number | string
-  quantity: number | string
-  selectedColor?: string
-  selectedSize?: string
-  selectedMaterial?: string
-}
-
-type ShippingInfo = {
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  address: string
-  city: string
-  state: string
-  zipCode: string
-  country: string
-}
-
-function safeNumber(v: unknown) {
-  const n = typeof v === "string" ? Number(v) : (v as number)
-  return Number.isFinite(n) ? n : 0
-}
-
-function to2(n: number) {
-  return n.toFixed(2)
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 
 export default function CheckoutPage() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const { t, locale } = useLanguage()
-
-  const payCardLabel =
-    locale === "pt"
-      ? "Pagar com Cartão (Crédito/Débito)"
-      : locale === "es"
-        ? "Pagar con Tarjeta (Crédito/Débito)"
-        : "Pay by Card (Credit/Debit)"
-
-  const payPalLabel =
-    locale === "pt" ? "Pagar com PayPal" : locale === "es" ? "Pagar con PayPal" : "Pay with PayPal"
-
-  const processingLabel =
-    locale === "pt" ? "Processando..." : locale === "es" ? "Procesando..." : "Processing..."
-
-  const { items } = useCart() as { items: CartItem[] }
-  const [isProcessing, setIsProcessing] = useState(false)
-
-  const [formData, setFormData] = useState<ShippingInfo>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    country: "Spain",
+  const { locale } = useLanguage()
+  const { items, totalPrice } = useCart()
+  const [formData, setFormData] = useState({
+    firstName: "", lastName: "", email: "", address: "", city: "", zipCode: ""
   })
 
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    if (!items || items.length === 0) router.replace("/cart")
-  }, [items, router])
+  const shipping = totalPrice >= 50 ? 0 : 5.99
+  const total = totalPrice + shipping
 
-  const subtotal = useMemo(() => {
-    return (items || []).reduce((sum, it) => {
-      const price = safeNumber(it.price)
-      const qty = safeNumber(it.quantity)
-      return sum + price * qty
-    }, 0)
-  }, [items])
-
-  const shipping = subtotal >= 50 ? 0 : 5.99
-  const total = useMemo(() => subtotal + shipping, [subtotal, shipping])
-
-  const canSubmit = useMemo(() => {
-    return (
-      (items?.length ?? 0) > 0 &&
-      formData.firstName.trim() &&
-      formData.lastName.trim() &&
-      formData.email.trim() &&
-      formData.phone.trim() &&
-      formData.address.trim() &&
-      formData.city.trim() &&
-      formData.state.trim() &&
-      formData.zipCode.trim() &&
-      formData.country.trim()
-    )
-  }, [items, formData])
-
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { id, value } = e.target
-    setFormData((prev) => ({ ...prev, [id]: value }))
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value })
   }
-
-  // =========================
-  // STRIPE (DO NOT TOUCH API)
-  // =========================
-  const handleCheckout = async () => {
-    if (!canSubmit) {
-      toast({
-        title: "Missing information",
-        description: "Please fill in all fields before paying.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsProcessing(true)
-    try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: (items || []).map((item) => ({
-            product: item.product,
-            price: item.price,
-            quantity: item.quantity,
-            selectedColor: item.selectedColor,
-            selectedSize: item.selectedSize,
-            selectedMaterial: item.selectedMaterial,
-          })),
-          userId: null,
-          shippingInfo: formData,
-          // ✅ importante: também envia o idioma atual
-          locale,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) throw new Error(data?.error || "Failed to create Stripe checkout.")
-      if (!data?.url) {
-        console.log("Stripe response:", data)
-        throw new Error("Stripe checkout URL is missing.")
-      }
-
-      window.location.href = data.url
-    } catch (error) {
-      console.error("Checkout error:", error)
-      toast({
-        title: "Payment failed",
-        description: error instanceof Error ? error.message : "Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
-  // =========================
-  // PAYPAL (DO NOT TOUCH API)
-  // =========================
-  const handlePayPalCheckout = async () => {
-    if (!canSubmit) {
-      toast({
-        title: "Missing information",
-        description: "Please fill in all fields before paying.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsProcessing(true)
-    try {
-      const response = await fetch("/api/paypal/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: (items || []).map((item) => ({
-            product: item.product,
-            price: item.price,
-            quantity: item.quantity,
-            selectedColor: item.selectedColor,
-            selectedSize: item.selectedSize,
-            selectedMaterial: item.selectedMaterial,
-          })),
-          userId: null,
-          shippingInfo: formData,
-          // ✅ aqui é o que faz o PayPal seguir o idioma do checkout
-          locale,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) throw new Error(data?.error || "Failed to create PayPal order.")
-      if (!data?.approveUrl) {
-        console.log("PayPal response:", data)
-        throw new Error("PayPal approval URL is missing.")
-      }
-
-      window.location.href = data.approveUrl
-    } catch (error) {
-      console.error("PayPal checkout error:", error)
-      toast({
-        title: "Payment failed",
-        description: error instanceof Error ? error.message : "Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
-  if (!items || items.length === 0) return null
 
   return (
     <main className="min-h-screen">
       <Navbar />
-
-      <div className="pt-24 pb-12">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-8">Checkout</h1>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Informações de Envio</CardTitle>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="firstName">{t.checkout.firstName}</Label>
-                      <Input id="firstName" value={formData.firstName} onChange={handleInputChange} required />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="lastName">{t.checkout.lastName}</Label>
-                      <Input id="lastName" value={formData.lastName} onChange={handleInputChange} required />
-                    </div>
+      <div className="pt-24 pb-12 container mx-auto px-4">
+        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader><CardTitle>Informações de Envio</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">Nome</Label>
+                    <Input id="firstName" value={formData.firstName} onChange={handleInputChange} required />
                   </div>
-
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" value={formData.email} onChange={handleInputChange} required />
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Sobrenome</Label>
+                    <Input id="lastName" value={formData.lastName} onChange={handleInputChange} required />
                   </div>
-
-                  <div>
-                    <Label htmlFor="phone">{t.checkout.phone}</Label>
-                    <Input id="phone" value={formData.phone} onChange={handleInputChange} required />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="address">{t.checkout.address}</Label>
-                    <Input id="address" value={formData.address} onChange={handleInputChange} required />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="city">{t.checkout.city}</Label>
-                      <Input id="city" value={formData.city} onChange={handleInputChange} required />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="state">{t.checkout.state}</Label>
-                      <Input id="state" value={formData.state} onChange={handleInputChange} required />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="zipCode">{t.checkout.zipCode}</Label>
-                      <Input id="zipCode" value={formData.zipCode} onChange={handleInputChange} required />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="country">{t.checkout.country}</Label>
-                      <Input id="country" value={formData.country} onChange={handleInputChange} required />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t.checkout.orderSummary}</CardTitle>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    {items.map((it, idx) => {
-                      type NameObj = { en?: string; pt?: string; es?: string }
-                      const loc = (locale === "pt" || locale === "es" || locale === "en" ? locale : "en") as keyof NameObj
-
-                      const name =
-                        typeof it.product?.name === "object"
-                          ? ((it.product?.name as NameObj)[loc] ?? (it.product?.name as NameObj).en ?? "")
-                          : (it.product?.name ?? "")
-
-                      const qty = safeNumber(it.quantity)
-                      const price = safeNumber(it.price)
-
-                      return (
-                        <div key={idx} className="flex items-center justify-between gap-3">
-                          <div className="text-sm">
-                            <div className="font-medium">{name || "Product"}</div>
-                            <div className="opacity-70">
-                              Qty: {qty} × € {to2(price)}
-                            </div>
-                          </div>
-                          <div className="font-medium">€ {to2(price * qty)}</div>
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  <div className="border-t pt-4 space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>{t.cart.subtotal}</span>
-                      <span>€ {to2(subtotal)}</span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span>{t.cart.shipping}</span>
-                      <span>€ {to2(shipping)}</span>
-                    </div>
-                  </div>
-
-                  <div className="border-t pt-4 flex justify-between items-center">
-                    <span className="text-lg font-semibold">Total</span>
-                    <span className="text-xl font-bold">€ {to2(total)}</span>
-                  </div>
-
-                  <div className="space-y-3 pt-2">
-                    <Button
-                      type="button"
-                      className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg"
-                      disabled={isProcessing || !canSubmit}
-                      onClick={handleCheckout}
-                    >
-                      {isProcessing ? processingLabel : payCardLabel}
-                    </Button>
-
-                    <Button
-                      type="button"
-                      className="w-full h-12 bg-[#0070ba] hover:bg-[#003087] text-white font-semibold transition-all"
-                      disabled={isProcessing || !canSubmit}
-                      onClick={handlePayPalCheckout}
-                    >
-                      {payPalLabel}
-                    </Button>
-                  </div>
-
-                  {!canSubmit ? (
-                    <p className="text-xs opacity-70">Fill in all fields to enable payment.</p>
-                  ) : (
-                    <p className="text-xs text-center text-muted-foreground">🔒 Secure payment • Encrypted checkout • No card data stored</p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" value={formData.email} onChange={handleInputChange} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">Endereço</Label>
+                  <Input id="address" value={formData.address} onChange={handleInputChange} required />
+                </div>
+              </CardContent>
+            </Card>
           </div>
+
+          <Card className="h-fit">
+            <CardHeader><CardTitle>Resumo do Pedido</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              {items.map((item, idx) => (
+                <div key={idx} className="flex justify-between text-sm">
+                  <span>{item.quantity}x {(item.product.name as any)?.[locale] || "Produto"}</span>
+                  <span>{formatCurrency(item.price * item.quantity, locale)}</span>
+                </div>
+              ))}
+              <Separator />
+              <div className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(totalPrice, locale)}</span></div>
+              <div className="flex justify-between"><span>Frete</span><span>{formatCurrency(shipping, locale)}</span></div>
+              <Separator />
+              <div className="flex justify-between font-bold text-lg text-primary">
+                <span>Total</span><span>{formatCurrency(total, locale)}</span>
+              </div>
+              <Button className="w-full mt-6" size="lg">Finalizar e Pagar</Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
-
       <Footer />
     </main>
   )
