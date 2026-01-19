@@ -93,7 +93,7 @@ export function ProductsContent() {
 
       {filteredProducts.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground text-lg">{t.common.noResults}</p>
+          <p className="text-muted-foreground text-lg">No hay resultados</p>
         </div>
       )}
     </div>
