@@ -200,7 +200,7 @@ export default function CartPage() {
 
                           <div className="text-right">
                             <p className="text-sm text-muted-foreground">
-                              {formatCurrency(item.price, locale)} 
+                             {formatCurrency(item.price, locale)}
                             </p>
                             <p className="text-xl font-bold text-primary">
                               {formatCurrency(item.price * item.quantity, locale)}
@@ -217,7 +217,7 @@ export default function CartPage() {
             <div className="lg:col-span-1">
               <Card className="sticky top-24">
                 <CardContent className="p-6 space-y-4">
-                <h2 className="text-2xl font-bold mb-6">{t.checkout.orderSummary}</h2>
+                <h2 className="text-2xl font-bold mb-6">Resumo do Pedido</h2>
 
                   <div className="rounded-2xl border bg-muted/30 p-4">
                     {missingForFreeShipping > 0 ? (
