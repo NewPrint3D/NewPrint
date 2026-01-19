@@ -200,7 +200,7 @@ export default function CartPage() {
 
                           <div className="text-right">
                             <p className="text-sm text-muted-foreground">
-                              {formatCurrency(item.price, locale)} {t.cart.perItem}
+                              {formatCurrency(item.price, locale)} 
                             </p>
                             <p className="text-xl font-bold text-primary">
                               {formatCurrency(item.price * item.quantity, locale)}
