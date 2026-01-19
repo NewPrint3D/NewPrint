@@ -73,9 +73,7 @@ export function ProductsContent() {
     <div className="max-w-6xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <p className="text-muted-foreground">
-          {filteredProducts.length === 1
-            ? t.productsPage.showingCountSingular
-            : t.productsPage.showingCountPlural.replace("{count}", String(filteredProducts.length))}
+          {t.nav.products}: {filteredProducts.length}
         </p>
       </div>
 
