@@ -37,6 +37,7 @@ export default function CartPage() {
   const thresholdText = formatCurrency(freeShippingThreshold, locale)
   const missingText = formatCurrency(missingForFreeShipping, locale)
 
+  // Textos estáticos para evitar erros de tradução ausente
   const fs = {
     missingTitle:
       locale === "pt"
@@ -75,11 +76,11 @@ export default function CartPage() {
                 <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
                   <ShoppingBag className="w-12 h-12 text-muted-foreground" />
                 </div>
-                <h1 className="text-3xl font-bold mb-4">{t.cart.empty}</h1>
-                <p className="text-muted-foreground mb-8">{t.cart.emptyDescription}</p>
+                <h1 className="text-3xl font-bold mb-4">{(t.cart as any).empty || "Seu carrinho está vazio"}</h1>
+                <p className="text-muted-foreground mb-8">{(t.cart as any).emptyDescription || "Adicione produtos para começar"}</p>
                 <Button asChild size="lg">
                   <Link href="/products">
-                    {t.cart.continueShopping}
+                    {(t.cart as any).continueShopping || "Continuar Comprando"}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
@@ -97,7 +98,7 @@ export default function CartPage() {
       <Navbar />
       <div className="pt-24 pb-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-8">{t.cart.title}</h1>
+          <h1 className="text-4xl font-bold mb-8">{(t.cart as any).title || "Carrinho"}</h1>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => (
@@ -117,7 +118,7 @@ export default function CartPage() {
                             <h3 className="font-bold text-lg mb-1">
                               {item.product.name?.[locale] ?? item.product.name?.en ?? "Product"}
                             </h3>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground line-clamp-2">
                               {item.product.description?.[locale] ?? item.product.description?.en ?? ""}
                             </p>
                           </div>
@@ -132,15 +133,15 @@ export default function CartPage() {
                         </div>
                         <div className="flex flex-wrap gap-4 mb-4 text-sm">
                           <div>
-                            <span className="text-muted-foreground">{t.cart.color}:</span>{" "}
+                            <span className="text-muted-foreground">{(t.cart as any).color || "Cor"}:</span>{" "}
                             <span className="font-medium">{(item as any).selectedColorName || getColorName(item.selectedColor)}</span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">{t.cart.size}:</span>{" "}
+                            <span className="text-muted-foreground">{(t.cart as any).size || "Tamanho"}:</span>{" "}
                             <span className="font-medium">{item.selectedSize}</span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">{t.cart.material}:</span>{" "}
+                            <span className="text-muted-foreground">{(t.cart as any).material || "Material"}:</span>{" "}
                             <span className="font-medium">{item.selectedMaterial}</span>
                           </div>
                         </div>
@@ -206,11 +207,11 @@ export default function CartPage() {
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{t.cart.subtotal}</span>
+                      <span className="text-muted-foreground">{(t.cart as any).subtotal || "Subtotal"}</span>
                       <span className="font-medium">{formatCurrency(totalPrice, locale)}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{t.cart.shipping}</span>
+                      <span className="text-muted-foreground">{(t.cart as any).shipping || "Frete"}</span>
                       <span className="font-medium">{formatCurrency(shipping, locale)}</span>
                     </div>
                     <div className="border-t border-border pt-3">
@@ -222,7 +223,11 @@ export default function CartPage() {
                   </div>
 
                   <Button asChild size="lg" className="w-full mt-6">
-                    <Link href="/checkout">{t.cart.proceedToCheckout}</Link>
+                    <Link href="/checkout">Finalizar Compra</Link>
+                  </Button>
+
+                  <Button asChild variant="outline" size="lg" className="w-full bg-transparent">
+                    <Link href="/products">{(t.cart as any).continueShopping || "Continuar Comprando"}</Link>
                   </Button>
                 </CardContent>
               </Card>
