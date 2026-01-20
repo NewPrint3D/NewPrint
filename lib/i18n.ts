@@ -34,13 +34,13 @@ export const translations = {
       title: "Productos",
     },
 
-    // ✅ NOVO: bloco usado em components/features-section.tsx
     features: {
       quality: {
         title: "Calidad premium",
         description: "Impresión 3D de alta calidad con un acabado profesional.",
       },
-      speed: {
+      // ✅ NOVO: o componente pede `fast`, não `speed`
+      fast: {
         title: "Producción rápida",
         description: "Fabricación eficiente con plazos optimizados.",
       },
@@ -140,13 +140,13 @@ export const translations = {
       title: "Produtos",
     },
 
-    // ✅ NOVO
     features: {
       quality: {
         title: "Qualidade premium",
         description: "Impressão 3D de alta qualidade com acabamento profissional.",
       },
-      speed: {
+      // ✅ NOVO
+      fast: {
         title: "Produção rápida",
         description: "Fabricação eficiente com prazos otimizados.",
       },
@@ -246,13 +246,13 @@ export const translations = {
       title: "Products",
     },
 
-    // ✅ NOVO
     features: {
       quality: {
         title: "Premium quality",
         description: "High-quality 3D printing with a professional finish.",
       },
-      speed: {
+      // ✅ NOVO
+      fast: {
         title: "Fast production",
         description: "Efficient manufacturing with optimized lead times.",
       },
