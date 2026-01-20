@@ -53,9 +53,6 @@ function toStripeLocale(locale: "pt" | "es" | "en"): Stripe.Checkout.SessionCrea
 }
 
 function safeName(item: any, locale: string) {
-  // suporta os 2 formatos:
-  // 1) frontend manda item.name direto
-  // 2) formato antigo: item.product.name[locale]
   return (
     item?.name ||
     item?.product?.name?.[locale] ||
@@ -67,6 +64,18 @@ function safeName(item: any, locale: string) {
 
 function toCents(n: any) {
   return Math.round((Number(n) || 0) * 100)
+}
+
+function getUnitPrice(item: any) {
+  return Number(item?.unitPrice ?? item?.price) || 0
+}
+
+function getQty(item: any) {
+  return Math.max(1, Number(item?.quantity) || 1)
+}
+
+function round2(n: number) {
+  return Math.round((Number(n) || 0) * 100) / 100
 }
 
 async function getPayPalAccessToken() {
@@ -90,7 +99,10 @@ async function getPayPalAccessToken() {
   })
 
   const data = await res.json().catch(() => ({} as any))
-  if (!res.ok || !data?.access_token) throw new Error("PayPal auth failed")
+  if (!res.ok || !data?.access_token) {
+    console.error("[PAYPAL AUTH ERROR]", res.status, data)
+    throw new Error("PayPal auth failed")
+  }
 
   return { accessToken: data.access_token as string, apiBase }
 }
@@ -102,19 +114,30 @@ async function createPayPalOrder(body: IncomingBody) {
   const items = Array.isArray(body.items) ? body.items : []
   if (!items.length) throw new Error("Cart is empty")
 
-  const subtotal = Number(body.totals?.subtotal) || 0
-  const shipping = Number(body.totals?.shipping) || 0
-  const total = Number(body.totals?.total) || subtotal + shipping
+  // ✅ IMPORTANTÍSSIMO: PayPal é chato com centavos.
+  // Vamos calcular subtotal/total no SERVIDOR para bater 100% com os itens.
+  const subtotalCalc = round2(
+    items.reduce((sum, i) => sum + getUnitPrice(i) * getQty(i), 0)
+  )
+
+  const shippingIncoming = body.totals?.shipping
+  const shippingCalc = Number.isFinite(Number(shippingIncoming))
+    ? round2(Number(shippingIncoming))
+    : subtotalCalc >= 50
+      ? 0
+      : 5.99
+
+  const totalCalc = round2(subtotalCalc + shippingCalc)
 
   const fmt = (n: number) => (Number(n) || 0).toFixed(2)
 
-  // PayPal exige items como strings e valores com 2 casas
   const paypalItems = items.map((i) => {
-    const qty = Math.max(1, Number(i.quantity) || 1)
-    // suporta unitPrice (novo) e price (antigo)
-    const unit = Number((i as any).unitPrice ?? (i as any).price) || 0
+    const qty = getQty(i)
+    const unit = round2(getUnitPrice(i))
+    const name = String(safeName(i, safeLocale(body.locale))).slice(0, 127)
+
     return {
-      name: String(safeName(i, safeLocale(body.locale))).slice(0, 127),
+      name,
       quantity: String(qty),
       unit_amount: { currency_code: currency, value: fmt(unit) },
     }
@@ -134,10 +157,10 @@ async function createPayPalOrder(body: IncomingBody) {
         {
           amount: {
             currency_code: currency,
-            value: fmt(total),
+            value: fmt(totalCalc),
             breakdown: {
-              item_total: { currency_code: currency, value: fmt(subtotal) },
-              shipping: { currency_code: currency, value: fmt(shipping) },
+              item_total: { currency_code: currency, value: fmt(subtotalCalc) },
+              shipping: { currency_code: currency, value: fmt(shippingCalc) },
             },
           },
           items: paypalItems,
@@ -155,10 +178,16 @@ async function createPayPalOrder(body: IncomingBody) {
   })
 
   const data = await res.json().catch(() => ({} as any))
-  if (!res.ok) throw new Error("PayPal order failed")
+  if (!res.ok) {
+    console.error("[PAYPAL ORDER ERROR]", res.status, data)
+    throw new Error("PayPal order failed")
+  }
 
   const approve = (data?.links || []).find((l: any) => l?.rel === "approve")?.href
-  if (!approve) throw new Error("PayPal approval url missing")
+  if (!approve) {
+    console.error("[PAYPAL APPROVE MISSING]", data)
+    throw new Error("PayPal approval url missing")
+  }
 
   return approve as string
 }
@@ -176,7 +205,6 @@ export async function POST(req: Request) {
     const baseUrl = getBaseUrl()
     const paymentMethod = body.paymentMethod || "card"
 
-    // email pode vir de customer (novo) ou shippingInfo (antigo)
     const customerEmail = body.customer?.email || body.shippingInfo?.email || undefined
 
     // PAYPAL
@@ -191,8 +219,8 @@ export async function POST(req: Request) {
     const currency = (body.totals?.currency || "EUR").toLowerCase()
 
     const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item: any) => {
-      const qty = Math.max(1, Number(item.quantity) || 1)
-      const unit = Number(item.unitPrice ?? item.price) || 0
+      const qty = getQty(item)
+      const unit = getUnitPrice(item)
 
       return {
         price_data: {
@@ -206,10 +234,9 @@ export async function POST(req: Request) {
       }
     })
 
-    // shipping pode vir do totals.shipping (novo). Se não vier, calcula igual ao antigo.
-    const subtotal = Number(body.totals?.subtotal) || items.reduce((sum, it: any) => sum + (Number(it.price ?? it.unitPrice) || 0) * (Number(it.quantity) || 1), 0)
+    const subtotal = Number(body.totals?.subtotal) || items.reduce((sum, it: any) => sum + getUnitPrice(it) * getQty(it), 0)
     const shippingAmount = Number(body.totals?.shipping)
-    const shippingValue = Number.isFinite(shippingAmount) ? (shippingAmount as number) : subtotal >= 50 ? 0 : 5.99
+    const shippingValue = Number.isFinite(shippingAmount) ? shippingAmount : subtotal >= 50 ? 0 : 5.99
 
     const shippingLabel = locale === "pt" ? "Envio" : locale === "es" ? "Envío" : "Shipping"
 
