@@ -69,12 +69,11 @@ export const translations = {
     hero: {
       readyForDelivery: "Listo para entrega",
       printing3d: "Impresión 3D",
-      // ✅ NOVO
       highQuality: "Alta calidad",
-      title: "Impresión 3D premium en España",
-      subtitle: "Piezas decorativas, regalos y proyectos personalizados con acabado profesional.",
-      ctaShop: "Ver productos",
-      ctaCustom: "Proyectos personalizados",
+      exclusiveProducts: "Productos exclusivos y proyectos personalizados para tu espacio.",
+      // ✅ NOVAS (faltavam no componente)
+      viewProducts: "Ver productos",
+      customProjects: "Proyectos personalizados",
     },
 
     cart: {
@@ -194,12 +193,11 @@ export const translations = {
     hero: {
       readyForDelivery: "Pronto para entrega",
       printing3d: "Impressão 3D",
-      // ✅ NOVO
       highQuality: "Alta qualidade",
-      title: "Impressão 3D premium na Espanha",
-      subtitle: "Peças decorativas, presentes e projetos personalizados com acabamento profissional.",
-      ctaShop: "Ver produtos",
-      ctaCustom: "Projetos personalizados",
+      exclusiveProducts: "Produtos exclusivos e projetos personalizados para o seu ambiente.",
+      // ✅ NOVAS
+      viewProducts: "Ver produtos",
+      customProjects: "Projetos personalizados",
     },
 
     cart: {
@@ -319,12 +317,11 @@ export const translations = {
     hero: {
       readyForDelivery: "Ready for delivery",
       printing3d: "3D Printing",
-      // ✅ NOVO
       highQuality: "High quality",
-      title: "Premium 3D printing in Spain",
-      subtitle: "Decor pieces, gifts and custom projects with a professional finish.",
-      ctaShop: "Browse products",
-      ctaCustom: "Custom projects",
+      exclusiveProducts: "Exclusive products and custom projects made for your space.",
+      // ✅ NOVAS
+      viewProducts: "Browse products",
+      customProjects: "Custom projects",
     },
 
     cart: {
