@@ -61,6 +61,8 @@ export const translations = {
     footer: {
       description: "Impresión 3D premium y diseño moderno: piezas únicas hechas para tu espacio.",
       quickLinks: "Enlaces rápidos",
+      // ✅ NOVO
+      contact: "Contacto",
       rights: "Todos los derechos reservados.",
       made: "Hecho con cuidado en España.",
     },
@@ -174,6 +176,8 @@ export const translations = {
     footer: {
       description: "Impressão 3D premium e design moderno: peças únicas para o seu ambiente.",
       quickLinks: "Links rápidos",
+      // ✅ NOVO
+      contact: "Contato",
       rights: "Todos os direitos reservados.",
       made: "Feito com cuidado na Espanha.",
     },
@@ -276,7 +280,7 @@ export const translations = {
       },
       secure: {
         title: "Secure checkout",
-       description: "Protected payments and a reliable experience.",
+        description: "Protected payments and a reliable experience.",
       },
       support: {
         title: "Support",
@@ -287,6 +291,8 @@ export const translations = {
     footer: {
       description: "Premium 3D printing and modern design: unique pieces made for your space.",
       quickLinks: "Quick links",
+      // ✅ NOVO
+      contact: "Contact",
       rights: "All rights reserved.",
       made: "Made with care in Spain.",
     },
