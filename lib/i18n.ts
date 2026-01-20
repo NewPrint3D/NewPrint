@@ -34,6 +34,30 @@ export const translations = {
       title: "Productos",
     },
 
+    // ✅ NOVO: bloco usado em components/features-section.tsx
+    features: {
+      quality: {
+        title: "Calidad premium",
+        description: "Impresión 3D de alta calidad con un acabado profesional.",
+      },
+      speed: {
+        title: "Producción rápida",
+        description: "Fabricación eficiente con plazos optimizados.",
+      },
+      customization: {
+        title: "Personalización",
+        description: "Colores, tamaños y materiales a tu medida.",
+      },
+      secure: {
+        title: "Compra segura",
+        description: "Pagos protegidos y experiencia confiable.",
+      },
+      support: {
+        title: "Soporte",
+        description: "Atención rápida para ayudarte antes y después de la compra.",
+      },
+    },
+
     cart: {
       title: "Carrito",
       empty: "Tu carrito está vacío",
@@ -116,6 +140,30 @@ export const translations = {
       title: "Produtos",
     },
 
+    // ✅ NOVO
+    features: {
+      quality: {
+        title: "Qualidade premium",
+        description: "Impressão 3D de alta qualidade com acabamento profissional.",
+      },
+      speed: {
+        title: "Produção rápida",
+        description: "Fabricação eficiente com prazos otimizados.",
+      },
+      customization: {
+        title: "Personalização",
+        description: "Cores, tamanhos e materiais do seu jeito.",
+      },
+      secure: {
+        title: "Compra segura",
+        description: "Pagamentos protegidos e experiência confiável.",
+      },
+      support: {
+        title: "Suporte",
+        description: "Atendimento rápido para ajudar antes e depois da compra.",
+      },
+    },
+
     cart: {
       title: "Carrinho",
       empty: "Seu carrinho está vazio",
@@ -196,6 +244,30 @@ export const translations = {
 
     products: {
       title: "Products",
+    },
+
+    // ✅ NOVO
+    features: {
+      quality: {
+        title: "Premium quality",
+        description: "High-quality 3D printing with a professional finish.",
+      },
+      speed: {
+        title: "Fast production",
+        description: "Efficient manufacturing with optimized lead times.",
+      },
+      customization: {
+        title: "Customization",
+        description: "Colors, sizes, and materials tailored to you.",
+      },
+      secure: {
+        title: "Secure checkout",
+        description: "Protected payments and a reliable experience.",
+      },
+      support: {
+        title: "Support",
+        description: "Quick help before and after your purchase.",
+      },
     },
 
     cart: {
