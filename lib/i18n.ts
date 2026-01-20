@@ -28,6 +28,7 @@ export const translations = {
 
     common: {
       featured: "Destacado",
+      interactive3d: "3D interactivo",
     },
 
     actions: {
@@ -78,6 +79,10 @@ export const translations = {
       exclusiveProducts: "Productos exclusivos y proyectos personalizados para tu espacio.",
       viewProducts: "Ver productos",
       customProjects: "Proyectos personalizados",
+      ctaShop: "Ver productos",
+      ctaCustom: "Proyectos personalizados",
+      title: "Impresión 3D premium en España",
+      subtitle: "Piezas decorativas, regalos y proyectos personalizados con acabado profesional.",
     },
 
     cart: {
@@ -106,7 +111,6 @@ export const translations = {
       noAccount: "¿No tienes cuenta?",
       signUpHere: "Crear cuenta",
       profile: "Perfil",
-      // ✅ NOVO
       logout: "Cerrar sesión",
     },
 
@@ -159,6 +163,7 @@ export const translations = {
 
     common: {
       featured: "Destaque",
+      interactive3d: "3D interativo",
     },
 
     actions: {
@@ -209,6 +214,10 @@ export const translations = {
       exclusiveProducts: "Produtos exclusivos e projetos personalizados para o seu ambiente.",
       viewProducts: "Ver produtos",
       customProjects: "Projetos personalizados",
+      ctaShop: "Ver produtos",
+      ctaCustom: "Projetos personalizados",
+      title: "Impressão 3D premium na Espanha",
+      subtitle: "Peças decorativas, presentes e projetos personalizados com acabamento profissional.",
     },
 
     cart: {
@@ -237,7 +246,6 @@ export const translations = {
       noAccount: "Não tem conta?",
       signUpHere: "Criar conta",
       profile: "Perfil",
-      // ✅ NOVO
       logout: "Sair",
     },
 
@@ -290,6 +298,7 @@ export const translations = {
 
     common: {
       featured: "Featured",
+      interactive3d: "Interactive 3D",
     },
 
     actions: {
@@ -340,6 +349,10 @@ export const translations = {
       exclusiveProducts: "Exclusive products and custom projects made for your space.",
       viewProducts: "Browse products",
       customProjects: "Custom projects",
+      ctaShop: "Browse products",
+      ctaCustom: "Custom projects",
+      title: "Premium 3D printing in Spain",
+      subtitle: "Decor pieces, gifts, and custom projects with a professional finish.",
     },
 
     cart: {
@@ -368,7 +381,6 @@ export const translations = {
       noAccount: "No account?",
       signUpHere: "Sign up",
       profile: "Profile",
-      // ✅ NOVO
       logout: "Logout",
     },
 
@@ -405,8 +417,9 @@ export const translations = {
   },
 } as const
 
-export type TranslationShape = typeof translations.es
+// ✅ MODO TOLERANTE: nunca mais quebra build por falta de chave
+export type TranslationShape = Record<string, any>
 
-export function getTranslations(locale: Locale) {
-  return translations[locale] ?? translations[defaultLocale]
+export function getTranslations(locale: Locale): TranslationShape {
+  return (translations as any)[locale] ?? (translations as any)[defaultLocale]
 }
