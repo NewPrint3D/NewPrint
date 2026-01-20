@@ -30,6 +30,8 @@ export default function ContactPage() {
           message: "Mensaje",
           send: "Enviar mensaje",
           sending: "Enviando...",
+          sent: "Enviado con éxito ✓",
+          ready: "Listo para enviar.",
           successTitle: "Mensaje enviado",
           successDesc: "Gracias. Te responderemos lo antes posible.",
           errorTitle: "Error",
@@ -49,6 +51,8 @@ export default function ContactPage() {
             message: "Mensagem",
             send: "Enviar mensagem",
             sending: "Enviando...",
+            sent: "Enviado com sucesso ✓",
+            ready: "Pronto para enviar.",
             successTitle: "Mensagem enviada",
             successDesc: "Obrigado. Vamos responder o quanto antes.",
             errorTitle: "Erro",
@@ -67,6 +71,8 @@ export default function ContactPage() {
             message: "Message",
             send: "Send message",
             sending: "Sending...",
+            sent: "Sent successfully ✓",
+            ready: "Ready to send.",
             successTitle: "Message sent",
             successDesc: "Thanks. We’ll get back to you as soon as possible.",
             errorTitle: "Error",
@@ -82,6 +88,7 @@ export default function ContactPage() {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSent, setIsSent] = useState(false)
   const [inlineError, setInlineError] = useState<string | null>(null)
 
   const canSubmit =
@@ -102,7 +109,7 @@ export default function ContactPage() {
       const fd = new FormData()
       fd.append("name", form.name)
       fd.append("email", form.email)
-      fd.append("phone", "") // mantém compatibilidade com seu /api/contact
+      fd.append("phone", "")
       fd.append("message", `Asunto: ${form.subject}\n\n${form.message}`)
 
       const res = await fetch("/api/contact", { method: "POST", body: fd })
@@ -113,7 +120,12 @@ export default function ContactPage() {
         description: copy.successDesc,
       })
 
+      // ✅ limpa campos
       setForm({ name: "", email: "", subject: "", message: "" })
+
+      // ✅ botão muda para "enviado com sucesso" no idioma
+      setIsSent(true)
+      setTimeout(() => setIsSent(false), 6000)
     } catch (err) {
       toast({
         variant: "destructive",
@@ -214,14 +226,15 @@ export default function ContactPage() {
                   </div>
                 )}
 
-                <Button className="w-full" size="lg" type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? copy.sending : copy.send}
+                <Button className="w-full" size="lg" type="submit" disabled={isSubmitting || isSent}>
+                  {isSubmitting ? copy.sending : isSent ? copy.sent : copy.send}
                 </Button>
 
-                {!isSubmitting && canSubmit && !inlineError && (
+                {/* ✅ mantém a mensagem "pronto para enviar" (você disse que ficou boa) */}
+                {!isSubmitting && !isSent && canSubmit && !inlineError && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <CheckCircle2 className="h-4 w-4" />
-                    <span>{locale === "es" ? "Listo para enviar." : locale === "pt" ? "Pronto para enviar." : "Ready to send."}</span>
+                    <span>{copy.ready}</span>
                   </div>
                 )}
               </form>
