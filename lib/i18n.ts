@@ -35,7 +35,6 @@ export const translations = {
     },
 
     features: {
-      // ✅ NOVO: título geral da seção
       title: "Por qué elegir NewPrint3D",
       quality: {
         title: "Calidad premium",
@@ -57,6 +56,13 @@ export const translations = {
         title: "Soporte",
         description: "Atención rápida para ayudarte antes y después de la compra.",
       },
+    },
+
+    // ✅ NOVO: footer
+    footer: {
+      description: "Impresión 3D premium y diseño moderno: piezas únicas hechas para tu espacio.",
+      rights: "Todos los derechos reservados.",
+      made: "Hecho con cuidado en España.",
     },
 
     cart: {
@@ -165,6 +171,13 @@ export const translations = {
       },
     },
 
+    // ✅ NOVO: footer
+    footer: {
+      description: "Impressão 3D premium e design moderno: peças únicas para o seu ambiente.",
+      rights: "Todos os direitos reservados.",
+      made: "Feito com cuidado na Espanha.",
+    },
+
     cart: {
       title: "Carrinho",
       empty: "Seu carrinho está vazio",
@@ -269,6 +282,13 @@ export const translations = {
         title: "Support",
         description: "Quick help before and after your purchase.",
       },
+    },
+
+    // ✅ NOVO: footer
+    footer: {
+      description: "Premium 3D printing and modern design: unique pieces made for your space.",
+      rights: "All rights reserved.",
+      made: "Made with care in Spain.",
     },
 
     cart: {
