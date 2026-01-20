@@ -68,8 +68,9 @@ export const translations = {
 
     hero: {
       readyForDelivery: "Listo para entrega",
-      // ✅ NOVO
       printing3d: "Impresión 3D",
+      // ✅ NOVO
+      highQuality: "Alta calidad",
       title: "Impresión 3D premium en España",
       subtitle: "Piezas decorativas, regalos y proyectos personalizados con acabado profesional.",
       ctaShop: "Ver productos",
@@ -192,8 +193,9 @@ export const translations = {
 
     hero: {
       readyForDelivery: "Pronto para entrega",
-      // ✅ NOVO
       printing3d: "Impressão 3D",
+      // ✅ NOVO
+      highQuality: "Alta qualidade",
       title: "Impressão 3D premium na Espanha",
       subtitle: "Peças decorativas, presentes e projetos personalizados com acabamento profissional.",
       ctaShop: "Ver produtos",
@@ -316,8 +318,9 @@ export const translations = {
 
     hero: {
       readyForDelivery: "Ready for delivery",
-      // ✅ NOVO
       printing3d: "3D Printing",
+      // ✅ NOVO
+      highQuality: "High quality",
       title: "Premium 3D printing in Spain",
       subtitle: "Decor pieces, gifts and custom projects with a professional finish.",
       ctaShop: "Browse products",
