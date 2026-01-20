@@ -41,12 +41,6 @@ export function Navbar() {
 
   const closeMobile = () => setIsMobileMenuOpen(false)
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) element.scrollIntoView({ behavior: "smooth", block: "start" })
-    closeMobile()
-  }
-
   const labels = {
     about: locale === "pt" ? "Sobre nós" : locale === "es" ? "Acerca de nosotros" : "About us",
   }
@@ -76,8 +70,6 @@ export function Navbar() {
             <div className="hidden md:flex items-center gap-8">
               <Link href="/">{t.nav.home}</Link>
               <Link href="/products">{t.nav.products}</Link>
-
-              <button onClick={() => scrollToSection("custom")}>{(t as any)?.customProjects?.navLink || "Custom"}</button>
 
               {/* ✅ FORÇADO por idioma */}
               <Link href="/about">{labels.about}</Link>
