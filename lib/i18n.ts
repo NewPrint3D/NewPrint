@@ -15,6 +15,8 @@ export const translations = {
     nav: {
       home: "Inicio",
       products: "Productos",
+      // ✅ NOVO
+      customProjects: "Proyectos personalizados",
       about: "Acerca",
       contact: "Contacto",
       cart: "Carrito",
@@ -71,7 +73,6 @@ export const translations = {
       printing3d: "Impresión 3D",
       highQuality: "Alta calidad",
       exclusiveProducts: "Productos exclusivos y proyectos personalizados para tu espacio.",
-      // ✅ NOVAS (faltavam no componente)
       viewProducts: "Ver productos",
       customProjects: "Proyectos personalizados",
     },
@@ -139,6 +140,8 @@ export const translations = {
     nav: {
       home: "Início",
       products: "Produtos",
+      // ✅ NOVO
+      customProjects: "Projetos personalizados",
       about: "Sobre",
       contact: "Contato",
       cart: "Carrinho",
@@ -195,7 +198,6 @@ export const translations = {
       printing3d: "Impressão 3D",
       highQuality: "Alta qualidade",
       exclusiveProducts: "Produtos exclusivos e projetos personalizados para o seu ambiente.",
-      // ✅ NOVAS
       viewProducts: "Ver produtos",
       customProjects: "Projetos personalizados",
     },
@@ -263,6 +265,8 @@ export const translations = {
     nav: {
       home: "Home",
       products: "Products",
+      // ✅ NOVO
+      customProjects: "Custom projects",
       about: "About",
       contact: "Contact",
       cart: "Cart",
@@ -319,7 +323,6 @@ export const translations = {
       printing3d: "3D Printing",
       highQuality: "High quality",
       exclusiveProducts: "Exclusive products and custom projects made for your space.",
-      // ✅ NOVAS
       viewProducts: "Browse products",
       customProjects: "Custom projects",
     },
