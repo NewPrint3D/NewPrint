@@ -1,3 +1,4 @@
+
 export type Locale = "es" | "pt" | "en"
 
 export const locales: Locale[] = ["es", "pt", "en"]
@@ -61,10 +62,18 @@ export const translations = {
     footer: {
       description: "Impresión 3D premium y diseño moderno: piezas únicas hechas para tu espacio.",
       quickLinks: "Enlaces rápidos",
-      // ✅ NOVO
       contact: "Contacto",
       rights: "Todos los derechos reservados.",
       made: "Hecho con cuidado en España.",
+    },
+
+    // ✅ NOVO: hero
+    hero: {
+      readyForDelivery: "Listo para entrega",
+      title: "Impresión 3D premium en España",
+      subtitle: "Piezas decorativas, regalos y proyectos personalizados con acabado profesional.",
+      ctaShop: "Ver productos",
+      ctaCustom: "Proyectos personalizados",
     },
 
     cart: {
@@ -176,10 +185,17 @@ export const translations = {
     footer: {
       description: "Impressão 3D premium e design moderno: peças únicas para o seu ambiente.",
       quickLinks: "Links rápidos",
-      // ✅ NOVO
       contact: "Contato",
       rights: "Todos os direitos reservados.",
       made: "Feito com cuidado na Espanha.",
+    },
+
+    hero: {
+      readyForDelivery: "Pronto para entrega",
+      title: "Impressão 3D premium na Espanha",
+      subtitle: "Peças decorativas, presentes e projetos personalizados com acabamento profissional.",
+      ctaShop: "Ver produtos",
+      ctaCustom: "Projetos personalizados",
     },
 
     cart: {
@@ -291,10 +307,17 @@ export const translations = {
     footer: {
       description: "Premium 3D printing and modern design: unique pieces made for your space.",
       quickLinks: "Quick links",
-      // ✅ NOVO
       contact: "Contact",
       rights: "All rights reserved.",
       made: "Made with care in Spain.",
+    },
+
+    hero: {
+      readyForDelivery: "Ready for delivery",
+      title: "Premium 3D printing in Spain",
+      subtitle: "Decor pieces, gifts and custom projects with a professional finish.",
+      ctaShop: "Browse products",
+      ctaCustom: "Custom projects",
     },
 
     cart: {
