@@ -74,12 +74,7 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
       {/* mídia principal */}
       <div style={{ marginBottom: 16 }}>
         {active.type === "video" ? (
-          <video
-            src={active.src}
-            controls
-            playsInline
-            style={{ width: "100%", borderRadius: 8 }}
-          />
+          <video src={active.src} controls playsInline style={{ width: "100%", borderRadius: 8 }} />
         ) : (
           <Image
             src={active.src}
@@ -106,10 +101,7 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
               }
             }}
             style={{
-              border:
-                active.src === item.src
-                  ? "2px solid #00ffff"
-                  : "1px solid #444",
+              border: active.src === item.src ? "2px solid #00ffff" : "1px solid #444",
               padding: 2,
               borderRadius: 6,
               cursor: "pointer",
@@ -128,21 +120,21 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
                   borderRadius: 4,
                 }}
               />
-          } : (
-            <img
-             src={item.src}
-             alt={item.alt || "Miniatura"}
-             width={60}
-              height={60}
-            style={{
-            borderRadius: 4,
-             width: 60,
-           height: 60,
-            objectFit: "cover",
-             display: "block",
-               }}
-            />
-         )}
+            ) : (
+              <img
+                src={item.src}
+                alt={item.alt || "Miniatura"}
+                width={60}
+                height={60}
+                style={{
+                  borderRadius: 4,
+                  width: 60,
+                  height: 60,
+                  objectFit: "cover",
+                  display: "block",
+                }}
+              />
+            )}
           </button>
         ))}
       </div>
