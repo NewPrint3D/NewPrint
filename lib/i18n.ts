@@ -35,11 +35,12 @@ export const translations = {
     },
 
     features: {
+      // ✅ NOVO: título geral da seção
+      title: "Por qué elegir NewPrint3D",
       quality: {
         title: "Calidad premium",
         description: "Impresión 3D de alta calidad con un acabado profesional.",
       },
-      // ✅ NOVO: o componente pede `fast`, não `speed`
       fast: {
         title: "Producción rápida",
         description: "Fabricación eficiente con plazos optimizados.",
@@ -141,11 +142,11 @@ export const translations = {
     },
 
     features: {
+      title: "Por que escolher a NewPrint3D",
       quality: {
         title: "Qualidade premium",
         description: "Impressão 3D de alta qualidade com acabamento profissional.",
       },
-      // ✅ NOVO
       fast: {
         title: "Produção rápida",
         description: "Fabricação eficiente com prazos otimizados.",
@@ -247,11 +248,11 @@ export const translations = {
     },
 
     features: {
+      title: "Why choose NewPrint3D",
       quality: {
         title: "Premium quality",
         description: "High-quality 3D printing with a professional finish.",
       },
-      // ✅ NOVO
       fast: {
         title: "Fast production",
         description: "Efficient manufacturing with optimized lead times.",
