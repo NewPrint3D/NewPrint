@@ -43,9 +43,7 @@ export function Navbar() {
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" })
-    }
+    if (element) element.scrollIntoView({ behavior: "smooth", block: "start" })
     closeMobile()
   }
 
@@ -79,9 +77,11 @@ export function Navbar() {
               <Link href="/">{t.nav.home}</Link>
               <Link href="/products">{t.nav.products}</Link>
 
-              <button onClick={() => scrollToSection("custom")}>{t.customProjects.navLink}</button>
+              <button onClick={() => scrollToSection("custom")}>{(t as any)?.customProjects?.navLink || "Custom"}</button>
 
-              <Link href="/about">{(t as any)?.nav?.about || labels.about}</Link>
+              {/* ✅ FORÇADO por idioma */}
+              <Link href="/about">{labels.about}</Link>
+
               <Link href="/contact">{t.nav.contact}</Link>
             </div>
 
@@ -132,12 +132,10 @@ export function Navbar() {
                 </Button>
               )}
 
-              {/* ✅ carrinho NÃO aparece no checkout */}
               {!hideCart && (
                 <Button asChild variant="ghost" size="icon" className="relative">
                   <Link href="/cart" className="relative">
                     <ShoppingCart className="h-5 w-5" />
-
                     {totalItems > 0 && (
                       <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-accent text-accent-foreground text-[11px] rounded-full flex items-center justify-center leading-none">
                         {totalItems}
