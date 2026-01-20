@@ -1,7 +1,6 @@
 "use client"
 
 import { useMemo, useState, useEffect } from "react"
-import Image from "next/image"
 
 type MediaItem = {
   type: "image" | "video"
@@ -71,18 +70,25 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
 
   return (
     <div>
-      {/* mídia principal */}
+      {/* imagem principal */}
       <div style={{ marginBottom: 16 }}>
         {active.type === "video" ? (
-          <video src={active.src} controls playsInline style={{ width: "100%", borderRadius: 8 }} />
+          <video
+            src={active.src}
+            controls
+            playsInline
+            style={{ width: "100%", borderRadius: 8 }}
+          />
         ) : (
-          <Image
+          <img
             src={active.src}
             alt={active.alt || "Produto"}
-            width={900}
-            height={900}
-            priority
-            style={{ borderRadius: 8, width: "100%", height: "auto" }}
+            style={{
+              width: "100%",
+              height: "auto",
+              borderRadius: 8,
+              display: "block",
+            }}
           />
         )}
       </div>
@@ -94,14 +100,15 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
             key={`${item.type}-${item.src}-${index}`}
             onClick={() => {
               setActive(item)
-
-              // 🔒 vídeo NÃO altera cor
               if (item.type === "image") {
                 onSelectItem?.(item)
               }
             }}
             style={{
-              border: active.src === item.src ? "2px solid #00ffff" : "1px solid #444",
+              border:
+                active.src === item.src
+                  ? "2px solid #00ffff"
+                  : "1px solid #444",
               padding: 2,
               borderRadius: 6,
               cursor: "pointer",
@@ -127,10 +134,10 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
                 width={60}
                 height={60}
                 style={{
-                  borderRadius: 4,
                   width: 60,
                   height: 60,
                   objectFit: "cover",
+                  borderRadius: 4,
                   display: "block",
                 }}
               />
