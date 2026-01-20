@@ -105,8 +105,9 @@ export const translations = {
       loginButton: "Entrar",
       noAccount: "¿No tienes cuenta?",
       signUpHere: "Crear cuenta",
-      // ✅ NOVO
       profile: "Perfil",
+      // ✅ NOVO
+      logout: "Cerrar sesión",
     },
 
     admin: {
@@ -235,8 +236,9 @@ export const translations = {
       loginButton: "Entrar",
       noAccount: "Não tem conta?",
       signUpHere: "Criar conta",
-      // ✅ NOVO
       profile: "Perfil",
+      // ✅ NOVO
+      logout: "Sair",
     },
 
     admin: {
@@ -365,8 +367,9 @@ export const translations = {
       loginButton: "Login",
       noAccount: "No account?",
       signUpHere: "Sign up",
-      // ✅ NOVO
       profile: "Profile",
+      // ✅ NOVO
+      logout: "Logout",
     },
 
     admin: {
