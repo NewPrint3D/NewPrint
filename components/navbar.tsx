@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function Navbar() {
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
   const { totalItems } = useCart()
   const { user, logout, isAdmin } = useAuth()
 
@@ -47,6 +47,10 @@ export function Navbar() {
       element.scrollIntoView({ behavior: "smooth", block: "start" })
     }
     closeMobile()
+  }
+
+  const labels = {
+    about: locale === "pt" ? "Sobre nós" : locale === "es" ? "Acerca de nosotros" : "About us",
   }
 
   return (
@@ -77,7 +81,7 @@ export function Navbar() {
 
               <button onClick={() => scrollToSection("custom")}>{t.customProjects.navLink}</button>
 
-              <Link href="/about">{t.nav.about}</Link>
+              <Link href="/about">{(t as any)?.nav?.about || labels.about}</Link>
               <Link href="/contact">{t.nav.contact}</Link>
             </div>
 
