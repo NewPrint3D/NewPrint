@@ -128,20 +128,21 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
                   borderRadius: 4,
                 }}
               />
-            ) : (
-              <Image
-                src={item.src}
-                alt={item.alt || "Miniatura"}
-                width={60}
-                height={60}
-                style={{
-                  borderRadius: 4,
-                  width: 60,
-                  height: 60,
-                  objectFit: "cover",
-                }}
-              />
-            )}
+          } : (
+            <img
+             src={item.src}
+             alt={item.alt || "Miniatura"}
+             width={60}
+              height={60}
+            style={{
+            borderRadius: 4,
+             width: 60,
+           height: 60,
+            objectFit: "cover",
+             display: "block",
+               }}
+            />
+         )}
           </button>
         ))}
       </div>
