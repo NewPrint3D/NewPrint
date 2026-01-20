@@ -547,20 +547,28 @@ export const translations = {
 function createT(obj: any): any {
   const handler: ProxyHandler<any> = {
     get(target, prop) {
-      // suporte a console/log/inspeção
-      if (prop === "__raw") return target
-      if (prop === Symbol.toPrimitive) return () => ""
-      if (prop === "toString") return () => ""
-      if (prop === "valueOf") return () => ""
+      if (
+        prop === "__raw" ||
+        prop === "toString" ||
+        prop === "valueOf" ||
+        prop === Symbol.toPrimitive
+      ) {
+        return () => ""
+      }
 
       const value = target?.[prop as any]
 
+      // ✅ se não existir → string vazia
       if (value === undefined || value === null) {
-        // devolve proxy que vira "" se renderizado
-        return createT({})
+        return ""
       }
 
-      if (typeof value === "object") return createT(value)
+      // ✅ se for objeto → outro proxy
+      if (typeof value === "object") {
+        return createT(value)
+      }
+
+      // ✅ string, number, boolean
       return value
     },
   }
