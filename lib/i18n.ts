@@ -85,6 +85,7 @@ export const translations = {
     cta: {
       view: "Ver",
       edit: "Editar",
+      viewAll: "Ver todo",
     },
 
     aria: {
@@ -166,6 +167,7 @@ export const translations = {
     cta: {
       view: "Ver",
       edit: "Editar",
+      viewAll: "Ver tudo",
     },
 
     aria: {
@@ -247,6 +249,7 @@ export const translations = {
     cta: {
       view: "View",
       edit: "Edit",
+      viewAll: "View all",
     },
 
     aria: {
