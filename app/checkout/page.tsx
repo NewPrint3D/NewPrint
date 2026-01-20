@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 
-import { AlertCircle, Lock, ShieldCheck } from "lucide-react"
+import { AlertCircle, CreditCard, Paypal, Lock, ShieldCheck } from "lucide-react"
 
 type FormData = {
   firstName: string
@@ -32,7 +32,6 @@ function normalizeErrorMessage(raw: unknown) {
   const msg = typeof raw === "string" ? raw : ""
   const lower = msg.toLowerCase()
 
-  // Mensagens mais amigáveis (sem mostrar JSON cru)
   if (lower.includes("failed to create checkout session")) {
     return "No se pudo iniciar el pago. Intenta de nuevo en unos segundos."
   }
@@ -60,6 +59,7 @@ export default function CheckoutPage() {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submittingMethod, setSubmittingMethod] = useState<"card" | "paypal" | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const freeShippingThreshold = 50
@@ -85,7 +85,7 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, [id]: value }))
   }
 
-  async function handlePay() {
+  async function handlePay(paymentMethod: "card" | "paypal") {
     setErrorMsg(null)
 
     if (isCartEmpty) {
@@ -100,11 +100,13 @@ export default function CheckoutPage() {
 
     try {
       setIsSubmitting(true)
+      setSubmittingMethod(paymentMethod)
 
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          paymentMethod, // "card" | "paypal"
           customer: formData,
           locale,
           items: items.map((i) => ({
@@ -130,7 +132,6 @@ export default function CheckoutPage() {
         }),
       })
 
-      // tenta ler JSON, mas sem quebrar se vier texto
       let data: CheckoutResponse = {}
       const contentType = res.headers.get("content-type") || ""
       if (contentType.includes("application/json")) {
@@ -145,13 +146,14 @@ export default function CheckoutPage() {
       }
 
       const url = data.url || data.redirectUrl
-      if (!url) throw new Error("Respuesta inválida del servidor (sin URL).") // backend deve retornar {url}
+      if (!url) throw new Error("Respuesta inválida del servidor (sin URL).")
 
       window.location.href = url
     } catch (err: any) {
       setErrorMsg(normalizeErrorMessage(err?.message))
     } finally {
       setIsSubmitting(false)
+      setSubmittingMethod(null)
     }
   }
 
@@ -161,11 +163,9 @@ export default function CheckoutPage() {
 
       <div className="pt-24 pb-14">
         <div className="container mx-auto px-4">
-          <div className="mb-8 flex flex-col gap-2">
+          <div className="mb-8 flex flex-col gap-1">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Checkout</h1>
-            <p className="text-sm text-muted-foreground">
-              Pago seguro. Serás redirigido a la pasarela (tarjeta o PayPal).
-            </p>
+            {/* REMOVIDO: mensagem de segurança duplicada aqui em cima */}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -248,7 +248,6 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* Mensagem de erro (amigável) */}
                   {errorMsg && (
                     <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm">
                       <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
@@ -325,15 +324,31 @@ export default function CheckoutPage() {
                     <span>{formatCurrency(total, locale)}</span>
                   </div>
 
-                  <Button
-                    className="w-full mt-2 rounded-xl"
-                    size="lg"
-                    onClick={handlePay}
-                    disabled={!canPay || isSubmitting}
-                  >
-                    {isSubmitting ? "Procesando..." : "Finalizar y pagar"}
-                  </Button>
+                  {/* BOTÕES IMEDIATOS (Cartão / PayPal) */}
+                  <div className="grid grid-cols-1 gap-3 pt-1">
+                    <Button
+                      className="w-full rounded-xl"
+                      size="lg"
+                      onClick={() => handlePay("card")}
+                      disabled={!canPay || isSubmitting}
+                    >
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      {submittingMethod === "card" ? "Procesando..." : "Pagar con tarjeta"}
+                    </Button>
 
+                    <Button
+                      className="w-full rounded-xl"
+                      size="lg"
+                      variant="secondary"
+                      onClick={() => handlePay("paypal")}
+                      disabled={!canPay || isSubmitting}
+                    >
+                      <Paypal className="h-4 w-4 mr-2" />
+                      {submittingMethod === "paypal" ? "Procesando..." : "Pagar con PayPal"}
+                    </Button>
+                  </div>
+
+                  {/* DEIXA SÓ ESTA MENSAGEM (a de baixo) */}
                   <p className="text-xs text-muted-foreground">
                     Al continuar, serás redirigido a la página segura de pago (tarjeta o PayPal).
                   </p>
