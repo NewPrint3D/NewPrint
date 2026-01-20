@@ -15,12 +15,16 @@ export const translations = {
     nav: {
       home: "Inicio",
       products: "Productos",
-      // ✅ NOVO
       customProjects: "Proyectos personalizados",
       about: "Acerca",
       contact: "Contacto",
       cart: "Carrito",
       navLink: "Enlace",
+    },
+
+    // ✅ NOVO (o Navbar usa t.customProjects.navLink)
+    customProjects: {
+      navLink: "Proyectos personalizados",
     },
 
     common: {
@@ -140,12 +144,16 @@ export const translations = {
     nav: {
       home: "Início",
       products: "Produtos",
-      // ✅ NOVO
       customProjects: "Projetos personalizados",
       about: "Sobre",
       contact: "Contato",
       cart: "Carrinho",
       navLink: "Link",
+    },
+
+    // ✅ NOVO
+    customProjects: {
+      navLink: "Projetos personalizados",
     },
 
     common: {
@@ -265,12 +273,16 @@ export const translations = {
     nav: {
       home: "Home",
       products: "Products",
-      // ✅ NOVO
       customProjects: "Custom projects",
       about: "About",
       contact: "Contact",
       cart: "Cart",
       navLink: "Link",
+    },
+
+    // ✅ NOVO
+    customProjects: {
+      navLink: "Custom projects",
     },
 
     common: {
