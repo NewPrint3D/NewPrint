@@ -22,7 +22,6 @@ export const translations = {
       navLink: "Enlace",
     },
 
-    // ✅ NOVO (o Navbar usa t.customProjects.navLink)
     customProjects: {
       navLink: "Proyectos personalizados",
     },
@@ -106,6 +105,8 @@ export const translations = {
       loginButton: "Entrar",
       noAccount: "¿No tienes cuenta?",
       signUpHere: "Crear cuenta",
+      // ✅ NOVO
+      profile: "Perfil",
     },
 
     admin: {
@@ -151,7 +152,6 @@ export const translations = {
       navLink: "Link",
     },
 
-    // ✅ NOVO
     customProjects: {
       navLink: "Projetos personalizados",
     },
@@ -235,6 +235,8 @@ export const translations = {
       loginButton: "Entrar",
       noAccount: "Não tem conta?",
       signUpHere: "Criar conta",
+      // ✅ NOVO
+      profile: "Perfil",
     },
 
     admin: {
@@ -280,7 +282,6 @@ export const translations = {
       navLink: "Link",
     },
 
-    // ✅ NOVO
     customProjects: {
       navLink: "Custom projects",
     },
@@ -364,6 +365,8 @@ export const translations = {
       loginButton: "Login",
       noAccount: "No account?",
       signUpHere: "Sign up",
+      // ✅ NOVO
+      profile: "Profile",
     },
 
     admin: {
