@@ -30,6 +30,10 @@ export const translations = {
       continueShopping: "Seguir comprando",
     },
 
+    products: {
+      title: "Productos",
+    },
+
     cart: {
       title: "Carrito",
       empty: "Tu carrito está vacío",
@@ -107,6 +111,10 @@ export const translations = {
       continueShopping: "Continuar comprando",
     },
 
+    products: {
+      title: "Produtos",
+    },
+
     cart: {
       title: "Carrinho",
       empty: "Seu carrinho está vazio",
@@ -182,6 +190,10 @@ export const translations = {
     actions: {
       viewAll: "View all",
       continueShopping: "Continue shopping",
+    },
+
+    products: {
+      title: "Products",
     },
 
     cart: {
