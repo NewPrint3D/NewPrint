@@ -18,22 +18,21 @@ type ColorImage = {
   url?: string
   imageUrl?: string
   image_url?: string
-
-  // nomes opcionais (caso existam no seu data)
   name?: string
-  label?: string
   colorName?: string
-  name_es?: string
-  name_pt?: string
-  name_en?: string
-  es?: string
-  pt?: string
-  en?: string
+  label?: string
 }
 
 interface ProductCustomizerProps {
   product: Product
-  onVariantChange?: (v: { color: string; colorName: string; size: string; material: string; price: number; image: string }) => void
+  onVariantChange?: (v: {
+    color: string
+    colorName: string
+    size: string
+    material: string
+    price: number
+    image: string
+  }) => void
   selectedColorHex?: string
   selectedColorName?: string
   selectedImageUrl?: string
@@ -46,12 +45,76 @@ const safeNumber = (v: unknown) => {
 }
 
 const normalizeHex = (hex?: string) => (hex || "").trim()
-const normalizeUrl = (u?: string) => (u || "").trim()
 
 const toArray = (v: any): string[] => {
   if (Array.isArray(v)) return v.filter(Boolean).map(String).map((s) => s.trim()).filter(Boolean)
   if (typeof v === "string") return v.split(",").map((s) => s.trim()).filter(Boolean)
   return []
+}
+
+function hexToBasicColorKey(hexRaw?: string) {
+  const hex = normalizeHex(hexRaw).toLowerCase()
+  if (!hex) return ""
+
+  // Normaliza #RGB -> #RRGGBB
+  const h = hex.startsWith("#") ? hex : `#${hex}`
+  const full =
+    h.length === 4
+      ? `#${h[1]}${h[1]}${h[2]}${h[2]}${h[3]}${h[3]}`
+      : h
+
+  // Mapeia cores comuns (inclui variações bem usadas)
+  const map: Record<string, string> = {
+    "#ff0000": "red",
+    "#e53935": "red",
+    "#d32f2f": "red",
+
+    "#ffff00": "yellow",
+    "#ffeb3b": "yellow",
+    "#f1c40f": "yellow",
+    "#fdd835": "yellow",
+
+    "#000000": "black",
+    "#111111": "black",
+
+    "#ffffff": "white",
+    "#f5f5f5": "white",
+
+    "#212121": "gray",
+    "#808080": "gray",
+    "#9e9e9e": "gray",
+  }
+
+  return map[full] || ""
+}
+
+function translateBasicColor(key: string, locale: string) {
+  if (!key) return ""
+  const es: Record<string, string> = {
+    red: "Rojo",
+    yellow: "Amarillo",
+    black: "Negro",
+    white: "Blanco",
+    gray: "Gris",
+  }
+  const pt: Record<string, string> = {
+    red: "Vermelho",
+    yellow: "Amarelo",
+    black: "Preto",
+    white: "Branco",
+    gray: "Cinza",
+  }
+  const en: Record<string, string> = {
+    red: "Red",
+    yellow: "Yellow",
+    black: "Black",
+    white: "White",
+    gray: "Gray",
+  }
+
+  if (locale === "es") return es[key] || ""
+  if (locale === "pt") return pt[key] || ""
+  return en[key] || ""
 }
 
 export function ProductCustomizer({
@@ -65,16 +128,10 @@ export function ProductCustomizer({
   const { t, locale } = useLanguage()
   const { addItem } = useCart()
 
-  // Arrays
   const colors = useMemo(() => toArray((product as any).colors), [product])
   const sizes = useMemo(() => toArray((product as any).sizes), [product])
   const materials = useMemo(() => toArray((product as any).materials), [product])
 
-  // Mostra tamanho/material somente se fizer sentido (evita aparecer "Standard" sozinho)
-  const showSizes = sizes.length > 1
-  const showMaterials = materials.length > 1
-
-  // Imagem base
   const baseImage = useMemo(() => {
     return (product as any).image_url || (product as any).imageUrl || (product as any).image || "/placeholder.svg"
   }, [product])
@@ -90,52 +147,23 @@ export function ProductCustomizer({
     return found?.url || found?.imageUrl || found?.image_url || baseImage
   }
 
-  // ✅ encontra nome da cor por HEX ou por URL da imagem selecionada
-  const getColorName = (hex?: string, imageUrl?: string) => {
-    const hexKey = normalizeHex(hex).toLowerCase()
-    const imgKey = normalizeUrl(imageUrl)
+  const getNameForColor = (hex: string) => {
+    const key = normalizeHex(hex).toLowerCase()
+    const found = colorImages.find((ci) => normalizeHex(ci.color || ci.hex).toLowerCase() === key)
 
-    const pickByLocale = (ci: ColorImage) => {
-      const byLocale =
-        locale === "es"
-          ? (ci.name_es || ci.es)
-          : locale === "pt"
-            ? (ci.name_pt || ci.pt)
-            : (ci.name_en || ci.en)
+    // 1) se tiver nome vindo dos dados, usa
+    const direct = (found?.name || found?.colorName || found?.label || "").trim()
+    if (direct) return direct
 
-      const generic = ci.colorName || ci.name || ci.label
-      const best = (byLocale || generic || "").toString().trim()
-      return best
-    }
+    // 2) tenta inferir pelo HEX (resolve o caso do AMARILLO)
+    const basicKey = hexToBasicColorKey(hex)
+    const translated = translateBasicColor(basicKey, locale)
+    if (translated) return translated
 
-    // 1) tenta por HEX
-    if (hexKey) {
-      const byHex = colorImages.find((ci) => normalizeHex(ci.color || ci.hex).toLowerCase() === hexKey)
-      if (byHex) {
-        const n = pickByLocale(byHex)
-        if (n) return n
-      }
-    }
-
-    // 2) tenta por URL (isso resolve quando só muda a miniatura e não vem colorName)
-    if (imgKey) {
-      const byUrl = colorImages.find((ci) => {
-        const u = ci.url || ci.imageUrl || ci.image_url
-        return normalizeUrl(u) === imgKey
-      })
-      if (byUrl) {
-        const n = pickByLocale(byUrl)
-        if (n) return n
-      }
-    }
-
-    // 3) fallback fixo (o seu caso do amarelo)
-    if (locale === "es") return "Amarillo"
-    if (locale === "pt") return "Amarelo"
-    return "Yellow"
+    return ""
   }
 
-  // Preços
+  // ✅ Preços (PETG sem acréscimo)
   const materialPrices: Record<string, number> = { PLA: 0, ABS: 5, PETG: 0 }
   const sizePrices: Record<string, number> = { Small: 0, Medium: 5, Large: 10, Standard: 0, "19cm": 0 }
 
@@ -145,32 +173,19 @@ export function ProductCustomizer({
 
   const storageKey = `np3d:product:${(product as any).id}:variant`
 
-  // Defaults
   const defaultColor = colors[0] || "#000000"
   const defaultSize = sizes[0] || "Standard"
   const defaultMaterial = materials[0] || "PLA"
 
-  // Estados
   const [selectedColor, setSelectedColor] = useState<string>(selectedColorHex || defaultColor)
   const [selectedSize, setSelectedSize] = useState<string>(defaultSize)
   const [selectedMaterial, setSelectedMaterial] = useState<string>(defaultMaterial)
   const [selectedImage, setSelectedImage] = useState<string>(selectedImageUrl || getImageForColor(defaultColor))
-  const [colorName, setColorName] = useState<string>(selectedColorName || "")
-  const [quantity, setQuantity] = useState(1)
+  const [colorName, setColorName] = useState<string>(selectedColorName || getNameForColor(selectedColorHex || defaultColor) || "")
+  const [quantity] = useState(1)
   const [isAdded, setIsAdded] = useState(false)
 
-  // ✅ nome efetivo SEMPRE aparece (mesmo se não vier selectedColorName)
-  const effectiveColorName = useMemo(() => {
-    const fromPropOrState = (selectedColorName || colorName || "").trim()
-    if (fromPropOrState) return fromPropOrState
-    return getColorName(selectedColor, selectedImageUrl || selectedImage)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedColor, selectedColorName, colorName, selectedImageUrl, selectedImage, locale])
-
-  const totalPrice =
-    basePrice +
-    (showMaterials ? getMaterialExtra(selectedMaterial) : 0) +
-    (showSizes ? getSizeExtra(selectedSize) : 0)
+  const totalPrice = basePrice + getMaterialExtra(selectedMaterial) + getSizeExtra(selectedSize)
 
   const notifyVariantChange = (color: string, cName: string, size: string, material: string, image: string) => {
     onVariantChange?.({
@@ -178,20 +193,30 @@ export function ProductCustomizer({
       colorName: cName,
       size,
       material,
-      price:
-        basePrice +
-        (showMaterials ? getMaterialExtra(material) : 0) +
-        (showSizes ? getSizeExtra(size) : 0),
+      price: basePrice + getMaterialExtra(material) + getSizeExtra(size),
       image,
     })
   }
 
-  // Quando mudar miniatura/props, atualiza tudo e GARANTE nome da cor
+  // ✅ Sempre que trocar cor (mesmo sem nome vindo por props), calcula o nome (resolve AMARILLO)
+  useEffect(() => {
+    const computed = getNameForColor(selectedColor)
+    if (computed && computed !== colorName) {
+      setColorName(computed)
+      notifyVariantChange(selectedColor, computed, selectedSize, selectedMaterial, selectedImage)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedColor, locale])
+
+  // Sincronização quando vem da galeria (miniatura)
   useEffect(() => {
     if (selectedImageUrl || selectedColorHex) {
       const nextColor = selectedColorHex || selectedColor
       const nextImg = selectedImageUrl || getImageForColor(nextColor)
-      const nextName = (selectedColorName || colorName || "").trim() || getColorName(nextColor, nextImg)
+      const nextName =
+        (selectedColorName || "").trim() ||
+        getNameForColor(nextColor) ||
+        colorName
 
       setSelectedImage(nextImg)
       setSelectedColor(nextColor)
@@ -202,7 +227,7 @@ export function ProductCustomizer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedColorHex, selectedImageUrl, selectedColorName])
 
-  // Carregamento inicial
+  // Carregamento Inicial
   useEffect(() => {
     const saved = localStorage.getItem(storageKey)
     if (saved && !selectedImageUrl) {
@@ -210,8 +235,8 @@ export function ProductCustomizer({
         const parsed = JSON.parse(saved)
         setSelectedSize(parsed.size || defaultSize)
         setSelectedMaterial(parsed.material || defaultMaterial)
-      } catch (e) {
-        console.error("Erro ao carregar cache de variante")
+      } catch {
+        // ignore
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -222,7 +247,7 @@ export function ProductCustomizer({
       product,
       quantity,
       selectedColor,
-      selectedColorName: effectiveColorName,
+      selectedColorName: colorName,
       selectedSize,
       selectedMaterial,
       price: totalPrice,
@@ -233,28 +258,23 @@ export function ProductCustomizer({
     setTimeout(() => setIsAdded(false), 2000)
   }
 
+  const shouldShowSize = sizes.length > 1 // ✅ remove o “Standard” quando só existe 1 tamanho
+
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
       <CardContent className="p-6 space-y-6">
-        {/* ✅ Agora "Cor seleccionada" SEMPRE mostra o nome (Amarillo/Amarelo/Yellow) */}
         <div>
           <Label className="text-base font-bold mb-2 block">{t.customizer.color}</Label>
-
-          <div className="flex items-center gap-3">
-            <span
-              className="inline-flex h-5 w-5 rounded-full border border-border"
-              style={{ backgroundColor: selectedColor }}
-              aria-label={effectiveColorName}
-              title={effectiveColorName}
-            />
-            <div className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{effectiveColorName}</span>
-            </div>
+          <div className="text-sm text-muted-foreground">
+            {colorName ? (
+              <span className="font-medium text-foreground">{colorName}</span>
+            ) : (
+              <span className="italic">{t.products.selectColorHint}</span>
+            )}
           </div>
         </div>
 
-        {/* ✅ TAMANHO: some quando só tem 1 opção (tira o "Standard" da tela) */}
-        {showSizes && (
+        {shouldShowSize && (
           <div>
             <Label className="text-base font-bold mb-3 block">{t.customizer.size}</Label>
             <RadioGroup value={selectedSize} onValueChange={setSelectedSize} className="flex flex-wrap gap-3">
@@ -278,35 +298,30 @@ export function ProductCustomizer({
           </div>
         )}
 
-        {/* MATERIAL: só mostra se tiver mais de 1 */}
-        {showMaterials && (
-          <div>
-            <Label className="text-base font-bold mb-3 block">{t.customizer.material}</Label>
-            <RadioGroup value={selectedMaterial} onValueChange={setSelectedMaterial} className="space-y-3">
-              {materials.map((material) => (
-                <div key={material} className="relative">
-                  <RadioGroupItem value={material} id={`material-${material}`} className="peer sr-only" />
-                  <Label
-                    htmlFor={`material-${material}`}
-                    className="flex items-center justify-between p-4 rounded-lg border-2 border-border cursor-pointer transition-all hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
-                  >
-                    <span className="font-medium">{material}</span>
-                    {(materialPrices[material] ?? 0) > 0 && (
-                      <Badge variant="secondary">+{formatCurrency(materialPrices[material], locale)}</Badge>
-                    )}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-        )}
+        <div>
+          <Label className="text-base font-bold mb-3 block">{t.customizer.material}</Label>
+          <RadioGroup value={selectedMaterial} onValueChange={setSelectedMaterial} className="space-y-3">
+            {materials.map((material) => (
+              <div key={material} className="relative">
+                <RadioGroupItem value={material} id={`material-${material}`} className="peer sr-only" />
+                <Label
+                  htmlFor={`material-${material}`}
+                  className="flex items-center justify-between p-4 rounded-lg border-2 border-border cursor-pointer transition-all hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
+                >
+                  <span className="font-medium">{material}</span>
+                  {(materialPrices[material] ?? 0) > 0 && (
+                    <Badge variant="secondary">+{formatCurrency(materialPrices[material], locale)}</Badge>
+                  )}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
 
         <div className="border-t border-border pt-6">
           <div className="flex items-center justify-between mb-6">
             <span className="text-lg font-medium text-muted-foreground">{t.customizer.totalPrice}</span>
-            <span className="text-3xl font-bold text-primary">
-              {formatCurrency(totalPrice * quantity, locale)}
-            </span>
+            <span className="text-3xl font-bold text-primary">{formatCurrency(totalPrice * quantity, locale)}</span>
           </div>
 
           <Button size="lg" className="w-full group relative overflow-hidden" onClick={handleAddToCart} disabled={isAdded}>
