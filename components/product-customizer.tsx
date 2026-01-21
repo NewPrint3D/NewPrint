@@ -54,10 +54,7 @@ export function ProductCustomizer({
 
   // ---- Lógica de Imagem Principal (Fallbacks em cascata)
   const baseImage = useMemo(() => {
-    return (product as any).image_url || 
-           (product as any).imageUrl || 
-           (product as any).image || 
-           "/placeholder.svg"
+    return (product as any).image_url || (product as any).imageUrl || (product as any).image || "/placeholder.svg"
   }, [product])
 
   const colorImages: ColorImage[] = useMemo(() => {
@@ -71,10 +68,10 @@ export function ProductCustomizer({
     return found?.url || found?.imageUrl || found?.image_url || baseImage
   }
 
-  // Preços
-  const materialPrices: Record<string, number> = { PLA: 0, ABS: 5, PETG: 8 }
+  // ✅ Preços (PETG SEM acréscimo)
+  const materialPrices: Record<string, number> = { PLA: 0, ABS: 5, PETG: 0 }
   const sizePrices: Record<string, number> = { Small: 0, Medium: 5, Large: 10, Standard: 0, "19cm": 0 }
-  
+
   const basePrice = safeNumber((product as any).basePrice ?? (product as any).base_price ?? (product as any).price)
   const getMaterialExtra = (material: string) => materialPrices[material] ?? 0
   const getSizeExtra = (size: string) => sizePrices[size] ?? 0
@@ -98,19 +95,18 @@ export function ProductCustomizer({
   const totalPrice = basePrice + getMaterialExtra(selectedMaterial) + getSizeExtra(selectedSize)
 
   const notifyVariantChange = (color: string, cName: string, size: string, material: string, image: string) => {
-    onVariantChange?.({ 
-      color, 
-      colorName: cName, 
-      size, 
-      material, 
-      price: basePrice + getMaterialExtra(material) + getSizeExtra(size), 
-      image 
+    onVariantChange?.({
+      color,
+      colorName: cName,
+      size,
+      material,
+      price: basePrice + getMaterialExtra(material) + getSizeExtra(size),
+      image,
     })
   }
 
   // Sincronização Definitiva: Sempre que as props mudarem (clique na miniatura)
   useEffect(() => {
-    // Se a imagem vinda da galeria existir, ela MANDA no estado.
     if (selectedImageUrl || selectedColorHex) {
       const nextImg = selectedImageUrl || getImageForColor(selectedColorHex || selectedColor)
       const nextColor = selectedColorHex || selectedColor
@@ -119,9 +115,10 @@ export function ProductCustomizer({
       setSelectedImage(nextImg)
       setSelectedColor(nextColor)
       setColorName(nextName)
-      
+
       notifyVariantChange(nextColor, nextName, selectedSize, selectedMaterial, nextImg)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedColorHex, selectedImageUrl, selectedColorName])
 
   // Carregamento Inicial (ignora cache se as props estiverem presentes para evitar imagens quebradas)
@@ -136,6 +133,7 @@ export function ProductCustomizer({
         console.error("Erro ao carregar cache de variante")
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleAddToCart = () => {
@@ -160,11 +158,7 @@ export function ProductCustomizer({
         <div>
           <Label className="text-base font-bold mb-2 block">{t.customizer.color}</Label>
           <div className="text-sm text-muted-foreground">
-            {colorName ? (
-              <span className="font-medium text-foreground">{colorName}</span>
-            ) : (
-              <span className="italic">{t.products.selectColorHint}</span>
-            )}
+            {colorName ? <span className="font-medium text-foreground">{colorName}</span> : <span className="italic">{t.products.selectColorHint}</span>}
           </div>
         </div>
 
@@ -213,17 +207,19 @@ export function ProductCustomizer({
         <div className="border-t border-border pt-6">
           <div className="flex items-center justify-between mb-6">
             <span className="text-lg font-medium text-muted-foreground">{t.customizer.totalPrice}</span>
-            <span className="text-3xl font-bold text-primary">
-              {formatCurrency(totalPrice * quantity, locale)}
-            </span>
+            <span className="text-3xl font-bold text-primary">{formatCurrency(totalPrice * quantity, locale)}</span>
           </div>
 
           <Button size="lg" className="w-full group relative overflow-hidden" onClick={handleAddToCart} disabled={isAdded}>
             <span className="relative z-10 flex items-center justify-center gap-2">
               {isAdded ? (
-                <><CheckCircle className="w-5 h-5" /> {t.customizer.addedToCart}</>
+                <>
+                  <CheckCircle className="w-5 h-5" /> {t.customizer.addedToCart}
+                </>
               ) : (
-                <><ShoppingCart className="w-5 h-5" /> {t.products.addToCart}</>
+                <>
+                  <ShoppingCart className="w-5 h-5" /> {t.products.addToCart}
+                </>
               )}
             </span>
           </Button>
