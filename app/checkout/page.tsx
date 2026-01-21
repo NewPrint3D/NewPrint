@@ -282,16 +282,15 @@ export default function CheckoutPage() {
                   {labels.payCard}
                 </Button>
 
-                <Button
-                  className="w-full"
-                  size="lg"
-                  variant="secondary"
-                  onClick={() => startPayment("paypal")}
-                  disabled={!canPay || isSubmitting !== null}
-                >
-                  <Wallet className="h-5 w-5 mr-2" />
-                  {labels.payPaypal}
-                </Button>
+              <Button
+               className="w-full bg-[#003087] hover:bg-[#00256e] text-white"
+               size="lg"
+               onClick={() => startPayment("paypal")}
+               disabled={!canPay || isSubmitting !== null}
+               >
+              <Wallet className="h-5 w-5 mr-2" />
+              {labels.payPaypal}
+             </Button>
 
                 <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
                   <Lock className="h-4 w-4" />
