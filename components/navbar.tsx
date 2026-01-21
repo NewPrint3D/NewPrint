@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
 import { useLanguage } from "@/contexts/language-context"
 import { useCart } from "@/contexts/cart-context"
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function Navbar() {
+  const router = useRouter()
   const { t, locale } = useLanguage()
   const { totalItems } = useCart()
   const { user, logout, isAdmin } = useAuth()
@@ -46,14 +47,17 @@ export function Navbar() {
     about: locale === "pt" ? "Sobre nós" : locale === "es" ? "Acerca de nosotros" : "About us",
   }
 
+  const go = (href: string) => {
+    closeMobile()
+    router.push(href)
+  }
+
   return (
     <>
       <nav
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-          // ✅ FUNDO 100% OPACO (não deixa texto aparecer por trás)
           "bg-background border-b border-border shadow-sm",
-          // opcional: só muda um pouco a sombra quando rola
           isScrolled ? "shadow-md" : "shadow-sm",
         )}
       >
@@ -96,23 +100,45 @@ export function Navbar() {
 
                     <DropdownMenuSeparator />
 
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile">{t.auth.login}</Link>
+                    {/* ✅ navegação via router (não falha no dropdown) */}
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault()
+                        go("/profile")
+                      }}
+                    >
+                      {t.auth.login}
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem asChild>
-                      <Link href="/orders">{t.auth.register}</Link>
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault()
+                        go("/orders")
+                      }}
+                    >
+                      {t.auth.register}
                     </DropdownMenuItem>
 
                     {isAdmin && (
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin">Admin</Link>
+                      <DropdownMenuItem
+                        onSelect={(e) => {
+                          e.preventDefault()
+                          go("/admin")
+                        }}
+                      >
+                        Admin
                       </DropdownMenuItem>
                     )}
 
                     <DropdownMenuSeparator />
 
-                    <DropdownMenuItem onClick={logout} className="text-destructive">
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault()
+                        logout()
+                      }}
+                      className="text-destructive"
+                    >
                       <LogOut className="h-4 w-4 mr-2" />
                       {t.auth.logout}
                     </DropdownMenuItem>
