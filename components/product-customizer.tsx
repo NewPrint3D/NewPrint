@@ -12,7 +12,22 @@ import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, CheckCircle } from "lucide-react"
 import type { Product } from "@/lib/products"
 
-type ColorImage = { color?: string; hex?: string; url?: string; imageUrl?: string; image_url?: string }
+type ColorImage = {
+  color?: string
+  hex?: string
+  url?: string
+  imageUrl?: string
+  image_url?: string
+
+  // ✅ campos comuns onde o nome pode estar
+  name?: string
+  colorName?: string
+  label?: string
+  title?: string
+
+  // ✅ às vezes vem assim por idioma
+  names?: Partial<Record<"pt" | "es" | "en", string>>
+}
 
 interface ProductCustomizerProps {
   product: Product
@@ -68,7 +83,64 @@ export function ProductCustomizer({
     return found?.url || found?.imageUrl || found?.image_url || baseImage
   }
 
-  // ✅ Preços (PETG SEM acréscimo)
+  // ✅ Resolve nome da cor pelo HEX (pra não depender só de selectedColorName)
+  const getNameForColor = (hex: string) => {
+    const key = normalizeHex(hex).toLowerCase()
+    if (!key) return ""
+
+    // 1) tentar dentro do color_images
+    const found = colorImages.find((ci) => normalizeHex(ci.color || ci.hex).toLowerCase() === key)
+    const fromColorImages =
+      (found?.names && (found.names as any)?.[locale]) ||
+      found?.colorName ||
+      found?.name ||
+      found?.label ||
+      found?.title
+
+    if (typeof fromColorImages === "string" && fromColorImages.trim()) return fromColorImages.trim()
+
+    // 2) tentar um map por hex (muito comum em bases "cor->nome")
+    const map1 = (product as any).colorNamesMap || (product as any).color_names_map || (product as any).colorNameByHex
+    if (map1 && typeof map1 === "object") {
+      const hit = map1[key] || map1[key.toUpperCase()]
+      if (typeof hit === "string" && hit.trim()) return hit.trim()
+      if (hit && typeof hit === "object") {
+        const hitLocale = hit?.[locale]
+        if (typeof hitLocale === "string" && hitLocale.trim()) return hitLocale.trim()
+      }
+    }
+
+    // 3) tentar array paralelo (colors[] e color_names[] no mesmo índice)
+    const namesArr =
+      (product as any).color_names ||
+      (product as any).colorNames ||
+      (product as any).color_names_list ||
+      (product as any).colorNamesList
+
+    const idx = colors.findIndex((c) => normalizeHex(c).toLowerCase() === key)
+    if (idx >= 0) {
+      if (Array.isArray(namesArr)) {
+        const hit = namesArr[idx]
+        if (typeof hit === "string" && hit.trim()) return hit.trim()
+        if (hit && typeof hit === "object") {
+          const hitLocale = hit?.[locale]
+          if (typeof hitLocale === "string" && hitLocale.trim()) return hitLocale.trim()
+        }
+      }
+      // 4) objeto por índice/por locale
+      if (namesArr && typeof namesArr === "object") {
+        const maybeByLocale = namesArr?.[locale]
+        if (Array.isArray(maybeByLocale)) {
+          const hit = maybeByLocale[idx]
+          if (typeof hit === "string" && hit.trim()) return hit.trim()
+        }
+      }
+    }
+
+    return ""
+  }
+
+  // Preços
   const materialPrices: Record<string, number> = { PLA: 0, ABS: 5, PETG: 0 }
   const sizePrices: Record<string, number> = { Small: 0, Medium: 5, Large: 10, Standard: 0, "19cm": 0 }
 
@@ -88,7 +160,7 @@ export function ProductCustomizer({
   const [selectedSize, setSelectedSize] = useState<string>(defaultSize)
   const [selectedMaterial, setSelectedMaterial] = useState<string>(defaultMaterial)
   const [selectedImage, setSelectedImage] = useState<string>(selectedImageUrl || getImageForColor(defaultColor))
-  const [colorName, setColorName] = useState<string>(selectedColorName || "")
+  const [colorName, setColorName] = useState<string>(selectedColorName || getNameForColor(selectedColorHex || defaultColor) || "")
   const [quantity, setQuantity] = useState(1)
   const [isAdded, setIsAdded] = useState(false)
 
@@ -105,18 +177,20 @@ export function ProductCustomizer({
     })
   }
 
-  // Sincronização Definitiva: Sempre que as props mudarem (clique na miniatura)
+  // ✅ Sincronização Definitiva: Sempre que as props mudarem (clique na miniatura)
   useEffect(() => {
-    if (selectedImageUrl || selectedColorHex) {
-      const nextImg = selectedImageUrl || getImageForColor(selectedColorHex || selectedColor)
+    if (selectedImageUrl || selectedColorHex || selectedColorName) {
       const nextColor = selectedColorHex || selectedColor
-      const nextName = selectedColorName || colorName
+      const nextImg = selectedImageUrl || getImageForColor(nextColor)
+
+      // ✅ se não vier nome, resolve automaticamente pelo hex
+      const resolvedName = selectedColorName || getNameForColor(nextColor) || colorName
 
       setSelectedImage(nextImg)
       setSelectedColor(nextColor)
-      setColorName(nextName)
+      setColorName(resolvedName)
 
-      notifyVariantChange(nextColor, nextName, selectedSize, selectedMaterial, nextImg)
+      notifyVariantChange(nextColor, resolvedName, selectedSize, selectedMaterial, nextImg)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedColorHex, selectedImageUrl, selectedColorName])
@@ -158,7 +232,11 @@ export function ProductCustomizer({
         <div>
           <Label className="text-base font-bold mb-2 block">{t.customizer.color}</Label>
           <div className="text-sm text-muted-foreground">
-            {colorName ? <span className="font-medium text-foreground">{colorName}</span> : <span className="italic">{t.products.selectColorHint}</span>}
+            {colorName ? (
+              <span className="font-medium text-foreground">{colorName}</span>
+            ) : (
+              <span className="italic">{t.products.selectColorHint}</span>
+            )}
           </div>
         </div>
 
