@@ -36,6 +36,7 @@ export function Navbar() {
     if (typeof window === "undefined") return
     const handleScroll = () => setIsScrolled(window.scrollY > 20)
     window.addEventListener("scroll", handleScroll)
+    handleScroll()
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
@@ -50,17 +51,16 @@ export function Navbar() {
       <nav
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-          // ✅ ANTES era transparente, agora sempre tem fundo + blur
-          isScrolled
-            ? "bg-background/80 backdrop-blur-lg border-b border-border shadow-lg"
-            : "bg-background/70 backdrop-blur-lg border-b border-border/40",
+          // ✅ FUNDO 100% OPACO (não deixa texto aparecer por trás)
+          "bg-background border-b border-border shadow-sm",
+          // opcional: só muda um pouco a sombra quando rola
+          isScrolled ? "shadow-md" : "shadow-sm",
         )}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2 group" onClick={closeMobile}>
               <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse-glow" />
                 <div className="relative w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
                   <span className="text-primary-foreground font-bold text-xl">N3D</span>
                 </div>
@@ -73,7 +73,6 @@ export function Navbar() {
             <div className="hidden md:flex items-center gap-8">
               <Link href="/">{t.nav.home}</Link>
               <Link href="/products">{t.nav.products}</Link>
-
               <Link href="/about">{labels.about}</Link>
               <Link href="/contact">{t.nav.contact}</Link>
             </div>
@@ -125,7 +124,7 @@ export function Navbar() {
                 </Button>
               )}
 
-              {/* carrinho NÃO aparece no checkout */}
+              {/* ✅ carrinho NÃO aparece no checkout */}
               {!hideCart && (
                 <Button asChild variant="ghost" size="icon" className="relative">
                   <Link href="/cart" className="relative">
