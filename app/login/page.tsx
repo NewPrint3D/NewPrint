@@ -1,7 +1,9 @@
 "use client"
 
+export const dynamic = "force-dynamic"
+
 import { useEffect, useMemo, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 
 import { Navbar } from "@/components/navbar"
@@ -16,14 +18,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function LoginPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-
   const { t, locale } = useLanguage()
-  const { login, isLoading, user, isAdmin } = useAuth()
+  const { login, isLoading, user } = useAuth()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -40,12 +39,6 @@ export default function LoginPage() {
             ? "¿No tienes una cuenta?"
             : "Don't have an account?",
       signUp: locale === "pt" ? "Cadastre-se" : locale === "es" ? "Regístrate" : "Sign Up",
-      adminOnly:
-        locale === "pt"
-          ? "Acesso permitido apenas para administrador."
-          : locale === "es"
-            ? "Acceso permitido solo para administrador."
-            : "Admin access only.",
       connectionError:
         locale === "pt"
           ? "Não foi possível conectar. Tente novamente."
@@ -55,27 +48,31 @@ export default function LoginPage() {
     }
   }, [t, locale])
 
-  // ✅ se já estiver logado, redireciona (e evita ficar “preso” no login)
+  // ✅ pega "next" sem quebrar build (sem useSearchParams)
+  const getNextParam = () => {
+    if (typeof window === "undefined") return null
+    try {
+      return new URLSearchParams(window.location.search).get("next")
+    } catch {
+      return null
+    }
+  }
+
+  // ✅ se já estiver logado, manda embora do login
   useEffect(() => {
     if (isLoading) return
     if (!user) return
-
-    const next = searchParams.get("next")
-    if (isAdmin) {
-      router.replace(next || "/admin")
-    } else {
-      // usuário comum: manda pra home (ou perfil, se você tiver)
-      router.replace("/")
-    }
-  }, [isLoading, user, isAdmin, router, searchParams])
+    const next = getNextParam()
+    router.replace(next || "/admin")
+  }, [isLoading, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
 
     if (submitting) return
-
     setSubmitting(true)
+
     const result = await login(email.trim(), password)
 
     if (!result.success) {
@@ -84,20 +81,8 @@ export default function LoginPage() {
       return
     }
 
-    // ✅ login ok: valida admin e redireciona
-    // (isAdmin vem do context e atualiza após setUser)
-    // Pequena espera microtask pra garantir estado atualizado
-    setTimeout(() => {
-      const next = searchParams.get("next")
-      // Se não for admin, não deixa entrar no /admin
-      // (isso evita “logou mas admin não abre”)
-      if ((user && user.role === "admin") || isAdmin) {
-        router.replace(next || "/admin")
-      } else {
-        setError(texts.adminOnly)
-        setSubmitting(false)
-      }
-    }, 0)
+    const next = getNextParam()
+    router.replace(next || "/admin")
   }
 
   return (
