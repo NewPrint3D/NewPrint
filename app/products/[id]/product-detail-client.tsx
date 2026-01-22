@@ -28,7 +28,6 @@ const normalizeHex = (hex?: string) => (hex || "").trim().toLowerCase().replace(
 const colorNameFromHex = (hexNoHash: string) => {
   const h = (hexNoHash || "").toLowerCase()
 
-  // ✅ Mapa de cores (inclui AMARELO)
   const map: Record<string, { pt: string; en: string; es: string }> = {
     "000000": { pt: "Preto", en: "Black", es: "Negro" },
     "ffffff": { pt: "Branco", en: "White", es: "Blanco" },
@@ -39,36 +38,33 @@ const colorNameFromHex = (hexNoHash: string) => {
     "ffff00": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
     "ffd700": { pt: "Dourado", en: "Gold", es: "Dorado" },
     "ffc107": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
-    "ffeb3b": { pt: "Amarelo", en: "Yellow", es: "Amarillo" }
+    "ffeb3b": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
+
+    // ✅ SEU AMARELO do admin (#FBC02D)
+    "fbc02d": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
   }
 
-  // ✅ Se não reconhecer, NÃO devolve texto genérico (deixa vazio)
   return map[h] ?? { pt: "", en: "", es: "" }
 }
 
 export function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
   const { t, locale } = useLanguage()
 
-  const productId = String((product as any).id ?? (product as any).product_id ?? (product as any).slug)
-
   const colorOptions = useMemo(() => {
     const fromServer = (product as any).colorOptions
-    if (Array.isArray(fromServer) && fromServer.length) {
-      return fromServer.map((o: any) => {
-        const hexRaw = String(o.hex || "").toLowerCase()
-        const hex = hexRaw.startsWith("#") ? hexRaw : `#${hexRaw}`
-        const nameFromHex = colorNameFromHex(normalizeHex(hex))
+    if (!Array.isArray(fromServer) || !fromServer.length) return []
 
-        return {
-          hex,
-          image: String(o.image),
-          // se vier name do servidor, usa; senão usa o mapa pelo HEX
-          name: (o.name && typeof o.name === "object") ? o.name : nameFromHex,
-        }
-      })
-    }
+    return fromServer.map((o: any) => {
+      const hexRaw = String(o.hex || "").toLowerCase()
+      const hex = hexRaw.startsWith("#") ? hexRaw : `#${hexRaw}`
+      const nameFromHex = colorNameFromHex(normalizeHex(hex))
 
-    return []
+      return {
+        hex,
+        image: String(o.image),
+        name: o.name && typeof o.name === "object" ? o.name : nameFromHex,
+      }
+    })
   }, [product])
 
   const [selectedHex, setSelectedHex] = useState("")
@@ -100,15 +96,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
     if (item.type !== "image") return
     if (item.hex) setSelectedHex(item.hex)
     if (item.src) setSelectedImage(item.src)
-
-    // se não vier nome, tenta pelo HEX
-    if (item.colorName) {
-      setSelectedColorName(item.colorName)
-    } else if (item.hex) {
-      setSelectedColorName(colorNameFromHex(normalizeHex(item.hex)))
-    } else {
-      setSelectedColorName(null)
-    }
+    if (item.colorName) setSelectedColorName(item.colorName)
   }
 
   const localizedName =
@@ -117,8 +105,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
   const localizedDesc =
     (product as any).description?.[locale] || (product as any).description_pt || (product as any).description || ""
 
-  const colorNameForCustomizer =
-    (selectedColorName?.[locale] || selectedColorName?.es || selectedColorName?.pt || "").trim()
+  const colorNameForCustomizer = (selectedColorName?.[locale] || selectedColorName?.es || selectedColorName?.pt || "").trim()
 
   return (
     <main className="min-h-screen">
