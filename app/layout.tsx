@@ -13,11 +13,20 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: {
-    default: "NewPrint3D - Custom 3D Printing Services",
+    default: "NewPrint3D - Impresión 3D personalizada",
     template: "%s | NewPrint3D",
   },
-  description: "Premium 3D printing with full customization - colors, sizes, and materials for all your projects",
-  keywords: ["3D printing", "custom printing", "PLA", "ABS", "PETG", "3D models", "personalized products"],
+  description:
+    "Impresión 3D premium con personalización total: colores, tamaños y materiales para todos tus proyectos.",
+  keywords: [
+    "impresión 3D",
+    "impresión personalizada",
+    "PLA",
+    "ABS",
+    "PETG",
+    "modelos 3D",
+    "productos personalizados",
+  ],
   authors: [{ name: "NewPrint3D" }],
   creator: "NewPrint3D",
   publisher: "NewPrint3D",
@@ -27,22 +36,23 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "es_ES",
     url: "/",
-    title: "NewPrint3D - Custom 3D Printing Services",
-    description: "Premium 3D printing with full customization - colors, sizes, and materials for all your projects",
+    title: "NewPrint3D - Impresión 3D personalizada",
+    description:
+      "Impresión 3D premium con personalización total: colores, tamaños y materiales para todos tus proyectos.",
     siteName: "NewPrint3D",
   },
   twitter: {
     card: "summary_large_image",
-    title: "NewPrint3D - Custom 3D Printing Services",
-    description: "Premium 3D printing with full customization",
+    title: "NewPrint3D - Impresión 3D personalizada",
+    description: "Impresión 3D premium con personalización total.",
   },
   robots: {
     index: true,
     follow: true,
   },
-    generator: 'v0.app'
+  generator: "v0.app",
 }
 
 export default function RootLayout({
@@ -51,8 +61,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`font-sans antialiased`}>
+    <html lang="es">
+      <body className="font-sans antialiased">
         <LanguageProvider>
           <AuthProvider>
             <CartProvider>
