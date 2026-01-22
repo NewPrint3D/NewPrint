@@ -12,7 +12,7 @@ on:
         required: true
 
       file_name:
-        description: "Nome do arquivo (sem extensão) - ex: 000000, f5f5f5, d32f2f"
+        description: "Nome do arquivo (sem extensão) - ex: 000000, f5f5f5, d32f2f, fbc02d"
         required: true
 
       format:
