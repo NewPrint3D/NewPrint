@@ -1,247 +1,240 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
+import { useLanguage } from "@/contexts/language-context"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { useLanguage } from "@/contexts/language-context"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Mail, AlertCircle, CheckCircle2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { MapPin, Mail, Phone, Clock, Send } from "lucide-react"
 
 export default function ContactPage() {
-  const { locale } = useLanguage()
-  const { toast } = useToast()
-
-  const copy =
-    locale === "es"
-      ? {
-          title: "Contacto",
-          subtitle: "Ponte en contacto con nosotros",
-          description:
-            "¿Tienes alguna duda sobre nuestros productos de impresión 3D o necesitas un proyecto personalizado? Estamos aquí para ayudarte.",
-          formTitle: "Enviar un mensaje",
-          name: "Nombre",
-          email: "Email",
-          subject: "Asunto",
-          message: "Mensaje",
-          send: "Enviar mensaje",
-          sending: "Enviando...",
-          sent: "Enviado con éxito ✓",
-          ready: "Listo para enviar.",
-          successTitle: "Mensaje enviado",
-          successDesc: "Gracias. Te responderemos lo antes posible.",
-          errorTitle: "Error",
-          errorDesc: "No se pudo enviar ahora. Inténtalo de nuevo.",
-          required: "Completa los campos obligatorios.",
-        }
-      : locale === "pt"
-        ? {
-            title: "Contato",
-            subtitle: "Entre em contato conosco",
-            description:
-              "Tem alguma dúvida sobre nossos produtos de impressão 3D ou precisa de um projeto personalizado? Estamos aqui para ajudar.",
-            formTitle: "Enviar mensagem",
-            name: "Nome",
-            email: "Email",
-            subject: "Assunto",
-            message: "Mensagem",
-            send: "Enviar mensagem",
-            sending: "Enviando...",
-            sent: "Enviado com sucesso ✓",
-            ready: "Pronto para enviar.",
-            successTitle: "Mensagem enviada",
-            successDesc: "Obrigado. Vamos responder o quanto antes.",
-            errorTitle: "Erro",
-            errorDesc: "Não foi possível enviar agora. Tente novamente.",
-            required: "Preencha os campos obrigatórios.",
-          }
-        : {
-            title: "Contact",
-            subtitle: "Get in touch",
-            description:
-              "Do you have any questions about our 3D printing products or need a custom project? We’re here to help.",
-            formTitle: "Send a message",
-            name: "Name",
-            email: "Email",
-            subject: "Subject",
-            message: "Message",
-            send: "Send message",
-            sending: "Sending...",
-            sent: "Sent successfully ✓",
-            ready: "Ready to send.",
-            successTitle: "Message sent",
-            successDesc: "Thanks. We’ll get back to you as soon as possible.",
-            errorTitle: "Error",
-            errorDesc: "Could not send right now. Please try again.",
-            required: "Please fill the required fields.",
-          }
-
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  })
-
+  const { t } = useLanguage()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSent, setIsSent] = useState(false)
-  const [inlineError, setInlineError] = useState<string | null>(null)
+  const [isSuccess, setIsSuccess] = useState(false)
 
-  const canSubmit =
-    form.name.trim() && form.email.trim() && form.subject.trim() && form.message.trim()
+ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault()
+  setIsSubmitting(true)
+  setIsSuccess(false)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setInlineError(null)
+  try {
+    const form = e.currentTarget
+    const fd = new FormData(form)
 
-    if (!canSubmit) {
-      setInlineError(copy.required)
+    const payload = {
+      name: String(fd.get("name") || "").trim(),
+      email: String(fd.get("email") || "").trim(),
+      subject: String(fd.get("subject") || "").trim(),
+      message: String(fd.get("message") || "").trim(),
+    }
+
+    const r = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+
+    const data = await r.json().catch(() => null)
+
+    if (!r.ok) {
+      const msg =
+        (data && (data.error || data.message)) ||
+        `Erro ao enviar (status ${r.status})`
+      alert(msg)
       return
     }
 
-    try {
-      setIsSubmitting(true)
+    setIsSuccess(true)
+    form.reset()
 
-      const fd = new FormData()
-      fd.append("name", form.name)
-      fd.append("email", form.email)
-      fd.append("phone", "")
-      fd.append("message", `Asunto: ${form.subject}\n\n${form.message}`)
-
-      const res = await fetch("/api/contact", { method: "POST", body: fd })
-      if (!res.ok) throw new Error(`Status ${res.status}`)
-
-      toast({
-        title: copy.successTitle,
-        description: copy.successDesc,
-      })
-
-      // ✅ limpa campos
-      setForm({ name: "", email: "", subject: "", message: "" })
-
-      // ✅ botão muda para "enviado com sucesso" no idioma
-      setIsSent(true)
-      setTimeout(() => setIsSent(false), 6000)
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: copy.errorTitle,
-        description: copy.errorDesc,
-      })
-    } finally {
-      setIsSubmitting(false)
-    }
+    setTimeout(() => setIsSuccess(false), 3000)
+  } catch (err: any) {
+    alert("Falha ao enviar. Tente novamente.")
+  } finally {
+    setIsSubmitting(false)
   }
+}
+
+  const contactInfo = [
+     
+    {
+      icon: Mail,
+      label: t.contact.info.email,
+      color: "from-accent to-accent/50",
+    },
+   
+    {
+      icon: Clock,
+      label: t.contact.info.hours,
+      color: "from-chart-4 to-chart-4/50",
+    },
+  ]
 
   return (
     <main className="min-h-screen">
       <Navbar />
 
-      <div className="pt-24 pb-12 container mx-auto px-4">
-        <h1 className="text-4xl font-bold mb-8 text-center">{copy.title}</h1>
+      <section className="relative pt-32 pb-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-float" />
+        <div
+          className="absolute bottom-20 right-10 w-72 h-72 bg-accent/10 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "2s" }}
+        />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {/* LADO ESQUERDO — APENAS EMAIL */}
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold mb-4">{copy.subtitle}</h2>
-              <p className="text-muted-foreground mb-6">{copy.description}</p>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
+              <span className="text-balance">{t.contact.title}</span>
+            </h1>
+            <p className="text-xl text-muted-foreground animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+              {t.contact.subtitle}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div className="lg:col-span-2">
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl animate-in fade-in slide-in-from-left-8 duration-700">
+                <CardContent className="p-8">
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2 group">
+                        <Label
+                          htmlFor="name"
+                          className="group-focus-within:text-primary transition-colors duration-200"
+                        >
+                          {t.contact.form.name}
+                        </Label>
+                        <Input
+                          id="name"
+                         name="name" 
+                          required
+                          className="transition-all duration-300 focus:scale-[1.02] focus:shadow-lg"
+                        />
+                      </div>
+                      <div className="space-y-2 group">
+                        <Label
+                          htmlFor="email"
+                          className="group-focus-within:text-primary transition-colors duration-200"
+                        >
+                          {t.contact.form.email}
+                        </Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          required
+                          className="transition-all duration-300 focus:scale-[1.02] focus:shadow-lg"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 group">
+                      <Label
+                        htmlFor="subject"
+                        className="group-focus-within:text-primary transition-colors duration-200"
+                      >
+                        {t.contact.form.subject}
+                      </Label>
+                      <Input
+                        id="subject"
+                        name="subject" 
+                        required
+                        className="transition-all duration-300 focus:scale-[1.02] focus:shadow-lg"
+                      />
+                    </div>
+
+                    <div className="space-y-2 group">
+                      <Label
+                        htmlFor="message"
+                        className="group-focus-within:text-primary transition-colors duration-200"
+                      >
+                        {t.contact.form.message}
+                      </Label>
+                      <Textarea
+                        id="message"
+                       name="message" 
+                        required
+                        rows={6}
+                        className="transition-all duration-300 focus:scale-[1.02] focus:shadow-lg resize-none"
+                      />
+                    </div>
+
+                    <Button
+                      type="submit"
+                      size="lg"
+                      disabled={isSubmitting}
+                      className="w-full group relative overflow-hidden"
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-2">
+                        {isSubmitting
+                          ? t.contact.form.sending
+                          : isSuccess
+                            ? t.contact.form.success
+                            : t.contact.form.send}
+                        {!isSubmitting && !isSuccess && (
+                          <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-200" />
+                        )}
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-                <Mail className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="font-bold">Email</p>
-                <p className="text-muted-foreground">contacto@newprint3d.com</p>
-              </div>
+            <div className="space-y-6">
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-xl animate-in fade-in slide-in-from-right-8 duration-700">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold mb-6">{t.contact.info.title}</h3>
+                  <div className="space-y-6">
+                    {contactInfo.map((info, index) => (
+                      <div
+                        key={index}
+                        className="flex items-start gap-4 group hover:translate-x-2 transition-transform duration-300"
+                      >
+                        <div className="relative">
+                          <div
+                            className={`absolute inset-0 bg-gradient-to-br ${info.color} blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-300`}
+                          />
+                          <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-background to-muted flex items-center justify-center border border-border">
+                            <info.icon className="w-5 h-5 text-primary group-hover:scale-110 transition-transform duration-300" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors duration-200">
+                            {info.label}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border/50 bg-gradient-to-br from-primary/10 to-accent/10 backdrop-blur-sm shadow-xl animate-in fade-in slide-in-from-right-8 duration-700 delay-100 overflow-hidden group">
+                <CardContent className="p-6 relative">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+                  <div className="relative">
+                    <h3 className="text-lg font-bold mb-2">{t.contact.quickResponse.title}</h3>
+                    <p className="text-sm text-muted-foreground">{t.contact.quickResponse.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
-
-          {/* FORMULÁRIO */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{copy.formTitle}</CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">{copy.name}</Label>
-                    <Input
-                      id="name"
-                      value={form.name}
-                      onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                      placeholder={copy.name}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">{copy.email}</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                      placeholder="email@email.com"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="subject">{copy.subject}</Label>
-                  <Input
-                    id="subject"
-                    value={form.subject}
-                    onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))}
-                    placeholder={copy.subject}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="message">{copy.message}</Label>
-                  <Textarea
-                    id="message"
-                    className="min-h-[150px]"
-                    value={form.message}
-                    onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))}
-                    placeholder={copy.message}
-                    required
-                  />
-                </div>
-
-                {inlineError && (
-                  <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm">
-                    <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
-                    <div className="text-destructive">{inlineError}</div>
-                  </div>
-                )}
-
-                <Button className="w-full" size="lg" type="submit" disabled={isSubmitting || isSent}>
-                  {isSubmitting ? copy.sending : isSent ? copy.sent : copy.send}
-                </Button>
-
-                {/* ✅ mantém a mensagem "pronto para enviar" (você disse que ficou boa) */}
-                {!isSubmitting && !isSent && canSubmit && !inlineError && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <CheckCircle2 className="h-4 w-4" />
-                    <span>{copy.ready}</span>
-                  </div>
-                )}
-              </form>
-            </CardContent>
-          </Card>
         </div>
-      </div>
+      </section>
 
       <Footer />
     </main>

@@ -73,7 +73,9 @@ export function ProductsContent() {
     <div className="max-w-6xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <p className="text-muted-foreground">
-          {t.nav.products}: {filteredProducts.length}
+          {filteredProducts.length === 1
+            ? t.productsPage.showingCountSingular
+            : t.productsPage.showingCountPlural.replace("{count}", String(filteredProducts.length))}
         </p>
       </div>
 
@@ -93,7 +95,7 @@ export function ProductsContent() {
 
       {filteredProducts.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground text-lg">No hay resultados</p>
+          <p className="text-muted-foreground text-lg">{t.common.noResults}</p>
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState, useEffect } from "react"
+import Image from "next/image"
 
 type MediaItem = {
   type: "image" | "video"
@@ -70,7 +71,7 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
 
   return (
     <div>
-      {/* imagem principal */}
+      {/* mídia principal */}
       <div style={{ marginBottom: 16 }}>
         {active.type === "video" ? (
           <video
@@ -80,15 +81,13 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
             style={{ width: "100%", borderRadius: 8 }}
           />
         ) : (
-          <img
+          <Image
             src={active.src}
             alt={active.alt || "Produto"}
-            style={{
-              width: "100%",
-              height: "auto",
-              borderRadius: 8,
-              display: "block",
-            }}
+            width={900}
+            height={900}
+            priority
+            style={{ borderRadius: 8, width: "100%", height: "auto" }}
           />
         )}
       </div>
@@ -100,6 +99,8 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
             key={`${item.type}-${item.src}-${index}`}
             onClick={() => {
               setActive(item)
+
+              // 🔒 vídeo NÃO altera cor
               if (item.type === "image") {
                 onSelectItem?.(item)
               }
@@ -128,17 +129,16 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
                 }}
               />
             ) : (
-              <img
+              <Image
                 src={item.src}
                 alt={item.alt || "Miniatura"}
                 width={60}
                 height={60}
                 style={{
+                  borderRadius: 4,
                   width: 60,
                   height: 60,
                   objectFit: "cover",
-                  borderRadius: 4,
-                  display: "block",
                 }}
               />
             )}

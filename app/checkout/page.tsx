@@ -1,304 +1,386 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
+
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { useLanguage } from "@/contexts/language-context"
-import { useCart } from "@/contexts/cart-context"
-import { formatCurrency } from "@/lib/intl"
+
+// shadcn/ui
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { AlertCircle, CreditCard, Wallet, Lock } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 
-type FormData = {
+import { useCart } from "@/contexts/cart-context"
+import { useLanguage } from "@/contexts/language-context"
+
+type CartItem = {
+  product?: {
+    name?: { en?: string } | string
+    description?: { en?: string } | string
+    imageUrl?: string
+  }
+  price: number | string
+  quantity: number | string
+  selectedColor?: string
+  selectedSize?: string
+  selectedMaterial?: string
+}
+
+type ShippingInfo = {
   firstName: string
   lastName: string
   email: string
+  phone: string
   address: string
   city: string
+  state: string
   zipCode: string
+  country: string
+}
+
+function safeNumber(v: unknown) {
+  const n = typeof v === "string" ? Number(v) : (v as number)
+  return Number.isFinite(n) ? n : 0
+}
+
+function to2(n: number) {
+  return n.toFixed(2)
 }
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { locale } = useLanguage()
-  const { items, totalPrice } = useCart()
+  const { toast } = useToast()
+  const { t, locale } = useLanguage()
 
-  const [formData, setFormData] = useState<FormData>({
+  const payCardLabel =
+    locale === "pt"
+      ? "Pagar com Cartão (Crédito/Débito)"
+      : locale === "es"
+        ? "Pagar con Tarjeta (Crédito/Débito)"
+        : "Pay by Card (Credit/Debit)"
+
+  const payPalLabel =
+    locale === "pt" ? "Pagar com PayPal" : locale === "es" ? "Pagar con PayPal" : "Pay with PayPal"
+
+  const processingLabel =
+    locale === "pt" ? "Processando..." : locale === "es" ? "Procesando..." : "Processing..."
+
+  const { items } = useCart() as { items: CartItem[] }
+  const [isProcessing, setIsProcessing] = useState(false)
+
+  const [formData, setFormData] = useState<ShippingInfo>({
     firstName: "",
     lastName: "",
     email: "",
+    phone: "",
     address: "",
     city: "",
+    state: "",
     zipCode: "",
+    country: "Spain",
   })
 
-  const [isSubmitting, setIsSubmitting] = useState<"card" | "paypal" | null>(null)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if (!items || items.length === 0) router.replace("/cart")
+  }, [items, router])
 
-  // Regras de frete
-  const freeShippingThreshold = 50
-  const shipping = totalPrice >= freeShippingThreshold ? 0 : 5.99
-  const total = totalPrice + shipping
+  const subtotal = useMemo(() => {
+    return (items || []).reduce((sum, it) => {
+      const price = safeNumber(it.price)
+      const qty = safeNumber(it.quantity)
+      return sum + price * qty
+    }, 0)
+  }, [items])
 
-  const isCartEmpty = items.length === 0
+  const shipping = subtotal >= 50 ? 0 : 5.99
+  const total = useMemo(() => subtotal + shipping, [subtotal, shipping])
 
-  const labels = useMemo(() => {
-    const isPT = locale === "pt"
-    const isES = locale === "es"
-
-    return {
-      pageTitle: isPT ? "Checkout" : isES ? "Checkout" : "Checkout",
-      shippingTitle: isPT ? "Dados de envio" : isES ? "Datos de envío" : "Shipping details",
-      firstName: isPT ? "Nome" : isES ? "Nombre" : "First name",
-      lastName: isPT ? "Apelidos" : isES ? "Apellidos" : "Last name",
-      email: "Email",
-      address: isPT ? "Endereço" : isES ? "Dirección" : "Address",
-      city: isPT ? "Cidade" : isES ? "Ciudad" : "City",
-      zip: isPT ? "Código postal" : isES ? "Código postal" : "ZIP code",
-      emptyCart: isPT ? "Seu carrinho está vazio." : isES ? "Tu carrito está vacío." : "Your cart is empty.",
-      viewProducts: isPT ? "Ver produtos" : isES ? "Ver productos" : "View products",
-      fillShipping: isPT
-        ? "Complete os dados de envio para continuar."
-        : isES
-          ? "Completa los datos de envío para continuar."
-          : "Fill in shipping details to continue.",
-      cannotStart: isPT
-        ? "Não foi possível iniciar o pagamento. Tente novamente em alguns segundos."
-        : isES
-          ? "No se pudo iniciar el pago. Intenta de nuevo en unos segundos."
-          : "Could not start payment. Try again in a few seconds.",
-
-      summaryTitle: isPT ? "Resumo" : isES ? "Resumen" : "Summary",
-      subtotal: isPT ? "Subtotal" : isES ? "Subtotal" : "Subtotal",
-      shipping: isPT ? "Envio" : isES ? "Envío" : "Shipping",
-      free: isPT ? "Grátis" : isES ? "Gratis" : "Free",
-      total: isPT ? "Total" : isES ? "Total" : "Total",
-
-      payCard: isPT ? "Pagar com cartão" : isES ? "Pagar con tarjeta" : "Pay with card",
-      payPaypal: isPT ? "Pagar com PayPal" : isES ? "Pagar con PayPal" : "Pay with PayPal",
-      secure: isPT ? "Pagamento seguro" : isES ? "Pago seguro" : "Secure payment",
-    }
-  }, [locale])
-
-  const canPay = useMemo(() => {
-    if (isCartEmpty) return false
+  const canSubmit = useMemo(() => {
     return (
+      (items?.length ?? 0) > 0 &&
       formData.firstName.trim() &&
       formData.lastName.trim() &&
       formData.email.trim() &&
+      formData.phone.trim() &&
       formData.address.trim() &&
       formData.city.trim() &&
-      formData.zipCode.trim()
+      formData.state.trim() &&
+      formData.zipCode.trim() &&
+      formData.country.trim()
     )
-  }, [formData, isCartEmpty])
+  }, [items, formData])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }))
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const { id, value } = e.target
+    setFormData((prev) => ({ ...prev, [id]: value }))
   }
 
-  async function startPayment(provider: "card" | "paypal") {
-    setErrorMsg(null)
-
-    if (isCartEmpty) {
-      setErrorMsg(labels.emptyCart)
+  // =========================
+  // STRIPE (DO NOT TOUCH API)
+  // =========================
+  const handleCheckout = async () => {
+    if (!canSubmit) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all fields before paying.",
+        variant: "destructive",
+      })
       return
     }
 
-    if (!canPay) {
-      setErrorMsg(labels.fillShipping)
-      return
-    }
-
+    setIsProcessing(true)
     try {
-      setIsSubmitting(provider)
-
-      const res = await fetch("/api/checkout", {
+      const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          provider, // ✅ "card" | "paypal"
-          customer: formData,
-          locale,
-          items: items.map((i) => ({
-            productId: i.product.id,
-            name:
-              (i.product.name as any)?.[locale] ??
-              (i.product.name as any)?.es ??
-              (i.product.name as any)?.en ??
-              "Producto",
-            quantity: i.quantity,
-            unitPrice: i.price,
-            selectedColor: i.selectedColor,
-            selectedSize: i.selectedSize,
-            selectedMaterial: i.selectedMaterial,
-            selectedImage: (i as any).selectedImage ?? i.product.image ?? null,
+          items: (items || []).map((item) => ({
+            product: item.product,
+            price: item.price,
+            quantity: item.quantity,
+            selectedColor: item.selectedColor,
+            selectedSize: item.selectedSize,
+            selectedMaterial: item.selectedMaterial,
           })),
-          totals: {
-            subtotal: totalPrice,
-            shipping,
-            total,
-            currency: "EUR",
-          },
+          userId: null,
+          shippingInfo: formData,
+          // ✅ importante: também envia o idioma atual
+          locale,
         }),
       })
 
-      if (!res.ok) {
-        const txt = await res.text().catch(() => "")
-        throw new Error(txt || labels.cannotStart)
+      const data = await response.json()
+
+      if (!response.ok) throw new Error(data?.error || "Failed to create Stripe checkout.")
+      if (!data?.url) {
+        console.log("Stripe response:", data)
+        throw new Error("Stripe checkout URL is missing.")
       }
 
-      const data = (await res.json()) as { url?: string; redirectUrl?: string }
-      const url = data.url || data.redirectUrl
-      if (!url) throw new Error(labels.cannotStart)
-
-      window.location.href = url
-    } catch (err: any) {
-      setErrorMsg(err?.message || labels.cannotStart)
+      window.location.href = data.url
+    } catch (error) {
+      console.error("Checkout error:", error)
+      toast({
+        title: "Payment failed",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      })
     } finally {
-      setIsSubmitting(null)
+      setIsProcessing(false)
     }
   }
+
+  // =========================
+  // PAYPAL (DO NOT TOUCH API)
+  // =========================
+  const handlePayPalCheckout = async () => {
+    if (!canSubmit) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all fields before paying.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      const response = await fetch("/api/paypal/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: (items || []).map((item) => ({
+            product: item.product,
+            price: item.price,
+            quantity: item.quantity,
+            selectedColor: item.selectedColor,
+            selectedSize: item.selectedSize,
+            selectedMaterial: item.selectedMaterial,
+          })),
+          userId: null,
+          shippingInfo: formData,
+          // ✅ aqui é o que faz o PayPal seguir o idioma do checkout
+          locale,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) throw new Error(data?.error || "Failed to create PayPal order.")
+      if (!data?.approveUrl) {
+        console.log("PayPal response:", data)
+        throw new Error("PayPal approval URL is missing.")
+      }
+
+      window.location.href = data.approveUrl
+    } catch (error) {
+      console.error("PayPal checkout error:", error)
+      toast({
+        title: "Payment failed",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  if (!items || items.length === 0) return null
 
   return (
     <main className="min-h-screen">
       <Navbar />
 
-      <div className="pt-24 pb-12 container mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8">{labels.pageTitle}</h1>
+      <div className="pt-24 pb-12">
+        <div className="container mx-auto px-4">
+          <h1 className="text-4xl font-bold mb-8">Checkout</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Envío */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{labels.shippingTitle}</CardTitle>
-              </CardHeader>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t.checkout.shippingInfo}</CardTitle>
+                </CardHeader>
 
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">{labels.firstName}</Label>
-                    <Input id="firstName" value={formData.firstName} onChange={handleInputChange} required />
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="firstName">{t.checkout.firstName}</Label>
+                      <Input id="firstName" value={formData.firstName} onChange={handleInputChange} required />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="lastName">{t.checkout.lastName}</Label>
+                      <Input id="lastName" value={formData.lastName} onChange={handleInputChange} required />
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">{labels.lastName}</Label>
-                    <Input id="lastName" value={formData.lastName} onChange={handleInputChange} required />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">{labels.email}</Label>
-                  <Input id="email" type="email" value={formData.email} onChange={handleInputChange} required />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="address">{labels.address}</Label>
-                  <Input id="address" value={formData.address} onChange={handleInputChange} required />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city">{labels.city}</Label>
-                    <Input id="city" value={formData.city} onChange={handleInputChange} required />
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" value={formData.email} onChange={handleInputChange} required />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="zipCode">{labels.zip}</Label>
-                    <Input id="zipCode" value={formData.zipCode} onChange={handleInputChange} required />
+                  <div>
+                    <Label htmlFor="phone">{t.checkout.phone}</Label>
+                    <Input id="phone" value={formData.phone} onChange={handleInputChange} required />
                   </div>
-                </div>
 
-                {errorMsg && (
-                  <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm">
-                    <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
-                    <div className="text-destructive break-words">{errorMsg}</div>
+                  <div>
+                    <Label htmlFor="address">{t.checkout.address}</Label>
+                    <Input id="address" value={formData.address} onChange={handleInputChange} required />
                   </div>
-                )}
 
-                {isCartEmpty && (
-                  <div className="text-sm text-muted-foreground">
-                    {labels.emptyCart}{" "}
-                    <Button variant="link" className="px-0" onClick={() => router.push("/products")}>
-                      {labels.viewProducts}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="city">{t.checkout.city}</Label>
+                      <Input id="city" value={formData.city} onChange={handleInputChange} required />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="state">{t.checkout.state}</Label>
+                      <Input id="state" value={formData.state} onChange={handleInputChange} required />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="zipCode">{t.checkout.zipCode}</Label>
+                      <Input id="zipCode" value={formData.zipCode} onChange={handleInputChange} required />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="country">{t.checkout.country}</Label>
+                      <Input id="country" value={formData.country} onChange={handleInputChange} required />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t.checkout.orderSummary}</CardTitle>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    {items.map((it, idx) => {
+                      type NameObj = { en?: string; pt?: string; es?: string }
+                      const loc = (locale === "pt" || locale === "es" || locale === "en" ? locale : "en") as keyof NameObj
+
+                      const name =
+                        typeof it.product?.name === "object"
+                          ? ((it.product?.name as NameObj)[loc] ?? (it.product?.name as NameObj).en ?? "")
+                          : (it.product?.name ?? "")
+
+                      const qty = safeNumber(it.quantity)
+                      const price = safeNumber(it.price)
+
+                      return (
+                        <div key={idx} className="flex items-center justify-between gap-3">
+                          <div className="text-sm">
+                            <div className="font-medium">{name || "Product"}</div>
+                            <div className="opacity-70">
+                              Qty: {qty} × € {to2(price)}
+                            </div>
+                          </div>
+                          <div className="font-medium">€ {to2(price * qty)}</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  <div className="border-t pt-4 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>{t.cart.subtotal}</span>
+                      <span>€ {to2(subtotal)}</span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span>{t.cart.shipping}</span>
+                      <span>€ {to2(shipping)}</span>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4 flex justify-between items-center">
+                    <span className="text-lg font-semibold">Total</span>
+                    <span className="text-xl font-bold">€ {to2(total)}</span>
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    <Button
+                      type="button"
+                      className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg"
+                      disabled={isProcessing || !canSubmit}
+                      onClick={handleCheckout}
+                    >
+                      {isProcessing ? processingLabel : payCardLabel}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      className="w-full h-12 bg-[#0070ba] hover:bg-[#003087] text-white font-semibold transition-all"
+                      disabled={isProcessing || !canSubmit}
+                      onClick={handlePayPalCheckout}
+                    >
+                      {payPalLabel}
                     </Button>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+
+                  {!canSubmit ? (
+                    <p className="text-xs opacity-70">Fill in all fields to enable payment.</p>
+                  ) : (
+                    <p className="text-xs text-center text-muted-foreground">🔒 Secure payment • Encrypted checkout • No card data stored</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
-
-          {/* Resumen + Pago */}
-          <Card className="h-fit">
-            <CardHeader>
-              <CardTitle>{labels.summaryTitle}</CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              {items.map((item, idx) => (
-                <div key={idx} className="flex justify-between text-sm gap-4">
-                  <span className="line-clamp-2">
-                    {item.quantity}x{" "}
-                    {(item.product.name as any)?.[locale] || (item.product.name as any)?.es || "Producto"}
-                  </span>
-                  <span className="shrink-0">{formatCurrency(item.price * item.quantity, locale)}</span>
-                </div>
-              ))}
-
-              <Separator />
-
-              {/* ✅ Subtotal */}
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{labels.subtotal}</span>
-                <span>{formatCurrency(totalPrice, locale)}</span>
-              </div>
-
-              {/* ✅ Envío (isso estava faltando aparecer) */}
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{labels.shipping}</span>
-                <span>{shipping === 0 ? labels.free : formatCurrency(shipping, locale)}</span>
-              </div>
-
-              <Separator />
-
-              <div className="flex justify-between font-bold text-lg text-primary">
-                <span>{labels.total}</span>
-                <span>{formatCurrency(total, locale)}</span>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <Button
-                  className="w-full"
-                  size="lg"
-                  onClick={() => startPayment("card")}
-                  disabled={!canPay || isSubmitting !== null}
-                >
-                  <CreditCard className="h-5 w-5 mr-2" />
-                  {labels.payCard}
-                </Button>
-
-              <Button
-               className="w-full bg-[#003087] hover:bg-[#00256e] text-white"
-               size="lg"
-               onClick={() => startPayment("paypal")}
-               disabled={!canPay || isSubmitting !== null}
-               >
-              <Wallet className="h-5 w-5 mr-2" />
-              {labels.payPaypal}
-             </Button>
-
-                <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2">
-                  <Lock className="h-4 w-4" />
-                  <span>{labels.secure}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
 

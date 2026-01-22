@@ -12,30 +12,18 @@ import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, CheckCircle } from "lucide-react"
 import type { Product } from "@/lib/products"
 
-type ColorImage = {
-  color?: string
-  hex?: string
-  url?: string
-  imageUrl?: string
-  image_url?: string
-  name?: string
-  colorName?: string
-  label?: string
-}
+type ColorImage = { color?: string; hex?: string; url?: string; imageUrl?: string; image_url?: string }
 
 interface ProductCustomizerProps {
   product: Product
-  onVariantChange?: (v: {
-    color: string
-    colorName: string
-    size: string
-    material: string
-    price: number
-    image: string
-  }) => void
+  onVariantChange?: (v: { color: string; colorName: string; size: string; material: string; price: number; image: string }) => void
+
+  // ✅ vindo da galeria (ProductDetailClient)
   selectedColorHex?: string
   selectedColorName?: string
   selectedImageUrl?: string
+
+  // ✅ para esconder qualquer UI de cor
   hideColorButtons?: boolean
 }
 
@@ -52,71 +40,6 @@ const toArray = (v: any): string[] => {
   return []
 }
 
-function hexToBasicColorKey(hexRaw?: string) {
-  const hex = normalizeHex(hexRaw).toLowerCase()
-  if (!hex) return ""
-
-  // Normaliza #RGB -> #RRGGBB
-  const h = hex.startsWith("#") ? hex : `#${hex}`
-  const full =
-    h.length === 4
-      ? `#${h[1]}${h[1]}${h[2]}${h[2]}${h[3]}${h[3]}`
-      : h
-
-  // Mapeia cores comuns (inclui variações bem usadas)
-  const map: Record<string, string> = {
-    "#ff0000": "red",
-    "#e53935": "red",
-    "#d32f2f": "red",
-
-    "#ffff00": "yellow",
-    "#ffeb3b": "yellow",
-    "#f1c40f": "yellow",
-    "#fdd835": "yellow",
-
-    "#000000": "black",
-    "#111111": "black",
-
-    "#ffffff": "white",
-    "#f5f5f5": "white",
-
-    "#212121": "gray",
-    "#808080": "gray",
-    "#9e9e9e": "gray",
-  }
-
-  return map[full] || ""
-}
-
-function translateBasicColor(key: string, locale: string) {
-  if (!key) return ""
-  const es: Record<string, string> = {
-    red: "Rojo",
-    yellow: "Amarillo",
-    black: "Negro",
-    white: "Blanco",
-    gray: "Gris",
-  }
-  const pt: Record<string, string> = {
-    red: "Vermelho",
-    yellow: "Amarelo",
-    black: "Preto",
-    white: "Branco",
-    gray: "Cinza",
-  }
-  const en: Record<string, string> = {
-    red: "Red",
-    yellow: "Yellow",
-    black: "Black",
-    white: "White",
-    gray: "Gray",
-  }
-
-  if (locale === "es") return es[key] || ""
-  if (locale === "pt") return pt[key] || ""
-  return en[key] || ""
-}
-
 export function ProductCustomizer({
   product,
   onVariantChange,
@@ -128,14 +51,19 @@ export function ProductCustomizer({
   const { t, locale } = useLanguage()
   const { addItem } = useCart()
 
+  // ---- Normaliza campos que às vezes vêm como string do banco
   const colors = useMemo(() => toArray((product as any).colors), [product])
   const sizes = useMemo(() => toArray((product as any).sizes), [product])
   const materials = useMemo(() => toArray((product as any).materials), [product])
 
-  const baseImage = useMemo(() => {
-    return (product as any).image_url || (product as any).imageUrl || (product as any).image || "/placeholder.svg"
-  }, [product])
+  // ---- base image principal (pode vir como image_url, imageUrl ou image)
+  const baseImage =
+    (product as any).image_url ||
+    (product as any).imageUrl ||
+    (product as any).image ||
+    "/placeholder.svg"
 
+  // ---- color_images vindo do admin (array de {color, url})
   const colorImages: ColorImage[] = useMemo(() => {
     const raw = (product as any).color_images || (product as any).colorImages || []
     return Array.isArray(raw) ? raw : []
@@ -147,166 +75,203 @@ export function ProductCustomizer({
     return found?.url || found?.imageUrl || found?.image_url || baseImage
   }
 
-  const getNameForColor = (hex: string) => {
-    const key = normalizeHex(hex).toLowerCase()
-    const found = colorImages.find((ci) => normalizeHex(ci.color || ci.hex).toLowerCase() === key)
-
-    // 1) se tiver nome vindo dos dados, usa
-    const direct = (found?.name || found?.colorName || found?.label || "").trim()
-    if (direct) return direct
-
-    // 2) tenta inferir pelo HEX (resolve o caso do AMARILLO)
-    const basicKey = hexToBasicColorKey(hex)
-    const translated = translateBasicColor(basicKey, locale)
-    if (translated) return translated
-
-    return ""
+  const materialPrices: Record<string, number> = {
+    PLA: 0,
+    ABS: 5,
+    PETG: 8,
   }
 
-  // ✅ Preços (PETG sem acréscimo)
-  const materialPrices: Record<string, number> = { PLA: 0, ABS: 5, PETG: 0 }
-  const sizePrices: Record<string, number> = { Small: 0, Medium: 5, Large: 10, Standard: 0, "19cm": 0 }
+  const sizePrices: Record<string, number> = {
+    Small: 0,
+    Medium: 5,
+    Large: 10,
+    Standard: 0,
+    "19cm": 0,
+  }
 
   const basePrice = safeNumber((product as any).basePrice ?? (product as any).base_price ?? (product as any).price)
+
   const getMaterialExtra = (material: string) => materialPrices[material] ?? 0
   const getSizeExtra = (size: string) => sizePrices[size] ?? 0
 
   const storageKey = `np3d:product:${(product as any).id}:variant`
 
+  // defaults seguros
   const defaultColor = colors[0] || "#000000"
   const defaultSize = sizes[0] || "Standard"
   const defaultMaterial = materials[0] || "PLA"
+  const defaultImage = getImageForColor(defaultColor)
+  const defaultColorName = selectedColorName || ""
 
   const [selectedColor, setSelectedColor] = useState<string>(selectedColorHex || defaultColor)
   const [selectedSize, setSelectedSize] = useState<string>(defaultSize)
   const [selectedMaterial, setSelectedMaterial] = useState<string>(defaultMaterial)
-  const [selectedImage, setSelectedImage] = useState<string>(selectedImageUrl || getImageForColor(defaultColor))
-  const [colorName, setColorName] = useState<string>(selectedColorName || getNameForColor(selectedColorHex || defaultColor) || "")
-  const [quantity] = useState(1)
+  const [selectedImage, setSelectedImage] = useState<string>(selectedImageUrl || defaultImage)
+  const [colorName, setColorName] = useState<string>(selectedColorName || defaultColorName)
+
+  const [quantity, setQuantity] = useState(1)
   const [isAdded, setIsAdded] = useState(false)
 
   const totalPrice = basePrice + getMaterialExtra(selectedMaterial) + getSizeExtra(selectedSize)
 
   const notifyVariantChange = (color: string, cName: string, size: string, material: string, image: string) => {
-    onVariantChange?.({
-      color,
-      colorName: cName,
-      size,
-      material,
-      price: basePrice + getMaterialExtra(material) + getSizeExtra(size),
-      image,
-    })
+    const price = basePrice + getMaterialExtra(material) + getSizeExtra(size)
+    onVariantChange?.({ color, colorName: cName, size, material, price, image })
   }
 
-  // ✅ Sempre que trocar cor (mesmo sem nome vindo por props), calcula o nome (resolve AMARILLO)
+  const persist = (next: { color: string; colorName: string; size: string; material: string; image: string }) => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(next))
+    } catch {}
+  }
+
+  // ✅ 1) Ao montar: carrega do storage (se existir), mas PRIORIDADE é o que vem da galeria (props)
   useEffect(() => {
-    const computed = getNameForColor(selectedColor)
-    if (computed && computed !== colorName) {
-      setColorName(computed)
-      notifyVariantChange(selectedColor, computed, selectedSize, selectedMaterial, selectedImage)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedColor, locale])
-
-  // Sincronização quando vem da galeria (miniatura)
-  useEffect(() => {
-    if (selectedImageUrl || selectedColorHex) {
-      const nextColor = selectedColorHex || selectedColor
-      const nextImg = selectedImageUrl || getImageForColor(nextColor)
-      const nextName =
-        (selectedColorName || "").trim() ||
-        getNameForColor(nextColor) ||
-        colorName
-
-      setSelectedImage(nextImg)
-      setSelectedColor(nextColor)
-      setColorName(nextName)
-
-      notifyVariantChange(nextColor, nextName, selectedSize, selectedMaterial, nextImg)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedColorHex, selectedImageUrl, selectedColorName])
-
-  // Carregamento Inicial
-  useEffect(() => {
-    const saved = localStorage.getItem(storageKey)
-    if (saved && !selectedImageUrl) {
-      try {
-        const parsed = JSON.parse(saved)
-        setSelectedSize(parsed.size || defaultSize)
-        setSelectedMaterial(parsed.material || defaultMaterial)
-      } catch {
-        // ignore
+    try {
+      const saved = localStorage.getItem(storageKey)
+      if (!saved) {
+        const c = selectedColorHex || defaultColor
+        const img = selectedImageUrl || getImageForColor(c)
+        const cName = selectedColorName || ""
+        setSelectedColor(c)
+        setSelectedImage(img)
+        setColorName(cName)
+        notifyVariantChange(c, cName, defaultSize, defaultMaterial, img)
+        return
       }
+
+      const parsed = JSON.parse(saved) as { color?: string; colorName?: string; size?: string; material?: string; image?: string }
+
+      const c = selectedColorHex || (parsed.color && colors.includes(parsed.color) ? parsed.color : defaultColor)
+      const s = parsed.size && sizes.includes(parsed.size) ? parsed.size : defaultSize
+      const m = parsed.material && materials.includes(parsed.material) ? parsed.material : defaultMaterial
+      const img = selectedImageUrl || parsed.image || getImageForColor(c)
+      const cName = selectedColorName || parsed.colorName || ""
+
+      setSelectedColor(c)
+      setSelectedSize(s)
+      setSelectedMaterial(m)
+      setSelectedImage(img)
+      setColorName(cName)
+
+      notifyVariantChange(c, cName, s, m, img)
+    } catch {
+      const c = selectedColorHex || defaultColor
+      const img = selectedImageUrl || getImageForColor(c)
+      const cName = selectedColorName || ""
+      notifyVariantChange(c, cName, defaultSize, defaultMaterial, img)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // ✅ 2) Sempre que a galeria mudar a seleção (props), sincroniza aqui
+  useEffect(() => {
+    if (!selectedColorHex && !selectedImageUrl && !selectedColorName) return
+
+    const nextColor = selectedColorHex || selectedColor
+    const nextImage = selectedImageUrl || selectedImage
+    const nextName = selectedColorName || colorName
+
+    setSelectedColor(nextColor)
+    setSelectedImage(nextImage)
+    setColorName(nextName)
+
+    persist({
+      color: nextColor,
+      colorName: nextName,
+      size: selectedSize,
+      material: selectedMaterial,
+      image: nextImage,
+    })
+
+    notifyVariantChange(nextColor, nextName, selectedSize, selectedMaterial, nextImage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedColorHex, selectedImageUrl, selectedColorName])
+
+  const handleSizeChange = (size: string) => {
+    setSelectedSize(size)
+    persist({ color: selectedColor, colorName, size, material: selectedMaterial, image: selectedImage })
+    notifyVariantChange(selectedColor, colorName, size, selectedMaterial, selectedImage)
+  }
+
+  const handleMaterialChange = (material: string) => {
+    setSelectedMaterial(material)
+    persist({ color: selectedColor, colorName, size: selectedSize, material, image: selectedImage })
+    notifyVariantChange(selectedColor, colorName, selectedSize, material, selectedImage)
+  }
 
   const handleAddToCart = () => {
     addItem({
       product,
       quantity,
-      selectedColor,
-      selectedColorName: colorName,
+      selectedColor, // HEX
+      selectedColorName: colorName, // ✅ NOME (vermelho, preto...)
       selectedSize,
       selectedMaterial,
       price: totalPrice,
-      selectedImage,
+      selectedImage, // ✅ IMAGEM DA COR
     } as any)
 
     setIsAdded(true)
     setTimeout(() => setIsAdded(false), 2000)
   }
 
-  const shouldShowSize = sizes.length > 1 // ✅ remove o “Standard” quando só existe 1 tamanho
-
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
       <CardContent className="p-6 space-y-6">
+        {/* ✅ Sem bolinhas de cor. Só mostramos o nome da cor escolhida (vindo da imagem). */}
         <div>
           <Label className="text-base font-bold mb-2 block">{t.customizer.color}</Label>
           <div className="text-sm text-muted-foreground">
             {colorName ? (
               <span className="font-medium text-foreground">{colorName}</span>
             ) : (
-              <span className="italic">{t.products.selectColorHint}</span>
+            <span className="italic">
+  {t.products.selectColorHint}
+</span>
+
             )}
           </div>
+
+          {/* Se você quiser manter “ver” o hex internamente, pode deixar isso escondido */}
+          {!hideColorButtons && (
+            <div className="mt-3 text-xs text-muted-foreground">
+              HEX: <span className="font-mono">{selectedColor}</span>
+            </div>
+          )}
         </div>
 
-        {shouldShowSize && (
-          <div>
-            <Label className="text-base font-bold mb-3 block">{t.customizer.size}</Label>
-            <RadioGroup value={selectedSize} onValueChange={setSelectedSize} className="flex flex-wrap gap-3">
-              {sizes.map((size) => (
-                <div key={size} className="relative">
-                  <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" />
-                  <Label
-                    htmlFor={`size-${size}`}
-                    className="flex items-center justify-center px-4 py-2 rounded-lg border-2 border-border cursor-pointer transition-all hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground"
-                  >
-                    {size}
-                    {(sizePrices[size] ?? 0) > 0 && (
-                      <Badge variant="secondary" className="ml-2">
-                        +{formatCurrency(sizePrices[size], locale)}
-                      </Badge>
-                    )}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-        )}
+        <div>
+          <Label className="text-base font-bold mb-3 block">{t.customizer.size}</Label>
+          <RadioGroup value={selectedSize} onValueChange={handleSizeChange} className="flex flex-wrap gap-3">
+            {sizes.map((size) => (
+              <div key={size} className="relative">
+                <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" />
+                <Label
+                  htmlFor={`size-${size}`}
+                  className="flex items-center justify-center px-4 py-2 rounded-lg border-2 border-border cursor-pointer transition-all duration-200 hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground"
+                >
+                  {size}
+                  {(sizePrices[size] ?? 0) > 0 && (
+                    <Badge variant="secondary" className="ml-2">
+                      +{formatCurrency(sizePrices[size], locale)}
+                    </Badge>
+                  )}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
 
         <div>
           <Label className="text-base font-bold mb-3 block">{t.customizer.material}</Label>
-          <RadioGroup value={selectedMaterial} onValueChange={setSelectedMaterial} className="space-y-3">
+          <RadioGroup value={selectedMaterial} onValueChange={handleMaterialChange} className="space-y-3">
             {materials.map((material) => (
               <div key={material} className="relative">
                 <RadioGroupItem value={material} id={`material-${material}`} className="peer sr-only" />
                 <Label
                   htmlFor={`material-${material}`}
-                  className="flex items-center justify-between p-4 rounded-lg border-2 border-border cursor-pointer transition-all hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
+                  className="flex items-center justify-between p-4 rounded-lg border-2 border-border cursor-pointer transition-all duration-200 hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
                 >
                   <span className="font-medium">{material}</span>
                   {(materialPrices[material] ?? 0) > 0 && (
@@ -318,24 +283,49 @@ export function ProductCustomizer({
           </RadioGroup>
         </div>
 
+        <div>
+          <Label className="text-base font-bold mb-3 block">{t.customizer.quantity}</Label>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              className="h-10 w-10"
+            >
+              -
+            </Button>
+            <div className="flex-1 text-center">
+              <span className="text-2xl font-bold">{quantity}</span>
+            </div>
+            <Button variant="outline" size="icon" onClick={() => setQuantity(quantity + 1)} className="h-10 w-10">
+              +
+            </Button>
+          </div>
+        </div>
+
         <div className="border-t border-border pt-6">
           <div className="flex items-center justify-between mb-6">
             <span className="text-lg font-medium text-muted-foreground">{t.customizer.totalPrice}</span>
-            <span className="text-3xl font-bold text-primary">{formatCurrency(totalPrice * quantity, locale)}</span>
+            <span className="text-3xl font-bold text-primary">
+              {formatCurrency(totalPrice * quantity, locale)}
+            </span>
           </div>
 
           <Button size="lg" className="w-full group relative overflow-hidden" onClick={handleAddToCart} disabled={isAdded}>
             <span className="relative z-10 flex items-center justify-center gap-2">
               {isAdded ? (
                 <>
-                  <CheckCircle className="w-5 h-5" /> {t.customizer.addedToCart}
+                  <CheckCircle className="w-5 h-5" />
+                  {t.customizer.addedToCart}
                 </>
               ) : (
                 <>
-                  <ShoppingCart className="w-5 h-5" /> {t.products.addToCart}
+                  <ShoppingCart className="w-5 h-5" />
+                  {t.products.addToCart}
                 </>
               )}
             </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </Button>
         </div>
       </CardContent>
