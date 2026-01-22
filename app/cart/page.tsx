@@ -10,22 +10,30 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Trash2, ShoppingBag, ArrowRight } from "lucide-react"
 import Link from "next/link"
 
-const COLOR_NAME_MAP: Record<string, string> = {
- 
+type ColorLabel = { pt: string; en: string; es: string }
+
+const COLOR_NAME_MAP: Record<string, ColorLabel> = {
   "000000": { pt: "Preto", en: "Black", es: "Negro" },
-    "ffffff": { pt: "Branco", en: "White", es: "Blanco" },
-    "f5f5f5": { pt: "Branco", en: "White", es: "Blanco" },
-    "d32f2f": { pt: "Vermelho", en: "Red", es: "Rojo" },
-    "ff0000": { pt: "Vermelho", en: "Red", es: "Rojo" },
-    "212121": { pt: "Cinza", en: "Gray", es: "Gris" },
-    "808080": { pt: "Cinza", en: "Gray", es: "Gris" },
-    "fbc02d": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
-  
+  "ffffff": { pt: "Branco", en: "White", es: "Blanco" },
+  "f5f5f5": { pt: "Branco", en: "White", es: "Blanco" },
+  "d32f2f": { pt: "Vermelho", en: "Red", es: "Rojo" },
+  "ff0000": { pt: "Vermelho", en: "Red", es: "Rojo" },
+  "212121": { pt: "Cinza", en: "Gray", es: "Gris" },
+  "808080": { pt: "Cinza", en: "Gray", es: "Gris" },
+  "fbc02d": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
 }
 
-function getColorName(color?: string) {
+function normalizeHex(color?: string) {
   if (!color) return ""
-  return COLOR_NAME_MAP[color.toLowerCase()] ?? color
+  return color.trim().toLowerCase().replace("#", "")
+}
+
+function getColorName(color: string | undefined, locale: "pt" | "en" | "es") {
+  if (!color) return ""
+  const key = normalizeHex(color)
+  const label = COLOR_NAME_MAP[key]
+  if (!label) return color // fallback: mostra o hex mesmo
+  return (label[locale] || label.pt || "").trim()
 }
 
 export default function CartPage() {
@@ -116,6 +124,8 @@ export default function CartPage() {
                           src={(item as any).selectedImage || item.product.image || "/placeholder.svg"}
                           alt={item.product.name?.[locale] ?? item.product.name?.en ?? "Product"}
                           className="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
                         />
                       </div>
 
@@ -146,7 +156,7 @@ export default function CartPage() {
                         <div className="flex flex-wrap gap-4 mb-4 text-sm">
                           <div>
                             <span className="text-muted-foreground">{t.cart.color}:</span>{" "}
-                            <span className="font-medium">{getColorName(item.selectedColor)}</span>
+                            <span className="font-medium">{getColorName(item.selectedColor, locale)}</span>
                           </div>
 
                           <div>
