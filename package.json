@@ -13,6 +13,11 @@
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
   },
+  "pnpm": {
+    "overrides": {
+      "@aws-sdk/region-config-resolver": "3.972.0"
+    }
+  },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@neondatabase/serverless": "latest",
