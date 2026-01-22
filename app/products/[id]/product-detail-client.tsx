@@ -39,9 +39,8 @@ const colorNameFromHex = (hexNoHash: string) => {
     "ffd700": { pt: "Dourado", en: "Gold", es: "Dorado" },
     "ffc107": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
     "ffeb3b": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
-
-    // ✅ SEU AMARELO do admin (#FBC02D)
     "fbc02d": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
+  
   }
 
   return map[h] ?? { pt: "", en: "", es: "" }
