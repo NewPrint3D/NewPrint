@@ -26,7 +26,6 @@ type ProductName = {
 
 type Product = {
   id: string | number
-  // compatibilidade com seu backend (pode vir name string ou name objeto)
   name?: ProductName | string
   name_pt?: string
   name_es?: string
@@ -39,12 +38,23 @@ type Product = {
   image_url?: string
   image?: string
 
-  // cores (se existir)
   colors?: Array<{ name?: string; hex?: string; image?: string; image_url?: string }>
 }
 
 function isValidHex(hex: string) {
   return /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/.test(hex.trim())
+}
+
+// ✅ não depende do seu lib/intl (evita erro no build)
+function formatMoneyEUR(value: number, locale: string) {
+  const safe = Number.isFinite(value) ? value : 0
+  try {
+    const tag =
+      locale === "pt" ? "pt-PT" : locale === "es" ? "es-ES" : "en-US"
+    return new Intl.NumberFormat(tag, { style: "currency", currency: "EUR" }).format(safe)
+  } catch {
+    return `${safe.toFixed(2)} €`
+  }
 }
 
 export default function EditProductPage() {
@@ -68,7 +78,7 @@ export default function EditProductPage() {
       sectionColors: locale === "pt" ? "Cores (HEX)" : locale === "es" ? "Colores (HEX)" : "Colors (HEX)",
       namePt: locale === "pt" ? "Nome (PT)" : "Name (PT)",
       nameEs: locale === "es" ? "Nombre (ES)" : "Name (ES)",
-      nameEn: locale === "en" ? "Name (EN)" : "Name (EN)",
+      nameEn: "Name (EN)",
       price: locale === "pt" ? "Preço base (EUR)" : locale === "es" ? "Precio base (EUR)" : "Base price (EUR)",
       imageUrl: locale === "pt" ? "URL da imagem principal" : locale === "es" ? "URL de la imagen principal" : "Main image URL",
       colorsHelper:
@@ -118,7 +128,6 @@ export default function EditProductPage() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
-  // form state (profissional e compatível)
   const [namePt, setNamePt] = useState("")
   const [nameEs, setNameEs] = useState("")
   const [nameEn, setNameEn] = useState("")
@@ -159,7 +168,6 @@ export default function EditProductPage() {
 
       const data: Product = await res.json()
 
-      // nome (aceita vários formatos)
       const nameObj = typeof data.name === "object" && data.name ? (data.name as ProductName) : null
       const nameStr = typeof data.name === "string" ? data.name : ""
 
@@ -216,7 +224,6 @@ export default function EditProductPage() {
     setError(null)
     setNotice(null)
 
-    // valida hexes
     const bad = colors.find((c) => c.hex && !isValidHex(c.hex))
     if (bad) {
       setError(ui.invalidHex)
@@ -227,7 +234,6 @@ export default function EditProductPage() {
     try {
       const token = localStorage.getItem("auth_token")
 
-      // Payload compatível (envia várias chaves pra não quebrar o backend atual)
       const payload = {
         id,
         name: { pt: namePt, es: nameEs, en: nameEn },
@@ -239,9 +245,7 @@ export default function EditProductPage() {
         price,
         image_url: imageUrl,
         image: imageUrl,
-        colors: colors
-          .filter((c) => c.name || c.hex)
-          .map((c) => ({ name: c.name.trim(), hex: c.hex.trim() })),
+        colors: colors.filter((c) => c.name || c.hex).map((c) => ({ name: c.name.trim(), hex: c.hex.trim() })),
       }
 
       const res = await fetch(`/api/products/${id}`, {
@@ -292,7 +296,6 @@ export default function EditProductPage() {
 
       <div className="pt-24 pb-12">
         <div className="container mx-auto px-4">
-          {/* header */}
           <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h1 className="text-4xl font-bold">{ui.title}</h1>
@@ -337,7 +340,6 @@ export default function EditProductPage() {
           ) : null}
 
           <div className="grid gap-6 lg:grid-cols-3">
-            {/* Coluna principal */}
             <div className="lg:col-span-2 space-y-6">
               <Card className="border-border/60 bg-card/60 backdrop-blur-sm">
                 <CardHeader>
@@ -379,7 +381,7 @@ export default function EditProductPage() {
                 <CardContent className="space-y-3">
                   {colors.length ? (
                     colors.map((c, idx) => (
-                      <div key={idx} className="grid gap-3 md:grid-cols-[1fr_180px_120px] items-end">
+                      <div key={idx} className="grid gap-3 md:grid-cols-[1fr_180px_140px] items-end">
                         <div className="space-y-2">
                           <Label>{ui.colorName}</Label>
                           <Input
@@ -391,17 +393,11 @@ export default function EditProductPage() {
 
                         <div className="space-y-2">
                           <Label>{ui.colorHex}</Label>
-                          <Input
-                            value={c.hex}
-                            onChange={(e) => updateColor(idx, "hex", e.target.value)}
-                            placeholder="#212121"
-                          />
-                          {c.hex && !isValidHex(c.hex) ? (
-                            <p className="text-xs text-destructive">{ui.invalidHex}</p>
-                          ) : null}
+                          <Input value={c.hex} onChange={(e) => updateColor(idx, "hex", e.target.value)} placeholder="#212121" />
+                          {c.hex && !isValidHex(c.hex) ? <p className="text-xs text-destructive">{ui.invalidHex}</p> : null}
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-2 justify-end">
                           <div
                             className="h-10 w-10 rounded-md border border-border/60"
                             style={{ background: isValidHex(c.hex) ? c.hex : "transparent" }}
@@ -415,11 +411,7 @@ export default function EditProductPage() {
                     ))
                   ) : (
                     <div className="text-sm text-muted-foreground">
-                      {locale === "pt"
-                        ? "Nenhuma cor cadastrada."
-                        : locale === "es"
-                          ? "No hay colores."
-                          : "No colors yet."}
+                      {locale === "pt" ? "Nenhuma cor cadastrada." : locale === "es" ? "No hay colores." : "No colors yet."}
                     </div>
                   )}
 
@@ -432,7 +424,6 @@ export default function EditProductPage() {
               </Card>
             </div>
 
-            {/* Coluna lateral */}
             <div className="space-y-6">
               <Card className="border-border/60 bg-card/60 backdrop-blur-sm">
                 <CardHeader>
@@ -441,22 +432,13 @@ export default function EditProductPage() {
                     {ui.sectionMainImage}
                   </CardTitle>
                   <CardDescription>
-                    {locale === "pt"
-                      ? "Cole a URL da imagem principal."
-                      : locale === "es"
-                        ? "Pega la URL de la imagen principal."
-                        : "Paste the main image URL."}
+                    {locale === "pt" ? "Cole a URL da imagem principal." : locale === "es" ? "Pega la URL de la imagen principal." : "Paste the main image URL."}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="space-y-2">
                     <Label htmlFor="imageUrl">{ui.imageUrl}</Label>
-                    <Input
-                      id="imageUrl"
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                      placeholder="https://..."
-                    />
+                    <Input id="imageUrl" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
                   </div>
 
                   <div className="rounded-lg overflow-hidden border border-border/60 bg-muted">
@@ -465,11 +447,7 @@ export default function EditProductPage() {
                       <img src={imageUrl} alt="Main" className="w-full h-auto object-cover" loading="lazy" />
                     ) : (
                       <div className="p-6 text-sm text-muted-foreground">
-                        {locale === "pt"
-                          ? "Sem imagem. Cole uma URL acima."
-                          : locale === "es"
-                            ? "Sin imagen. Pega una URL arriba."
-                            : "No image. Paste an URL above."}
+                        {locale === "pt" ? "Sem imagem. Cole uma URL acima." : locale === "es" ? "Sin imagen. Pega una URL arriba." : "No image. Paste an URL above."}
                       </div>
                     )}
                   </div>
@@ -479,36 +457,23 @@ export default function EditProductPage() {
               <Card className="border-border/60 bg-card/60 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle>{ui.sectionPricing}</CardTitle>
-                  <CardDescription>
-                    {locale === "pt"
-                      ? "Preço base em EUR."
-                      : locale === "es"
-                        ? "Precio base en EUR."
-                        : "Base price in EUR."}
-                  </CardDescription>
+                  <CardDescription>{locale === "pt" ? "Preço base em EUR." : locale === "es" ? "Precio base en EUR." : "Base price in EUR."}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <Label htmlFor="price">{ui.price}</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    value={Number.isFinite(price) ? price : 0}
-                    onChange={(e) => setPrice(Number(e.target.value))}
-                  />
+                  <Input id="price" type="number" step="0.01" value={Number.isFinite(price) ? price : 0} onChange={(e) => setPrice(Number(e.target.value))} />
                   <p className="text-sm text-muted-foreground mt-2">
                     {locale === "pt"
-                      ? `Preview: ${formatCurrency(price || 0, locale)}`
+                      ? `Preview: ${formatMoneyEUR(price || 0, locale)}`
                       : locale === "es"
-                        ? `Vista previa: ${formatCurrency(price || 0, locale)}`
-                        : `Preview: ${formatCurrency(price || 0, locale)}`}
+                        ? `Vista previa: ${formatMoneyEUR(price || 0, locale)}`
+                        : `Preview: ${formatMoneyEUR(price || 0, locale)}`}
                   </p>
                 </CardContent>
               </Card>
             </div>
           </div>
 
-          {/* Ações finais */}
           <div className="mt-8 flex justify-end gap-2">
             <Button asChild variant="outline" className="bg-transparent">
               <Link href="/admin/products">{ui.back}</Link>
