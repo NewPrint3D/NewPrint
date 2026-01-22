@@ -8,8 +8,7 @@ import { ProductCard } from "@/components/product-card"
 import { useLanguage } from "@/contexts/language-context"
 import type { Product } from "@/lib/db-products"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Star, Truck, Shield, RefreshCw } from "lucide-react"
+import { Star } from "lucide-react"
 import ProductGallery from "./ProductGallery"
 
 interface ProductDetailClientProps {
@@ -24,42 +23,49 @@ type MediaItem = {
   colorName?: { pt: string; en: string; es: string }
 }
 
-const normalizeHex = (hex?: string) =>
-  (hex || "").trim().toLowerCase().replace("#", "")
+const normalizeHex = (hex?: string) => (hex || "").trim().toLowerCase().replace("#", "")
 
 const colorNameFromHex = (hexNoHash: string) => {
   const h = (hexNoHash || "").toLowerCase()
+
+  // ✅ Mapa de cores (inclui AMARELO)
   const map: Record<string, { pt: string; en: string; es: string }> = {
     "000000": { pt: "Preto", en: "Black", es: "Negro" },
     "ffffff": { pt: "Branco", en: "White", es: "Blanco" },
     "212121": { pt: "Cinza", en: "Gray", es: "Gris" },
     "ff0000": { pt: "Vermelho", en: "Red", es: "Rojo" },
+
+    // ✅ amarelos comuns
+    "ffff00": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
+    "ffd700": { pt: "Dourado", en: "Gold", es: "Dorado" },
+    "ffc107": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
+    "ffeb3b": { pt: "Amarelo", en: "Yellow", es: "Amarillo" }
   }
 
-  return (
-    map[h] ?? {
-      pt: "Cor selecionada",
-      en: "Selected color",
-      es: "Color seleccionada",
-    }
-  )
+  // ✅ Se não reconhecer, NÃO devolve texto genérico (deixa vazio)
+  return map[h] ?? { pt: "", en: "", es: "" }
 }
 
 export function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
   const { t, locale } = useLanguage()
 
-  const productId = String(
-    (product as any).id ?? (product as any).product_id ?? (product as any).slug
-  )
+  const productId = String((product as any).id ?? (product as any).product_id ?? (product as any).slug)
 
   const colorOptions = useMemo(() => {
     const fromServer = (product as any).colorOptions
     if (Array.isArray(fromServer) && fromServer.length) {
-      return fromServer.map((o: any) => ({
-        hex: String(o.hex).toLowerCase(),
-        image: String(o.image),
-        name: o.name || colorNameFromHex(normalizeHex(o.hex)),
-      }))
+      return fromServer.map((o: any) => {
+        const hexRaw = String(o.hex || "").toLowerCase()
+        const hex = hexRaw.startsWith("#") ? hexRaw : `#${hexRaw}`
+        const nameFromHex = colorNameFromHex(normalizeHex(hex))
+
+        return {
+          hex,
+          image: String(o.image),
+          // se vier name do servidor, usa; senão usa o mapa pelo HEX
+          name: (o.name && typeof o.name === "object") ? o.name : nameFromHex,
+        }
+      })
     }
 
     return []
@@ -67,20 +73,18 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
   const [selectedHex, setSelectedHex] = useState("")
   const [selectedImage, setSelectedImage] = useState("")
-  const [selectedColorName, setSelectedColorName] =
-    useState<{ pt: string; en: string; es: string } | null>(null)
+  const [selectedColorName, setSelectedColorName] = useState<{ pt: string; en: string; es: string } | null>(null)
 
   useEffect(() => {
     if (!colorOptions.length) return
     const first = colorOptions[0]
     setSelectedHex(first.hex)
     setSelectedImage(first.image)
-    setSelectedColorName(first.name)
+    setSelectedColorName(first.name || null)
   }, [colorOptions])
 
   const media: MediaItem[] = useMemo(() => {
     const items: MediaItem[] = []
-
     for (const opt of colorOptions) {
       items.push({
         type: "image",
@@ -89,7 +93,6 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
         colorName: opt.name,
       })
     }
-
     return items
   }, [colorOptions])
 
@@ -97,8 +100,25 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
     if (item.type !== "image") return
     if (item.hex) setSelectedHex(item.hex)
     if (item.src) setSelectedImage(item.src)
-    if (item.colorName) setSelectedColorName(item.colorName)
+
+    // se não vier nome, tenta pelo HEX
+    if (item.colorName) {
+      setSelectedColorName(item.colorName)
+    } else if (item.hex) {
+      setSelectedColorName(colorNameFromHex(normalizeHex(item.hex)))
+    } else {
+      setSelectedColorName(null)
+    }
   }
+
+  const localizedName =
+    (product as any).name?.[locale] || (product as any).name_pt || (product as any).name || "Producto"
+
+  const localizedDesc =
+    (product as any).description?.[locale] || (product as any).description_pt || (product as any).description || ""
+
+  const colorNameForCustomizer =
+    (selectedColorName?.[locale] || selectedColorName?.es || selectedColorName?.pt || "").trim()
 
   return (
     <main className="min-h-screen">
@@ -108,10 +128,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
             <div>
-              <ProductGallery
-                media={media}
-                {...({ onSelectItem: onSelectFromGallery } as any)}
-              />
+              <ProductGallery media={media} {...({ onSelectItem: onSelectFromGallery } as any)} />
             </div>
 
             <div className="space-y-6">
@@ -120,12 +137,7 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                   {(product as any).category}
                 </Badge>
 
-                <h1 className="text-4xl font-bold mb-4">
-                  {(product as any).name?.[locale] ||
-                    (product as any).name_pt ||
-                    (product as any).name ||
-                    "Produto"}
-                </h1>
+                <h1 className="text-4xl font-bold mb-4">{localizedName}</h1>
 
                 <div className="flex items-center gap-2 mb-4">
                   {[...Array(5)].map((_, i) => (
@@ -133,20 +145,14 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                   ))}
                 </div>
 
-                <p className="text-muted-foreground">
-                  {(product as any).description?.[locale] ||
-                    (product as any).description_pt ||
-                    (product as any).description ||
-                    ""}
-                </p>
+                <p className="text-muted-foreground">{localizedDesc}</p>
               </div>
 
               <ProductCustomizer
                 product={product as any}
                 {...({
                   selectedColorHex: selectedHex,
-                  selectedColorName:
-                    selectedColorName?.[locale] ?? selectedColorName?.pt ?? "",
+                  selectedColorName: colorNameForCustomizer,
                   selectedImageUrl: selectedImage,
                   hideColorButtons: true,
                 } as any)}
@@ -156,16 +162,11 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
           {relatedProducts.length > 0 && (
             <div>
-              <h2 className="text-3xl font-bold mb-8 text-center">
-                {t.product.related}
-              </h2>
+              <h2 className="text-3xl font-bold mb-8 text-center">{t.product.related}</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {relatedProducts.map((relatedProduct) => (
-                  <ProductCard
-                    key={(relatedProduct as any).id}
-                    product={relatedProduct as any}
-                  />
+                  <ProductCard key={(relatedProduct as any).id} product={relatedProduct as any} />
                 ))}
               </div>
             </div>
