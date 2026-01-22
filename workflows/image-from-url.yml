@@ -1,0 +1,56 @@
+name: Baixar e Converter Imagem
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_url:
+        description: "Cole aqui a URL direta da imagem (http/https)"
+        required: true
+
+      product_id:
+        description: "ID do produto (ex: 6)"
+        required: true
+
+      file_name:
+        description: "Nome do arquivo (sem extensão) - ex: 000000, f5f5f5, d32f2f"
+        required: true
+
+      format:
+        description: "Formato final (png, jpg ou webp)"
+        required: true
+        default: "webp"
+
+jobs:
+  convert-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar o repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+      - name: Baixar imagem da URL
+        run: |
+          curl -L "${{ github.event.inputs.image_url }}" -o temp_image
+
+      - name: Converter imagem e salvar no caminho correto
+        run: |
+          mkdir -p public/products/${{ github.event.inputs.product_id }}/colors
+          convert temp_image public/products/${{ github.event.inputs.product_id }}/colors/${{ github.event.inputs.file_name }}.${{ github.event.inputs.format }}
+
+      - name: Commit da imagem convertida
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git add public/products/
+
+          if git diff --cached --quiet; then
+            echo "Nenhuma mudança para commitar."
+            exit 0
+          fi
+
+          git commit -m "Add product ${{ github.event.inputs.product_id }} color ${{ github.event.inputs.file_name }}.${{ github.event.inputs.format }}"
+          git push

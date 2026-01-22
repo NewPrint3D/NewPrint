@@ -1,55 +1,44 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react"
-import { defaultLocale, getTranslations, locales, type Locale, type TranslationShape } from "@/lib/i18n"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { type Locale, defaultLocale, getTranslations } from "@/lib/i18n"
 
-type LanguageContextValue = {
+interface LanguageContextType {
   locale: Locale
-  setLocale: (next: Locale) => void
-  t: TranslationShape
+  setLocale: (locale: Locale) => void
+  t: ReturnType<typeof getTranslations>
 }
 
-// ✅ Fallback absoluto: mesmo se algum componente usar useLanguage() fora do Provider,
-// nunca teremos `t` = undefined no prerender/build.
-const fallbackValue: LanguageContextValue = {
-  locale: defaultLocale,
-  setLocale: () => {},
-  t: getTranslations(defaultLocale),
-}
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
-const LanguageContext = createContext<LanguageContextValue>(fallbackValue)
-
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
+export function LanguageProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(defaultLocale)
+  const [t, setT] = useState(getTranslations(defaultLocale))
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("locale")
-      if (saved && (locales as readonly string[]).includes(saved)) {
-        setLocaleState(saved as Locale)
-      }
-    } catch {}
+    if (typeof window === "undefined") return
+    const savedLocale = localStorage.getItem("locale") as Locale
+    if (savedLocale) {
+      setLocaleState(savedLocale)
+      setT(getTranslations(savedLocale))
+    }
   }, [])
 
-  const setLocale = useCallback((next: Locale) => {
-    if (!(locales as readonly string[]).includes(next)) return
-    setLocaleState(next)
-    try {
-      localStorage.setItem("locale", next)
-    } catch {}
-  }, [])
+  const setLocale = (newLocale: Locale) => {
+    setLocaleState(newLocale)
+    setT(getTranslations(newLocale))
+    if (typeof window !== "undefined") {
+      localStorage.setItem("locale", newLocale)
+    }
+  }
 
-  const t = useMemo(() => getTranslations(locale), [locale])
-
-  return (
-    <LanguageContext.Provider value={{ locale, setLocale, t }}>
-      {children}
-    </LanguageContext.Provider>
-  )
+  return <LanguageContext.Provider value={{ locale, setLocale, t }}>{children}</LanguageContext.Provider>
 }
 
 export function useLanguage() {
-  // ✅ Nunca lança erro no build/prerender.
-  // Se o Provider não estiver aplicado em algum trecho, retorna fallback seguro.
-  return useContext(LanguageContext)
+  const context = useContext(LanguageContext)
+  if (context === undefined) {
+    throw new Error("useLanguage must be used within a LanguageProvider")
+  }
+  return context
 }
