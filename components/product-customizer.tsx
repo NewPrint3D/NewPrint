@@ -34,12 +34,9 @@ interface ProductCustomizerProps {
     image: string
   }) => void
 
-  // ✅ vindo da galeria (ProductDetailClient)
   selectedColorHex?: string
   selectedColorName?: string
   selectedImageUrl?: string
-
-  // ✅ para esconder qualquer UI de cor
   hideColorButtons?: boolean
 }
 
@@ -60,7 +57,6 @@ const toLower = (v: string) => (v || "").toLowerCase().trim()
 
 const normalizeForCompare = (hex: string) => {
   const h = normalizeHex(hex).toLowerCase()
-  // normaliza #fff -> #ffffff
   if (/^#[0-9a-f]{3}$/i.test(h)) {
     const r = h[1]
     const g = h[2]
@@ -118,7 +114,6 @@ const getLocaleColorName = (locale: string, key: string) => {
 const guessColorByHex = (hex: string, locale: string) => {
   const h = normalizeForCompare(hex)
 
-  // mapa direto para HEX comuns
   const hexMap: Record<string, string> = {
     "#000000": "black",
     "#ffffff": "white",
@@ -135,11 +130,47 @@ const guessColorByHex = (hex: string, locale: string) => {
 
   if (hexMap[h]) return getLocaleColorName(locale, hexMap[h])
 
-  // heurística simples (bom o suficiente para o caso do amarelo)
-  if (h.startsWith("#ff") && (h.includes("ff00") || h.includes("ffff"))) return getLocaleColorName(locale, "yellow")
-  if (h.startsWith("#f") && h.includes("d7") && h.includes("00")) return getLocaleColorName(locale, "gold")
+  // amarelos comuns (bom para seu caso)
+  if (
+    h.startsWith("#") &&
+    h.length === 7 &&
+    h.slice(1, 3) === "ff" &&
+    h.slice(3, 5) === "ff" &&
+    Number.parseInt(h.slice(5, 7), 16) <= 60
+  ) {
+    return getLocaleColorName(locale, "yellow")
+  }
 
   return ""
+}
+
+const guessColorByUrl = (url: string, locale: string) => {
+  const u = toLower(url)
+  if (!u) return ""
+
+  if (u.includes("amarill") || u.includes("yellow") || u.includes("amarelo")) return getLocaleColorName(locale, "yellow")
+  if (u.includes("rojo") || u.includes("red") || u.includes("vermelh")) return getLocaleColorName(locale, "red")
+  if (u.includes("negro") || u.includes("black") || u.includes("preto")) return getLocaleColorName(locale, "black")
+  if (u.includes("gris") || u.includes("gray") || u.includes("cinza") || u.includes("grey")) return getLocaleColorName(locale, "gray")
+  if (u.includes("azul") || u.includes("blue")) return getLocaleColorName(locale, "blue")
+  if (u.includes("verde") || u.includes("green")) return getLocaleColorName(locale, "green")
+
+  return ""
+}
+
+const isGenericColorName = (name: string) => {
+  const n = toLower(name)
+  if (!n) return true
+  // textos genéricos que NÃO são nome de cor
+  if (n.includes("color seleccion")) return true
+  if (n.includes("cor selecion")) return true
+  if (n.includes("selected color")) return true
+  if (n.includes("selected")) return true
+  if (n.includes("selecciona el color")) return true
+  if (n.includes("select the color")) return true
+  // se for um HEX, também não é nome
+  if (/^#[0-9a-f]{3,6}$/i.test(n)) return true
+  return false
 }
 
 export function ProductCustomizer({
@@ -153,27 +184,22 @@ export function ProductCustomizer({
   const { t, locale } = useLanguage()
   const { addItem } = useCart()
 
-  // ---- Normaliza campos que às vezes vêm como string do banco
   const colors = useMemo(() => toArray((product as any).colors), [product])
   const sizesRaw = useMemo(() => toArray((product as any).sizes), [product])
   const materials = useMemo(() => toArray((product as any).materials), [product])
 
-  // ---- base image principal (pode vir como image_url, imageUrl ou image)
   const baseImage =
     (product as any).image_url ||
     (product as any).imageUrl ||
     (product as any).image ||
     "/placeholder.svg"
 
-  // ---- color_images vindo do admin (array de {color, url, name?})
   const colorImages: ColorImage[] = useMemo(() => {
     const raw = (product as any).color_images || (product as any).colorImages || []
     return Array.isArray(raw) ? raw : []
   }, [product])
 
-  // ---- color names (se existir no produto)
   const colorNamesFromProduct = useMemo(() => {
-    // pode vir como objeto { "#FFFF00": "Amarillo" } ou array
     const raw =
       (product as any).color_names ||
       (product as any).colorNames ||
@@ -189,69 +215,58 @@ export function ProductCustomizer({
     return found?.url || found?.imageUrl || found?.image_url || baseImage
   }
 
-  const getNameForColor = (hex: string) => {
+  const getNameForColor = (hex: string, urlMaybe?: string) => {
     const key = normalizeForCompare(hex)
 
-    // 1) se o produto tiver um objeto/dict de nomes por cor
+    // 1) dict no produto
     if (colorNamesFromProduct && typeof colorNamesFromProduct === "object" && !Array.isArray(colorNamesFromProduct)) {
       const dict = colorNamesFromProduct as Record<string, string>
       const direct = dict[key] || dict[key.toUpperCase()] || dict[key.toLowerCase()]
       if (direct) return direct
     }
 
-    // 2) tenta pegar de color_images (name/label/colorName)
+    // 2) color_images
     const found = colorImages.find((ci) => normalizeForCompare(ci.color || ci.hex || "") === key)
     const fromCi = found?.name || found?.label || found?.colorName
     if (fromCi) return fromCi
 
-    // 3) fallback por HEX (inclui amarelo/amarillo)
-    const guessed = guessColorByHex(key, locale)
-    if (guessed) return guessed
+    // 3) HEX
+    const guessedHex = guessColorByHex(key, locale)
+    if (guessedHex) return guessedHex
+
+    // 4) URL
+    if (urlMaybe) {
+      const guessedUrl = guessColorByUrl(urlMaybe, locale)
+      if (guessedUrl) return guessedUrl
+    }
 
     return ""
   }
 
-  // ✅ PREÇOS: aqui removemos qualquer extra (inclui PETG +8€)
-  const materialPrices: Record<string, number> = {
-    PLA: 0,
-    ABS: 0,
-    PETG: 0,
-  }
+  // ✅ remove extras (inclui PETG +8€)
+  const materialPrices: Record<string, number> = { PLA: 0, ABS: 0, PETG: 0 }
 
-  // ✅ TAMANHOS: escondemos "Standard" da UI (e se for o único, a seção some)
-  const sizes = useMemo(() => {
-    const filtered = sizesRaw.filter((s) => toLower(s) !== "standard")
-    // se só tinha Standard, fica vazio (e a seção some)
-    return filtered
-  }, [sizesRaw])
-
-  const sizePrices: Record<string, number> = {
-    Small: 0,
-    Medium: 0,
-    Large: 0,
-    Standard: 0,
-    "19cm": 0,
-  }
+  // ✅ remove "Standard" da UI
+  const sizes = useMemo(() => sizesRaw.filter((s) => toLower(s) !== "standard"), [sizesRaw])
+  const sizePrices: Record<string, number> = { Small: 0, Medium: 0, Large: 0, Standard: 0, "19cm": 0 }
 
   const basePrice = safeNumber((product as any).basePrice ?? (product as any).base_price ?? (product as any).price)
-
   const getMaterialExtra = (material: string) => materialPrices[material] ?? 0
   const getSizeExtra = (size: string) => sizePrices[size] ?? 0
 
   const storageKey = `np3d:product:${(product as any).id}:variant`
 
-  // defaults seguros (internos)
   const defaultColor = colors[0] || "#000000"
-
-  // se não tiver tamanhos além de Standard, mantemos Standard internamente, mas não mostramos na UI
   const internalDefaultSize = sizes.length > 0 ? sizes[0] : (sizesRaw[0] || "Standard")
-
   const defaultMaterial = materials[0] || "PLA"
-  const defaultImage = getImageForColor(defaultColor)
 
   const initialColor = selectedColorHex || defaultColor
   const initialImage = selectedImageUrl || getImageForColor(initialColor)
-  const initialName = (selectedColorName && selectedColorName.trim()) ? selectedColorName.trim() : getNameForColor(initialColor)
+
+  const initialName =
+    selectedColorName && !isGenericColorName(selectedColorName)
+      ? selectedColorName.trim()
+      : getNameForColor(initialColor, initialImage)
 
   const [selectedColor, setSelectedColor] = useState<string>(initialColor)
   const [selectedSize, setSelectedSize] = useState<string>(internalDefaultSize)
@@ -275,15 +290,17 @@ export function ProductCustomizer({
     } catch {}
   }
 
-  // ✅ 1) Ao montar: carrega do storage (se existir), mas PRIORIDADE é o que vem da galeria (props)
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey)
       if (!saved) {
         const c = selectedColorHex || defaultColor
         const img = selectedImageUrl || getImageForColor(c)
+
         const cName =
-          (selectedColorName && selectedColorName.trim()) ? selectedColorName.trim() : getNameForColor(c)
+          selectedColorName && !isGenericColorName(selectedColorName)
+            ? selectedColorName.trim()
+            : getNameForColor(c, img)
 
         setSelectedColor(c)
         setSelectedImage(img)
@@ -297,19 +314,17 @@ export function ProductCustomizer({
 
       const c = selectedColorHex || (parsed.color && colors.includes(parsed.color) ? parsed.color : defaultColor)
 
-      // size salvo só é aceito se existir na lista original (inclui Standard), mas a UI pode esconder
       const allSizesForValidation = sizesRaw.length > 0 ? sizesRaw : ["Standard"]
       const s = parsed.size && allSizesForValidation.includes(parsed.size) ? parsed.size : internalDefaultSize
 
       const m = parsed.material && materials.includes(parsed.material) ? parsed.material : defaultMaterial
       const img = selectedImageUrl || parsed.image || getImageForColor(c)
 
+      const parsedName = parsed.colorName || ""
       const cName =
-        (selectedColorName && selectedColorName.trim())
+        selectedColorName && !isGenericColorName(selectedColorName)
           ? selectedColorName.trim()
-          : (parsed.colorName && parsed.colorName.trim())
-            ? parsed.colorName.trim()
-            : getNameForColor(c)
+          : (!isGenericColorName(parsedName) ? parsedName.trim() : getNameForColor(c, img))
 
       setSelectedColor(c)
       setSelectedSize(s)
@@ -322,21 +337,25 @@ export function ProductCustomizer({
       const c = selectedColorHex || defaultColor
       const img = selectedImageUrl || getImageForColor(c)
       const cName =
-        (selectedColorName && selectedColorName.trim()) ? selectedColorName.trim() : getNameForColor(c)
+        selectedColorName && !isGenericColorName(selectedColorName)
+          ? selectedColorName.trim()
+          : getNameForColor(c, img)
 
       notifyVariantChange(c, cName, internalDefaultSize, defaultMaterial, img)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ✅ 2) Sempre que a galeria mudar a seleção (props), sincroniza aqui
   useEffect(() => {
     if (!selectedColorHex && !selectedImageUrl && !selectedColorName) return
 
     const nextColor = selectedColorHex || selectedColor
     const nextImage = selectedImageUrl || selectedImage
+
     const nextName =
-      (selectedColorName && selectedColorName.trim()) ? selectedColorName.trim() : (colorName || getNameForColor(nextColor))
+      selectedColorName && !isGenericColorName(selectedColorName)
+        ? selectedColorName.trim()
+        : getNameForColor(nextColor, nextImage)
 
     setSelectedColor(nextColor)
     setSelectedImage(nextImage)
@@ -370,12 +389,12 @@ export function ProductCustomizer({
     addItem({
       product,
       quantity,
-      selectedColor, // HEX
-      selectedColorName: colorName, // ✅ NOME (Amarillo, Rojo, etc.)
+      selectedColor,
+      selectedColorName: colorName,
       selectedSize,
       selectedMaterial,
       price: totalPrice,
-      selectedImage, // ✅ IMAGEM DA COR
+      selectedImage,
     } as any)
 
     setIsAdded(true)
@@ -387,7 +406,6 @@ export function ProductCustomizer({
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
       <CardContent className="p-6 space-y-6">
-        {/* ✅ Sem bolinhas de cor. Só mostramos o nome da cor escolhida (vindo da imagem/props/fallback). */}
         <div>
           <Label className="text-base font-bold mb-2 block">{t.customizer.color}</Label>
           <div className="text-sm text-muted-foreground">
@@ -405,7 +423,6 @@ export function ProductCustomizer({
           )}
         </div>
 
-        {/* ✅ Tamanho: some se só existia "Standard" */}
         {showSizeSection && (
           <div>
             <Label className="text-base font-bold mb-3 block">{t.customizer.size}</Label>
@@ -430,7 +447,6 @@ export function ProductCustomizer({
           </div>
         )}
 
-        {/* ✅ Material: sem extras (PETG não soma nada) */}
         <div>
           <Label className="text-base font-bold mb-3 block">{t.customizer.material}</Label>
           <RadioGroup value={selectedMaterial} onValueChange={handleMaterialChange} className="space-y-3">
@@ -474,9 +490,7 @@ export function ProductCustomizer({
         <div className="border-t border-border pt-6">
           <div className="flex items-center justify-between mb-6">
             <span className="text-lg font-medium text-muted-foreground">{t.customizer.totalPrice}</span>
-            <span className="text-3xl font-bold text-primary">
-              {formatCurrency(totalPrice * quantity, locale)}
-            </span>
+            <span className="text-3xl font-bold text-primary">{formatCurrency(totalPrice * quantity, locale)}</span>
           </div>
 
           <Button size="lg" className="w-full group relative overflow-hidden" onClick={handleAddToCart} disabled={isAdded}>
