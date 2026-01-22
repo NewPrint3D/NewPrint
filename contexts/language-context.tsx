@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { type Locale, defaultLocale, getTranslations } from "@/lib/i18n"
+import { type Locale, defaultLocale, getTranslations, locales } from "@/lib/i18n"
 
 interface LanguageContextType {
   locale: Locale
@@ -17,28 +17,42 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return
-    const savedLocale = localStorage.getItem("locale") as Locale
-    if (savedLocale) {
-      setLocaleState(savedLocale)
-      setT(getTranslations(savedLocale))
+
+    const savedLocale = localStorage.getItem("locale")
+
+    // só aceita idioma válido
+    if (savedLocale && locales.includes(savedLocale as Locale)) {
+      setLocaleState(savedLocale as Locale)
+      setT(getTranslations(savedLocale as Locale))
+    } else {
+      // garante espanhol como padrão
+      setLocaleState(defaultLocale)
+      setT(getTranslations(defaultLocale))
+      localStorage.setItem("locale", defaultLocale)
     }
   }, [])
 
   const setLocale = (newLocale: Locale) => {
+    if (!locales.includes(newLocale)) return
+
     setLocaleState(newLocale)
     setT(getTranslations(newLocale))
-    if (typeof window !== "undefined") {
-      localStorage.setItem("locale", newLocale)
-    }
+    localStorage.setItem("locale", newLocale)
   }
 
-  return <LanguageContext.Provider value={{ locale, setLocale, t }}>{children}</LanguageContext.Provider>
+  return (
+    <LanguageContext.Provider value={{ locale, setLocale, t }}>
+      {children}
+    </LanguageContext.Provider>
+  )
 }
 
 export function useLanguage() {
   const context = useContext(LanguageContext)
-  if (context === undefined) {
+
+  if (!context) {
     throw new Error("useLanguage must be used within a LanguageProvider")
   }
+
   return context
 }
