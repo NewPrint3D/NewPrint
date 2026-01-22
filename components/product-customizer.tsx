@@ -12,11 +12,27 @@ import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, CheckCircle } from "lucide-react"
 import type { Product } from "@/lib/products"
 
-type ColorImage = { color?: string; hex?: string; url?: string; imageUrl?: string; image_url?: string }
+type ColorImage = {
+  color?: string
+  hex?: string
+  url?: string
+  imageUrl?: string
+  image_url?: string
+  name?: string
+  label?: string
+  colorName?: string
+}
 
 interface ProductCustomizerProps {
   product: Product
-  onVariantChange?: (v: { color: string; colorName: string; size: string; material: string; price: number; image: string }) => void
+  onVariantChange?: (v: {
+    color: string
+    colorName: string
+    size: string
+    material: string
+    price: number
+    image: string
+  }) => void
 
   // ✅ vindo da galeria (ProductDetailClient)
   selectedColorHex?: string
@@ -40,6 +56,92 @@ const toArray = (v: any): string[] => {
   return []
 }
 
+const toLower = (v: string) => (v || "").toLowerCase().trim()
+
+const normalizeForCompare = (hex: string) => {
+  const h = normalizeHex(hex).toLowerCase()
+  // normaliza #fff -> #ffffff
+  if (/^#[0-9a-f]{3}$/i.test(h)) {
+    const r = h[1]
+    const g = h[2]
+    const b = h[3]
+    return `#${r}${r}${g}${g}${b}${b}`
+  }
+  return h
+}
+
+const getLocaleColorName = (locale: string, key: string) => {
+  const k = key.toLowerCase()
+  const dict: Record<string, Record<string, string>> = {
+    es: {
+      black: "Negro",
+      white: "Blanco",
+      gray: "Gris",
+      grey: "Gris",
+      red: "Rojo",
+      blue: "Azul",
+      green: "Verde",
+      yellow: "Amarillo",
+      gold: "Dorado",
+      silver: "Plateado",
+    },
+    pt: {
+      black: "Preto",
+      white: "Branco",
+      gray: "Cinza",
+      grey: "Cinza",
+      red: "Vermelho",
+      blue: "Azul",
+      green: "Verde",
+      yellow: "Amarelo",
+      gold: "Dourado",
+      silver: "Prateado",
+    },
+    en: {
+      black: "Black",
+      white: "White",
+      gray: "Gray",
+      grey: "Gray",
+      red: "Red",
+      blue: "Blue",
+      green: "Green",
+      yellow: "Yellow",
+      gold: "Gold",
+      silver: "Silver",
+    },
+  }
+
+  const base = dict[locale] || dict.es
+  return base[k] || ""
+}
+
+const guessColorByHex = (hex: string, locale: string) => {
+  const h = normalizeForCompare(hex)
+
+  // mapa direto para HEX comuns
+  const hexMap: Record<string, string> = {
+    "#000000": "black",
+    "#ffffff": "white",
+    "#ff0000": "red",
+    "#00ff00": "green",
+    "#0000ff": "blue",
+    "#ffff00": "yellow",
+    "#ffd700": "gold",
+    "#c0c0c0": "silver",
+    "#808080": "gray",
+    "#212121": "gray",
+    "#1f1f1f": "gray",
+  }
+
+  if (hexMap[h]) return getLocaleColorName(locale, hexMap[h])
+
+  // heurística simples (bom o suficiente para o caso do amarelo)
+  if (h.startsWith("#ff") && (h.includes("ff00") || h.includes("ffff"))) return getLocaleColorName(locale, "yellow")
+  if (h.startsWith("#f") && h.includes("d7") && h.includes("00")) return getLocaleColorName(locale, "gold")
+
+  return ""
+}
+
 export function ProductCustomizer({
   product,
   onVariantChange,
@@ -53,7 +155,7 @@ export function ProductCustomizer({
 
   // ---- Normaliza campos que às vezes vêm como string do banco
   const colors = useMemo(() => toArray((product as any).colors), [product])
-  const sizes = useMemo(() => toArray((product as any).sizes), [product])
+  const sizesRaw = useMemo(() => toArray((product as any).sizes), [product])
   const materials = useMemo(() => toArray((product as any).materials), [product])
 
   // ---- base image principal (pode vir como image_url, imageUrl ou image)
@@ -63,28 +165,70 @@ export function ProductCustomizer({
     (product as any).image ||
     "/placeholder.svg"
 
-  // ---- color_images vindo do admin (array de {color, url})
+  // ---- color_images vindo do admin (array de {color, url, name?})
   const colorImages: ColorImage[] = useMemo(() => {
     const raw = (product as any).color_images || (product as any).colorImages || []
     return Array.isArray(raw) ? raw : []
   }, [product])
 
+  // ---- color names (se existir no produto)
+  const colorNamesFromProduct = useMemo(() => {
+    // pode vir como objeto { "#FFFF00": "Amarillo" } ou array
+    const raw =
+      (product as any).color_names ||
+      (product as any).colorNames ||
+      (product as any).color_labels ||
+      (product as any).colorLabels ||
+      null
+    return raw
+  }, [product])
+
   const getImageForColor = (hex: string) => {
-    const key = normalizeHex(hex).toLowerCase()
-    const found = colorImages.find((ci) => normalizeHex(ci.color || ci.hex).toLowerCase() === key)
+    const key = normalizeForCompare(hex)
+    const found = colorImages.find((ci) => normalizeForCompare(ci.color || ci.hex || "") === key)
     return found?.url || found?.imageUrl || found?.image_url || baseImage
   }
 
+  const getNameForColor = (hex: string) => {
+    const key = normalizeForCompare(hex)
+
+    // 1) se o produto tiver um objeto/dict de nomes por cor
+    if (colorNamesFromProduct && typeof colorNamesFromProduct === "object" && !Array.isArray(colorNamesFromProduct)) {
+      const dict = colorNamesFromProduct as Record<string, string>
+      const direct = dict[key] || dict[key.toUpperCase()] || dict[key.toLowerCase()]
+      if (direct) return direct
+    }
+
+    // 2) tenta pegar de color_images (name/label/colorName)
+    const found = colorImages.find((ci) => normalizeForCompare(ci.color || ci.hex || "") === key)
+    const fromCi = found?.name || found?.label || found?.colorName
+    if (fromCi) return fromCi
+
+    // 3) fallback por HEX (inclui amarelo/amarillo)
+    const guessed = guessColorByHex(key, locale)
+    if (guessed) return guessed
+
+    return ""
+  }
+
+  // ✅ PREÇOS: aqui removemos qualquer extra (inclui PETG +8€)
   const materialPrices: Record<string, number> = {
     PLA: 0,
-    ABS: 5,
-    PETG: 8,
+    ABS: 0,
+    PETG: 0,
   }
+
+  // ✅ TAMANHOS: escondemos "Standard" da UI (e se for o único, a seção some)
+  const sizes = useMemo(() => {
+    const filtered = sizesRaw.filter((s) => toLower(s) !== "standard")
+    // se só tinha Standard, fica vazio (e a seção some)
+    return filtered
+  }, [sizesRaw])
 
   const sizePrices: Record<string, number> = {
     Small: 0,
-    Medium: 5,
-    Large: 10,
+    Medium: 0,
+    Large: 0,
     Standard: 0,
     "19cm": 0,
   }
@@ -96,18 +240,24 @@ export function ProductCustomizer({
 
   const storageKey = `np3d:product:${(product as any).id}:variant`
 
-  // defaults seguros
+  // defaults seguros (internos)
   const defaultColor = colors[0] || "#000000"
-  const defaultSize = sizes[0] || "Standard"
+
+  // se não tiver tamanhos além de Standard, mantemos Standard internamente, mas não mostramos na UI
+  const internalDefaultSize = sizes.length > 0 ? sizes[0] : (sizesRaw[0] || "Standard")
+
   const defaultMaterial = materials[0] || "PLA"
   const defaultImage = getImageForColor(defaultColor)
-  const defaultColorName = selectedColorName || ""
 
-  const [selectedColor, setSelectedColor] = useState<string>(selectedColorHex || defaultColor)
-  const [selectedSize, setSelectedSize] = useState<string>(defaultSize)
+  const initialColor = selectedColorHex || defaultColor
+  const initialImage = selectedImageUrl || getImageForColor(initialColor)
+  const initialName = (selectedColorName && selectedColorName.trim()) ? selectedColorName.trim() : getNameForColor(initialColor)
+
+  const [selectedColor, setSelectedColor] = useState<string>(initialColor)
+  const [selectedSize, setSelectedSize] = useState<string>(internalDefaultSize)
   const [selectedMaterial, setSelectedMaterial] = useState<string>(defaultMaterial)
-  const [selectedImage, setSelectedImage] = useState<string>(selectedImageUrl || defaultImage)
-  const [colorName, setColorName] = useState<string>(selectedColorName || defaultColorName)
+  const [selectedImage, setSelectedImage] = useState<string>(initialImage)
+  const [colorName, setColorName] = useState<string>(initialName)
 
   const [quantity, setQuantity] = useState(1)
   const [isAdded, setIsAdded] = useState(false)
@@ -132,21 +282,34 @@ export function ProductCustomizer({
       if (!saved) {
         const c = selectedColorHex || defaultColor
         const img = selectedImageUrl || getImageForColor(c)
-        const cName = selectedColorName || ""
+        const cName =
+          (selectedColorName && selectedColorName.trim()) ? selectedColorName.trim() : getNameForColor(c)
+
         setSelectedColor(c)
         setSelectedImage(img)
         setColorName(cName)
-        notifyVariantChange(c, cName, defaultSize, defaultMaterial, img)
+
+        notifyVariantChange(c, cName, internalDefaultSize, defaultMaterial, img)
         return
       }
 
       const parsed = JSON.parse(saved) as { color?: string; colorName?: string; size?: string; material?: string; image?: string }
 
       const c = selectedColorHex || (parsed.color && colors.includes(parsed.color) ? parsed.color : defaultColor)
-      const s = parsed.size && sizes.includes(parsed.size) ? parsed.size : defaultSize
+
+      // size salvo só é aceito se existir na lista original (inclui Standard), mas a UI pode esconder
+      const allSizesForValidation = sizesRaw.length > 0 ? sizesRaw : ["Standard"]
+      const s = parsed.size && allSizesForValidation.includes(parsed.size) ? parsed.size : internalDefaultSize
+
       const m = parsed.material && materials.includes(parsed.material) ? parsed.material : defaultMaterial
       const img = selectedImageUrl || parsed.image || getImageForColor(c)
-      const cName = selectedColorName || parsed.colorName || ""
+
+      const cName =
+        (selectedColorName && selectedColorName.trim())
+          ? selectedColorName.trim()
+          : (parsed.colorName && parsed.colorName.trim())
+            ? parsed.colorName.trim()
+            : getNameForColor(c)
 
       setSelectedColor(c)
       setSelectedSize(s)
@@ -158,8 +321,10 @@ export function ProductCustomizer({
     } catch {
       const c = selectedColorHex || defaultColor
       const img = selectedImageUrl || getImageForColor(c)
-      const cName = selectedColorName || ""
-      notifyVariantChange(c, cName, defaultSize, defaultMaterial, img)
+      const cName =
+        (selectedColorName && selectedColorName.trim()) ? selectedColorName.trim() : getNameForColor(c)
+
+      notifyVariantChange(c, cName, internalDefaultSize, defaultMaterial, img)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -170,7 +335,8 @@ export function ProductCustomizer({
 
     const nextColor = selectedColorHex || selectedColor
     const nextImage = selectedImageUrl || selectedImage
-    const nextName = selectedColorName || colorName
+    const nextName =
+      (selectedColorName && selectedColorName.trim()) ? selectedColorName.trim() : (colorName || getNameForColor(nextColor))
 
     setSelectedColor(nextColor)
     setSelectedImage(nextImage)
@@ -205,7 +371,7 @@ export function ProductCustomizer({
       product,
       quantity,
       selectedColor, // HEX
-      selectedColorName: colorName, // ✅ NOME (vermelho, preto...)
+      selectedColorName: colorName, // ✅ NOME (Amarillo, Rojo, etc.)
       selectedSize,
       selectedMaterial,
       price: totalPrice,
@@ -216,24 +382,22 @@ export function ProductCustomizer({
     setTimeout(() => setIsAdded(false), 2000)
   }
 
+  const showSizeSection = sizes.length > 0
+
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
       <CardContent className="p-6 space-y-6">
-        {/* ✅ Sem bolinhas de cor. Só mostramos o nome da cor escolhida (vindo da imagem). */}
+        {/* ✅ Sem bolinhas de cor. Só mostramos o nome da cor escolhida (vindo da imagem/props/fallback). */}
         <div>
           <Label className="text-base font-bold mb-2 block">{t.customizer.color}</Label>
           <div className="text-sm text-muted-foreground">
             {colorName ? (
               <span className="font-medium text-foreground">{colorName}</span>
             ) : (
-            <span className="italic">
-  {t.products.selectColorHint}
-</span>
-
+              <span className="italic">{t.products.selectColorHint}</span>
             )}
           </div>
 
-          {/* Se você quiser manter “ver” o hex internamente, pode deixar isso escondido */}
           {!hideColorButtons && (
             <div className="mt-3 text-xs text-muted-foreground">
               HEX: <span className="font-mono">{selectedColor}</span>
@@ -241,28 +405,32 @@ export function ProductCustomizer({
           )}
         </div>
 
-        <div>
-          <Label className="text-base font-bold mb-3 block">{t.customizer.size}</Label>
-          <RadioGroup value={selectedSize} onValueChange={handleSizeChange} className="flex flex-wrap gap-3">
-            {sizes.map((size) => (
-              <div key={size} className="relative">
-                <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" />
-                <Label
-                  htmlFor={`size-${size}`}
-                  className="flex items-center justify-center px-4 py-2 rounded-lg border-2 border-border cursor-pointer transition-all duration-200 hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground"
-                >
-                  {size}
-                  {(sizePrices[size] ?? 0) > 0 && (
-                    <Badge variant="secondary" className="ml-2">
-                      +{formatCurrency(sizePrices[size], locale)}
-                    </Badge>
-                  )}
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
-        </div>
+        {/* ✅ Tamanho: some se só existia "Standard" */}
+        {showSizeSection && (
+          <div>
+            <Label className="text-base font-bold mb-3 block">{t.customizer.size}</Label>
+            <RadioGroup value={selectedSize} onValueChange={handleSizeChange} className="flex flex-wrap gap-3">
+              {sizes.map((size) => (
+                <div key={size} className="relative">
+                  <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" />
+                  <Label
+                    htmlFor={`size-${size}`}
+                    className="flex items-center justify-center px-4 py-2 rounded-lg border-2 border-border cursor-pointer transition-all duration-200 hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground"
+                  >
+                    {size}
+                    {(sizePrices[size] ?? 0) > 0 && (
+                      <Badge variant="secondary" className="ml-2">
+                        +{formatCurrency(sizePrices[size], locale)}
+                      </Badge>
+                    )}
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+        )}
 
+        {/* ✅ Material: sem extras (PETG não soma nada) */}
         <div>
           <Label className="text-base font-bold mb-3 block">{t.customizer.material}</Label>
           <RadioGroup value={selectedMaterial} onValueChange={handleMaterialChange} className="space-y-3">
