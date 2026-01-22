@@ -11,16 +11,15 @@ import { Trash2, ShoppingBag, ArrowRight } from "lucide-react"
 import Link from "next/link"
 
 const COLOR_NAME_MAP: Record<string, string> = {
-  "#000000": "Preto",
-  "#ffffff": "Branco",
-  "#f5f5f5": "Branco",
-
-  "#212121": "Cinza",
-  "#808080": "Cinza",
-
-  "#ff0000": "Vermelho",
-  "#d32f2f": "Vermelho",
-  "#fbc02d": "Amarelo",
+ 
+  "000000": { pt: "Preto", en: "Black", es: "Negro" },
+    "ffffff": { pt: "Branco", en: "White", es: "Blanco" },
+    "f5f5f5": { pt: "Branco", en: "White", es: "Blanco" },
+    "d32f2f": { pt: "Vermelho", en: "Red", es: "Rojo" },
+    "ff0000": { pt: "Vermelho", en: "Red", es: "Rojo" },
+    "212121": { pt: "Cinza", en: "Gray", es: "Gris" },
+    "808080": { pt: "Cinza", en: "Gray", es: "Gris" },
+    "fbc02d": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
   
 }
 
