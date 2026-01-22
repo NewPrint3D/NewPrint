@@ -8,57 +8,138 @@ import { Lightbulb, Target, Eye, TrendingUp, Award, Leaf, Users } from "lucide-r
 import { useEffect, useRef, useState } from "react"
 
 export default function AboutPage() {
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage() as any
   const [isVisible, setIsVisible] = useState(false)
   const statsRef = useRef<HTMLDivElement>(null)
 
+  // ✅ Fallbacks seguros (não quebra build se t.about estiver incompleto)
+  const text = {
+    title: t?.about?.title ?? (locale === "pt" ? "Sobre nós" : locale === "es" ? "Acerca de nosotros" : "About us"),
+    subtitle:
+      t?.about?.subtitle ??
+      (locale === "pt"
+        ? "Design moderno, impressão 3D premium e foco total em qualidade."
+        : locale === "es"
+          ? "Diseño moderno, impresión 3D premium y enfoque total en calidad."
+          : "Modern design, premium 3D printing, and a strong focus on quality."),
+    story: {
+      title: t?.about?.story?.title ?? (locale === "pt" ? "Nossa história" : locale === "es" ? "Nuestra historia" : "Our story"),
+      description:
+        t?.about?.story?.description ??
+        (locale === "pt"
+          ? "Criamos peças únicas com acabamento profissional para transformar ambientes."
+          : locale === "es"
+            ? "Creamos piezas únicas con acabado profesional para transformar espacios."
+            : "We create unique pieces with a professional finish to transform spaces."),
+    },
+    mission: {
+      title: t?.about?.mission?.title ?? (locale === "pt" ? "Missão" : locale === "es" ? "Misión" : "Mission"),
+      description:
+        t?.about?.mission?.description ??
+        (locale === "pt"
+          ? "Entregar produtos bem-feitos, com bom gosto e experiência de compra segura."
+          : locale === "es"
+            ? "Entregar productos bien hechos, con buen gusto y una experiencia de compra segura."
+            : "Deliver well-made products with great taste and a safe shopping experience."),
+    },
+    vision: {
+      title: t?.about?.vision?.title ?? (locale === "pt" ? "Visão" : locale === "es" ? "Visión" : "Vision"),
+      description:
+        t?.about?.vision?.description ??
+        (locale === "pt"
+          ? "Ser referência em decoração impressa em 3D na Europa."
+          : locale === "es"
+            ? "Ser referencia en decoración impresa en 3D en Europa."
+            : "Be a reference for 3D-printed decor in Europe."),
+    },
+    stats: {
+      projects: t?.about?.stats?.projects ?? (locale === "pt" ? "Projetos" : locale === "es" ? "Proyectos" : "Projects"),
+      customers: t?.about?.stats?.customers ?? (locale === "pt" ? "Clientes" : locale === "es" ? "Clientes" : "Customers"),
+      materials: t?.about?.stats?.materials ?? (locale === "pt" ? "Materiais" : locale === "es" ? "Materiales" : "Materials"),
+      countries: t?.about?.stats?.countries ?? (locale === "pt" ? "Países" : locale === "es" ? "Países" : "Countries"),
+    },
+    values: {
+      title: t?.about?.values?.title ?? (locale === "pt" ? "Nossos valores" : locale === "es" ? "Nuestros valores" : "Our values"),
+      innovation: t?.about?.values?.innovation ?? (locale === "pt" ? "Inovação" : locale === "es" ? "Innovación" : "Innovation"),
+      innovationDesc:
+        t?.about?.values?.innovationDesc ??
+        (locale === "pt"
+          ? "Novas ideias e melhoria contínua em cada peça."
+          : locale === "es"
+            ? "Nuevas ideas y mejora continua en cada pieza."
+            : "New ideas and continuous improvement in every piece."),
+      quality: t?.about?.values?.quality ?? (locale === "pt" ? "Qualidade" : locale === "es" ? "Calidad" : "Quality"),
+      qualityDesc:
+        t?.about?.values?.qualityDesc ??
+        (locale === "pt"
+          ? "Acabamento premium e controle de qualidade."
+          : locale === "es"
+            ? "Acabado premium y control de calidad."
+            : "Premium finish and quality control."),
+      sustainability:
+        t?.about?.values?.sustainability ?? (locale === "pt" ? "Sustentabilidade" : locale === "es" ? "Sostenibilidad" : "Sustainability"),
+      sustainabilityDesc:
+        t?.about?.values?.sustainabilityDesc ??
+        (locale === "pt"
+          ? "Uso consciente de materiais e produção responsável."
+          : locale === "es"
+            ? "Uso consciente de materiales y producción responsable."
+            : "Responsible production and mindful material use."),
+      customer: t?.about?.values?.customer ?? (locale === "pt" ? "Cliente" : locale === "es" ? "Cliente" : "Customer"),
+      customerDesc:
+        t?.about?.values?.customerDesc ??
+        (locale === "pt"
+          ? "Atendimento claro e suporte rápido."
+          : locale === "es"
+            ? "Atención clara y soporte rápido."
+            : "Clear support and fast help."),
+    },
+  }
+
   useEffect(() => {
+    if (typeof window === "undefined") return
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
+        if (entry.isIntersecting) setIsVisible(true)
       },
       { threshold: 0.1 },
     )
 
-    if (statsRef.current) {
-      observer.observe(statsRef.current)
-    }
-
+    if (statsRef.current) observer.observe(statsRef.current)
     return () => observer.disconnect()
   }, [])
 
   const stats = [
-    { value: 5000, label: t.about.stats.projects, suffix: "+" },
-    { value: 2500, label: t.about.stats.customers, suffix: "+" },
-    { value: 50, label: t.about.stats.materials, suffix: "+" },
-    { value: 30, label: t.about.stats.countries, suffix: "+" },
+    { value: 5000, label: text.stats.projects, suffix: "+" },
+    { value: 2500, label: text.stats.customers, suffix: "+" },
+    { value: 50, label: text.stats.materials, suffix: "+" },
+    { value: 30, label: text.stats.countries, suffix: "+" },
   ]
 
   const values = [
     {
       icon: Lightbulb,
-      title: t.about.values.innovation,
-      description: t.about.values.innovationDesc,
+      title: text.values.innovation,
+      description: text.values.innovationDesc,
       color: "from-primary to-primary/50",
     },
     {
       icon: Award,
-      title: t.about.values.quality,
-      description: t.about.values.qualityDesc,
+      title: text.values.quality,
+      description: text.values.qualityDesc,
       color: "from-accent to-accent/50",
     },
     {
       icon: Leaf,
-      title: t.about.values.sustainability,
-      description: t.about.values.sustainabilityDesc,
+      title: text.values.sustainability,
+      description: text.values.sustainabilityDesc,
       color: "from-chart-3 to-chart-3/50",
     },
     {
       icon: Users,
-      title: t.about.values.customer,
-      description: t.about.values.customerDesc,
+      title: text.values.customer,
+      description: text.values.customerDesc,
       color: "from-chart-4 to-chart-4/50",
     },
   ]
@@ -78,10 +159,10 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
-              <span className="text-balance">{t.about.title}</span>
+              <span className="text-balance">{text.title}</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
-              {t.about.subtitle}
+              {text.subtitle}
             </p>
           </div>
         </div>
@@ -99,9 +180,9 @@ export default function AboutPage() {
                   </div>
                 </div>
                 <h3 className="text-2xl font-bold mb-4 group-hover:text-primary transition-colors duration-200">
-                  {t.about.story.title}
+                  {text.story.title}
                 </h3>
-                <p className="text-muted-foreground leading-relaxed">{t.about.story.description}</p>
+                <p className="text-muted-foreground leading-relaxed">{text.story.description}</p>
               </CardContent>
             </Card>
 
@@ -114,9 +195,9 @@ export default function AboutPage() {
                   </div>
                 </div>
                 <h3 className="text-2xl font-bold mb-4 group-hover:text-accent transition-colors duration-200">
-                  {t.about.mission.title}
+                  {text.mission.title}
                 </h3>
-                <p className="text-muted-foreground leading-relaxed">{t.about.mission.description}</p>
+                <p className="text-muted-foreground leading-relaxed">{text.mission.description}</p>
               </CardContent>
             </Card>
 
@@ -129,9 +210,9 @@ export default function AboutPage() {
                   </div>
                 </div>
                 <h3 className="text-2xl font-bold mb-4 group-hover:text-chart-3 transition-colors duration-200">
-                  {t.about.vision.title}
+                  {text.vision.title}
                 </h3>
-                <p className="text-muted-foreground leading-relaxed">{t.about.vision.description}</p>
+                <p className="text-muted-foreground leading-relaxed">{text.vision.description}</p>
               </CardContent>
             </Card>
           </div>
@@ -161,7 +242,7 @@ export default function AboutPage() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">{t.about.values.title}</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">{text.values.title}</h2>
             <div className="w-20 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
           </div>
 
