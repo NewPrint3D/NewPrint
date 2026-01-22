@@ -2,7 +2,7 @@ export type Locale = "en" | "pt" | "es"
 
 export const locales: Locale[] = ["en", "pt", "es"]
 
-export const defaultLocale: Locale = "en"
+export const defaultLocale: Locale = "es"
 
 export const localeNames: Record<Locale, string> = {
   en: "English",
@@ -273,7 +273,7 @@ export const translations = {
     },
     cta: {
       view: "View",
-      addToCart: "Add to Cart",
+      addToCart: "Add To Cart",
       buyNow: "Buy Now",
       edit: "Edit",
       viewAll: "View All Products",
