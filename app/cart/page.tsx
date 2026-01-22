@@ -20,6 +20,8 @@ const COLOR_NAME_MAP: Record<string, string> = {
 
   "#ff0000": "Vermelho",
   "#d32f2f": "Vermelho",
+  "#fbc02d": "Amarelo",
+  
 }
 
 function getColorName(color?: string) {
