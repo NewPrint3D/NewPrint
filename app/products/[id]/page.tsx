@@ -48,6 +48,7 @@ function colorNameFromHex(hexWithHash: string) {
     "ff0000": { pt: "Vermelho", en: "Red", es: "Rojo" },
     "212121": { pt: "Cinza", en: "Gray", es: "Gris" },
     "808080": { pt: "Cinza", en: "Gray", es: "Gris" },
+    "fbc02d": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
   }
 
   return (
