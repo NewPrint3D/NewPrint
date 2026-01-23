@@ -39,6 +39,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
+  // ✅ Chave de acesso temporário ao Admin (mesma que você usa no /admin?key=...)
+  const ADMIN_KEY = "NEWPRINT3D2026"
+  const ADMIN_SESSION_KEY = "admin_access_key"
+
+  // ✅ Se entrar com ?key=..., salva no sessionStorage para valer no /admin/* inteiro
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const key = params.get("key")
+      if (key && key === ADMIN_KEY) {
+        sessionStorage.setItem(ADMIN_SESSION_KEY, key)
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  // Verificar se há token salvo ao carregar
   useEffect(() => {
     if (typeof window === "undefined") {
       setIsLoading(false)
@@ -57,7 +76,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     })
       .then(async (res) => {
-        // Se a API respondeu erro, não confia no body como user
         const data = await res.json().catch(() => ({}))
         if (!res.ok) return null
         return data
@@ -130,13 +148,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("auth_token")
+      sessionStorage.removeItem(ADMIN_SESSION_KEY)
     }
     setUser(null)
     router.push("/")
   }
 
-  // Admin robusto (aceita role, role em maiúsculo, ou flags)
+  // ✅ Admin robusto: role/flags OU acesso temporário pela key salva no sessionStorage
   const isAdmin = (() => {
+    // 1) Se tiver key salva, libera admin (somente enquanto durar a sessão do browser)
+    if (typeof window !== "undefined") {
+      const savedKey = sessionStorage.getItem(ADMIN_SESSION_KEY)
+      if (savedKey && savedKey === ADMIN_KEY) return true
+    }
+
+    // 2) Admin normal pelo usuário autenticado
     if (!user) return false
     const anyUser = user as any
     if (anyUser.isAdmin === true) return true
