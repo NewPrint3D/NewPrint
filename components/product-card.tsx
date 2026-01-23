@@ -130,7 +130,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <Button asChild size="sm" variant="secondary" className="flex-1 bg-transparent">
-          <Link href={`/products/${(product as any).id}`}>{t.cta.viewDetails ?? t.cta.view}</Link>
+          <Link href={`/products/${(product as any).id}`}>{t.cta.view}</Link>
         </Button>
       </CardFooter>
     </Card>
