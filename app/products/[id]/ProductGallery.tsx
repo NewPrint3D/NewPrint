@@ -69,31 +69,62 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
 
   if (!active) return null
 
+  const isActive = (item: MediaItem) => active?.type === item.type && active?.src === item.src
+
   return (
-    <div>
-      {/* mídia principal */}
-      <div style={{ marginBottom: 16 }}>
+    <div style={{ width: "100%" }}>
+      {/* mídia principal (tamanho padronizado) */}
+      <div
+        style={{
+          width: "100%",
+          borderRadius: 12,
+          overflow: "hidden",
+          background: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          marginBottom: 12,
+
+          // caixa padrão (responsiva): mantém sempre o mesmo "tamanho visual"
+          aspectRatio: "1 / 1",
+          maxHeight: 560,
+          position: "relative",
+        }}
+      >
         {active.type === "video" ? (
           <video
             src={active.src}
             controls
             playsInline
-            style={{ width: "100%", borderRadius: 8 }}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
           />
         ) : (
           <Image
             src={active.src}
             alt={active.alt || "Produto"}
-            width={900}
-            height={900}
+            fill
             priority
-            style={{ borderRadius: 8, width: "100%", height: "auto" }}
+            sizes="(max-width: 768px) 100vw, 50vw"
+            style={{
+              objectFit: "contain", // ✅ não corta, padroniza (principalmente a branca)
+              padding: 14, // ✅ dá “respiro” para não encostar nas bordas
+            }}
           />
         )}
       </div>
 
-      {/* miniaturas */}
-      <div style={{ display: "flex", gap: 12 }}>
+      {/* miniaturas (menores + scroll se precisar) */}
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+          overflowX: "auto",
+          paddingBottom: 4,
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
         {uniqueMedia.map((item, index) => (
           <button
             key={`${item.type}-${item.src}-${index}`}
@@ -106,42 +137,49 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
               }
             }}
             style={{
-              border:
-                active.src === item.src
-                  ? "2px solid #00ffff"
-                  : "1px solid #444",
+              border: isActive(item) ? "2px solid #00ffff" : "1px solid rgba(255,255,255,0.18)",
               padding: 2,
-              borderRadius: 6,
+              borderRadius: 10,
               cursor: "pointer",
-              background: "transparent",
+              background: "rgba(255,255,255,0.03)",
+              flex: "0 0 auto",
             }}
+            aria-label="Selecionar mídia"
+            type="button"
           >
-            {item.type === "video" ? (
-              <video
-                src={item.src}
-                muted
-                playsInline
-                style={{
-                  width: 60,
-                  height: 60,
-                  objectFit: "cover",
-                  borderRadius: 4,
-                }}
-              />
-            ) : (
-              <Image
-                src={item.src}
-                alt={item.alt || "Miniatura"}
-                width={60}
-                height={60}
-                style={{
-                  borderRadius: 4,
-                  width: 60,
-                  height: 60,
-                  objectFit: "cover",
-                }}
-              />
-            )}
+            <div
+              style={{
+                width: 48, // ✅ menor
+                height: 48, // ✅ menor
+                borderRadius: 8,
+                overflow: "hidden",
+                position: "relative",
+                background: "rgba(0,0,0,0.25)",
+              }}
+            >
+              {item.type === "video" ? (
+                <video
+                  src={item.src}
+                  muted
+                  playsInline
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                <Image
+                  src={item.src}
+                  alt={item.alt || "Miniatura"}
+                  fill
+                  sizes="48px"
+                  style={{
+                    objectFit: "cover",
+                  }}
+                />
+              )}
+            </div>
           </button>
         ))}
       </div>
