@@ -31,7 +31,6 @@ export function Navbar() {
   useEffect(() => {
     if (typeof window === "undefined") return
     const handleScroll = () => setIsScrolled(window.scrollY > 10)
-    handleScroll()
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
@@ -40,69 +39,31 @@ export function Navbar() {
     <header
       className={cn(
         "fixed top-0 left-0 right-0 z-50",
-        // ✅ sem transparência
         "bg-[#0b1117] border-b border-white/10",
         isScrolled && "shadow-lg"
       )}
     >
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-6">
-        {/* LOGO (esquerda) */}
-        <Link href="/" className="flex items-center gap-3 font-bold text-lg group select-none">
-          <span
-            className={cn(
-              "inline-flex items-center justify-center",
-              "w-11 h-11 rounded-xl",
-              "bg-gradient-to-br from-cyan-500/25 to-emerald-500/10",
-              "border border-white/10",
-              // ✅ gira 360 no hover
-              "transition-transform duration-700 ease-in-out group-hover:rotate-[360deg]"
-            )}
-          >
-            <span className="text-primary font-extrabold">N3D</span>
-          </span>
-
-          <span className="text-white/95 tracking-tight transition-all duration-300 group-hover:tracking-wide">
-            NewPrint3D
-          </span>
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        {/* LOGO */}
+        <Link href="/" className="flex items-center gap-2 font-bold text-lg">
+          <span className="text-primary">N3D</span>
+          <span>NewPrint3D</span>
         </Link>
 
-        {/* MENU (centro) */}
-        <nav className="hidden md:flex items-center gap-8 text-white/90">
-          <Link href="/" className="hover:text-white transition-colors">
-            {t.nav.home}
-          </Link>
+        {/* DESKTOP */}
+        <nav className="hidden md:flex items-center gap-6">
+          <Link href="/">{t.nav.home}</Link>
+          <Link href="/products">{t.nav.products}</Link>
+          <Link href="/about">{t.nav.about}</Link>
+          <Link href="/contact">{t.nav.contact}</Link>
 
-          <Link href="/products" className="hover:text-white transition-colors">
-            {t.nav.products}
-          </Link>
-
-          {/* ✅ voltar “Acerca” */}
-          <Link href="/about" className="hover:text-white transition-colors">
-            {t.nav.about}
-          </Link>
-
-          <Link href="/contact" className="hover:text-white transition-colors">
-            {t.nav.contact}
-          </Link>
-        </nav>
-
-        {/* AÇÕES (direita) */}
-        <div className="flex items-center gap-2">
           <LanguageSwitcher />
 
-          <Link href="/cart" className="relative inline-flex items-center justify-center p-2 rounded-md hover:bg-white/5 transition-colors">
-            <ShoppingCart className="w-5 h-5" />
-            {totalItems > 0 && (
-              <span className="absolute -top-1 -right-1 bg-primary text-[10px] leading-none rounded-full px-1.5 py-0.5">
-                {totalItems}
-              </span>
-            )}
-          </Link>
-
+          {/* USER / ADMIN (bonequinho) */}
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="hover:bg-white/5">
+                <Button variant="ghost" size="icon" aria-label="User menu">
                   <User className="w-5 h-5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -116,48 +77,73 @@ export function Navbar() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="w-4 h-4 mr-2" />
-                  Sair
+                  {t.nav.logout ?? "Sair"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : null}
 
-          {/* MOBILE */}
-          <button className="md:hidden p-2 rounded-md hover:bg-white/5" onClick={() => setIsMobileMenuOpen(true)}>
-            <Menu />
-          </button>
-        </div>
+          <Link href="/cart" className="relative" aria-label="Cart">
+            <ShoppingCart className="w-5 h-5" />
+            {totalItems > 0 && (
+              <span className="absolute -top-2 -right-2 bg-primary text-xs rounded-full px-1">
+                {totalItems}
+              </span>
+            )}
+          </Link>
+        </nav>
+
+        {/* MOBILE */}
+        <button className="md:hidden" onClick={() => setIsMobileMenuOpen(true)} aria-label="Open menu">
+          <Menu />
+        </button>
       </div>
 
       {/* MOBILE MENU */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-[#0b1117] z-50 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <Link href="/" className="flex items-center gap-3 font-bold text-lg" onClick={() => setIsMobileMenuOpen(false)}>
-              <span className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/5 border border-white/10">
-                <span className="text-primary font-extrabold">N3D</span>
-              </span>
-              <span className="text-white/95">NewPrint3D</span>
-            </Link>
+        <div className="fixed inset-0 bg-black z-50 p-6">
+          <button className="mb-6" onClick={() => setIsMobileMenuOpen(false)} aria-label="Close menu">
+            <X />
+          </button>
 
-            <button className="p-2 rounded-md hover:bg-white/5" onClick={() => setIsMobileMenuOpen(false)}>
-              <X />
-            </button>
-          </div>
-
-          <nav className="flex flex-col gap-4 text-lg text-white/90">
-            <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-white transition-colors">
+          <nav className="flex flex-col gap-4 text-lg">
+            <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
               {t.nav.home}
             </Link>
-            <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-white transition-colors">
+            <Link href="/products" onClick={() => setIsMobileMenuOpen(false)}>
               {t.nav.products}
             </Link>
-            <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-white transition-colors">
+            <Link href="/about" onClick={() => setIsMobileMenuOpen(false)}>
               {t.nav.about}
             </Link>
-            <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-white transition-colors">
+            <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
               {t.nav.contact}
             </Link>
+
+            <div className="pt-4">
+              <LanguageSwitcher />
+            </div>
+
+            {/* USER / ADMIN (mobile) */}
+            {user ? (
+              <div className="pt-4 flex flex-col gap-3">
+                {isAdmin && (
+                  <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
+                    Admin
+                  </Link>
+                )}
+                <button
+                  className="text-left flex items-center gap-2"
+                  onClick={() => {
+                    logout()
+                    setIsMobileMenuOpen(false)
+                  }}
+                >
+                  <LogOut className="w-4 h-4" />
+                  {t.nav.logout ?? "Sair"}
+                </button>
+              </div>
+            ) : null}
           </nav>
         </div>
       )}
