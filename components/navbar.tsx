@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { Button } from "@/components/ui/button"
 
-import { ShoppingCart, Menu, X, User, LogOut } from "lucide-react"
+import { ShoppingCart, Menu, X, User, LogOut, Shield } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import {
@@ -40,7 +40,7 @@ export function Navbar() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50",
         "bg-[#0b1117] border-b border-white/10",
-        isScrolled && "shadow-lg"
+        isScrolled && "shadow-lg",
       )}
     >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -57,40 +57,53 @@ export function Navbar() {
           <Link href="/about">{t.nav.about}</Link>
           <Link href="/contact">{t.nav.contact}</Link>
 
-          <LanguageSwitcher />
+          {/* AÇÕES À DIREITA (globo / admin / user / cart) */}
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
 
-          {/* USER / ADMIN (bonequinho) */}
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="User menu">
-                  <User className="w-5 h-5" />
-                </Button>
-              </DropdownMenuTrigger>
+            {/* BOTÃO ADMIN FIXO AO LADO DO GLOBO (só se for admin) */}
+            {isAdmin ? (
+              <Button asChild variant="ghost" size="icon" aria-label="Admin">
+                <Link href="/admin">
+                  <Shield className="w-5 h-5" />
+                </Link>
+              </Button>
+            ) : null}
 
-              <DropdownMenuContent align="end">
-                {isAdmin && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin">Admin</Link>
+            {/* USER MENU (bonequinho) */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label="User menu">
+                    <User className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end">
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin">Admin</Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sair
                   </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout}>
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : null}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
 
-          <Link href="/cart" className="relative" aria-label="Cart">
-            <ShoppingCart className="w-5 h-5" />
-            {totalItems > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary text-xs rounded-full px-1">
-                {totalItems}
-              </span>
-            )}
-          </Link>
+            {/* CART */}
+            <Link href="/cart" className="relative" aria-label="Cart">
+              <ShoppingCart className="w-5 h-5" />
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-xs rounded-full px-1">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
+          </div>
         </nav>
 
         {/* MOBILE */}
@@ -120,18 +133,29 @@ export function Navbar() {
               {t.nav.contact}
             </Link>
 
-            <div className="pt-4">
+            <div className="pt-4 flex items-center gap-2">
               <LanguageSwitcher />
+
+              {/* ADMIN NO MOBILE (só se for admin) */}
+              {isAdmin ? (
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-white/15"
+                  aria-label="Admin"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Link href="/admin" className="flex items-center gap-2">
+                    <Shield className="w-4 h-4" />
+                    Admin
+                  </Link>
+                </Button>
+              ) : null}
             </div>
 
             {/* USER / ADMIN (mobile) */}
             {user ? (
               <div className="pt-4 flex flex-col gap-3">
-                {isAdmin && (
-                  <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
-                    Admin
-                  </Link>
-                )}
                 <button
                   className="text-left flex items-center gap-2"
                   onClick={() => {
