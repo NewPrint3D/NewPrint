@@ -18,8 +18,8 @@ import { useLanguage } from "@/contexts/language-context"
 
 type CartItem = {
   product?: {
-    name?: { en?: string } | string
-    description?: { en?: string } | string
+    name?: { en?: string; pt?: string; es?: string } | string
+    description?: { en?: string; pt?: string; es?: string } | string
     imageUrl?: string
   }
   price: number | string
@@ -27,6 +27,8 @@ type CartItem = {
   selectedColor?: string
   selectedSize?: string
   selectedMaterial?: string
+  selectedImage?: string
+  cartKey?: string
 }
 
 type ShippingInfo = {
@@ -69,7 +71,12 @@ export default function CheckoutPage() {
     locale === "pt" ? "Processando..." : locale === "es" ? "Procesando..." : "Processing..."
 
   const { items } = useCart() as { items: CartItem[] }
-  const [isProcessing, setIsProcessing] = useState(false)
+
+  // ✅ loading separado (corrige o “carregando” no botão errado)
+  const [isStripeProcessing, setIsStripeProcessing] = useState(false)
+  const [isPaypalProcessing, setIsPaypalProcessing] = useState(false)
+
+  const isProcessing = isStripeProcessing || isPaypalProcessing
 
   const [formData, setFormData] = useState<ShippingInfo>({
     firstName: "",
@@ -119,6 +126,19 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, [id]: value }))
   }
 
+  const buildItemsPayload = () => {
+    return (items || []).map((item) => ({
+      product: item.product,
+      price: item.price,
+      quantity: item.quantity,
+      selectedColor: item.selectedColor,
+      selectedSize: item.selectedSize,
+      selectedMaterial: item.selectedMaterial,
+      selectedImage: (item as any).selectedImage,
+      cartKey: (item as any).cartKey,
+    }))
+  }
+
   // =========================
   // STRIPE (DO NOT TOUCH API)
   // =========================
@@ -132,23 +152,15 @@ export default function CheckoutPage() {
       return
     }
 
-    setIsProcessing(true)
+    setIsStripeProcessing(true)
     try {
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: (items || []).map((item) => ({
-            product: item.product,
-            price: item.price,
-            quantity: item.quantity,
-            selectedColor: item.selectedColor,
-            selectedSize: item.selectedSize,
-            selectedMaterial: item.selectedMaterial,
-          })),
+          items: buildItemsPayload(),
           userId: null,
           shippingInfo: formData,
-          // ✅ importante: também envia o idioma atual
           locale,
         }),
       })
@@ -170,7 +182,7 @@ export default function CheckoutPage() {
         variant: "destructive",
       })
     } finally {
-      setIsProcessing(false)
+      setIsStripeProcessing(false)
     }
   }
 
@@ -187,23 +199,15 @@ export default function CheckoutPage() {
       return
     }
 
-    setIsProcessing(true)
+    setIsPaypalProcessing(true)
     try {
       const response = await fetch("/api/paypal/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: (items || []).map((item) => ({
-            product: item.product,
-            price: item.price,
-            quantity: item.quantity,
-            selectedColor: item.selectedColor,
-            selectedSize: item.selectedSize,
-            selectedMaterial: item.selectedMaterial,
-          })),
+          items: buildItemsPayload(),
           userId: null,
           shippingInfo: formData,
-          // ✅ aqui é o que faz o PayPal seguir o idioma do checkout
           locale,
         }),
       })
@@ -225,7 +229,7 @@ export default function CheckoutPage() {
         variant: "destructive",
       })
     } finally {
-      setIsProcessing(false)
+      setIsPaypalProcessing(false)
     }
   }
 
@@ -322,7 +326,7 @@ export default function CheckoutPage() {
                       const price = safeNumber(it.price)
 
                       return (
-                        <div key={idx} className="flex items-center justify-between gap-3">
+                        <div key={(it as any).cartKey || idx} className="flex items-center justify-between gap-3">
                           <div className="text-sm">
                             <div className="font-medium">{name || "Product"}</div>
                             <div className="opacity-70">
@@ -359,7 +363,7 @@ export default function CheckoutPage() {
                       disabled={isProcessing || !canSubmit}
                       onClick={handleCheckout}
                     >
-                      {isProcessing ? processingLabel : payCardLabel}
+                      {isStripeProcessing ? processingLabel : payCardLabel}
                     </Button>
 
                     <Button
@@ -368,14 +372,16 @@ export default function CheckoutPage() {
                       disabled={isProcessing || !canSubmit}
                       onClick={handlePayPalCheckout}
                     >
-                      {payPalLabel}
+                      {isPaypalProcessing ? processingLabel : payPalLabel}
                     </Button>
                   </div>
 
                   {!canSubmit ? (
                     <p className="text-xs opacity-70">Fill in all fields to enable payment.</p>
                   ) : (
-                    <p className="text-xs text-center text-muted-foreground">🔒 Secure payment • Encrypted checkout • No card data stored</p>
+                    <p className="text-xs text-center text-muted-foreground">
+                      🔒 Secure payment • Encrypted checkout • No card data stored
+                    </p>
                   )}
                 </CardContent>
               </Card>
