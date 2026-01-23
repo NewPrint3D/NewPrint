@@ -48,7 +48,7 @@ export function Navbar() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 select-none group">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/95 to-primary/55 flex items-center justify-center shadow-[0_10px_25px_rgba(0,0,0,0.35)] ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-[1.03]">
+         <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/95 to-primary/55 flex items-center justify-center shadow-[0_10px_25px_rgba(0,0,0,0.35)] ring-1 ring-white/10 transition-transform duration-700 group-hover:rotate-[360deg]">
             <span className="font-black text-white tracking-tight">N3D</span>
           </div>
 
