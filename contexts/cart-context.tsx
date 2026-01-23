@@ -17,13 +17,7 @@ type CartContextType = {
   items: CartItem[]
   addItem: (item: CartItem) => void
   removeItem: (productId: any, color?: string, size?: string, material?: string) => void
-  updateQuantity: (
-    productId: any,
-    color: string | undefined,
-    size: string | undefined,
-    material: string | undefined,
-    quantity: number
-  ) => void
+  updateQuantity: (productId: any, quantity: number, color?: string, size?: string, material?: string) => void
   clearCart: () => void
   totalItems: number
   totalPrice: number
@@ -83,7 +77,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     )
   }
 
-  const updateQuantity = (productId: any, color?: string, size?: string, material?: string, quantity: number) => {
+  // ✅ quantity agora vem antes dos opcionais
+  const updateQuantity = (productId: any, quantity: number, color?: string, size?: string, material?: string) => {
     const key = makeKey(productId, color, size, material)
     setItems((prev) =>
       prev
