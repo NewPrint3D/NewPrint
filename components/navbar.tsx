@@ -77,7 +77,7 @@ export function Navbar() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="w-4 h-4 mr-2" />
-                  {t.nav.logout ?? "Sair"}
+                  Sair
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -140,7 +140,7 @@ export function Navbar() {
                   }}
                 >
                   <LogOut className="w-4 h-4" />
-                  {t.nav.logout ?? "Sair"}
+                  Sair
                 </button>
               </div>
             ) : null}
