@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react"
 
-type CartItem = {
+export type CartItem = {
   product: any
   quantity: number
   selectedColor?: string
@@ -17,7 +17,13 @@ type CartContextType = {
   items: CartItem[]
   addItem: (item: CartItem) => void
   removeItem: (productId: any, color?: string, size?: string, material?: string) => void
-  updateQuantity: (productId: any, color: string | undefined, size: string | undefined, material: string | undefined, quantity: number) => void
+  updateQuantity: (
+    productId: any,
+    color: string | undefined,
+    size: string | undefined,
+    material: string | undefined,
+    quantity: number
+  ) => void
   clearCart: () => void
   totalItems: number
   totalPrice: number
@@ -34,23 +40,17 @@ const makeKey = (productId: any, color?: string, size?: string, material?: strin
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
 
-  // load
   useEffect(() => {
     try {
       const raw = localStorage.getItem("np3d:cart")
       if (raw) setItems(JSON.parse(raw))
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [])
 
-  // save
   useEffect(() => {
     try {
       localStorage.setItem("np3d:cart", JSON.stringify(items))
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [items])
 
   const addItem = (item: CartItem) => {
