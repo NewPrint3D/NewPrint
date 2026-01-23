@@ -16,28 +16,34 @@ function isEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 }
 
+// ✅ nunca retorna segredos
+function safeDetails(err: any) {
+  const msg = err?.message || String(err || "")
+  return {
+    name: err?.name,
+    message: msg,
+    statusCode: err?.statusCode,
+    code: err?.code,
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const RESEND_API_KEY = process.env.RESEND_API_KEY || ""
     const CONTACT_FROM = process.env.CONTACT_FROM || ""
     const CONTACT_TO = process.env.CONTACT_TO || ""
 
-    // ✅ Em vez de “500 genérico”, devolve erro claro (ajuda você a configurar rápido no Render)
-    if (!RESEND_API_KEY) {
+    if (!RESEND_API_KEY || !CONTACT_FROM || !CONTACT_TO) {
       return NextResponse.json(
-        { success: false, message: "Configuração ausente: RESEND_API_KEY (Render Environment)." },
-        { status: 500 },
-      )
-    }
-    if (!CONTACT_FROM) {
-      return NextResponse.json(
-        { success: false, message: "Configuração ausente: CONTACT_FROM (Render Environment)." },
-        { status: 500 },
-      )
-    }
-    if (!CONTACT_TO) {
-      return NextResponse.json(
-        { success: false, message: "Configuração ausente: CONTACT_TO (Render Environment)." },
+        {
+          success: false,
+          message: "Missing env vars",
+          details: {
+            has_RESEND_API_KEY: !!RESEND_API_KEY,
+            has_CONTACT_FROM: !!CONTACT_FROM,
+            has_CONTACT_TO: !!CONTACT_TO,
+          },
+        },
         { status: 500 },
       )
     }
@@ -66,7 +72,7 @@ export async function POST(req: Request) {
     const subject = `Novo contato via site - ${name}`
 
     const baseHtml = `
-      <h2>Novo contato via site (Contact)</h2>
+      <h2>Novo contato via site</h2>
       <p><b>Nome:</b> ${escapeHtml(name)}</p>
       <p><b>E-mail:</b> ${escapeHtml(email)}</p>
       <p><b>Telefone:</b> ${escapeHtml(phone || "-")}</p>
@@ -98,32 +104,25 @@ export async function POST(req: Request) {
     const sendRes = await resend.emails.send({
       from: CONTACT_FROM,
       to: [CONTACT_TO],
-      replyTo: email, // ✅ responder vai direto pro cliente
+      replyTo: email,
       subject,
       html: finalHtml,
       attachments: attachments.length ? attachments : undefined,
     })
 
-    // ✅ Se a Resend retornar erro, mostramos o motivo no response (para você corrigir rápido)
+    // ✅ se a Resend recusar, ela vem aqui
     if ((sendRes as any)?.error) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Falha ao enviar e-mail (Resend).",
-          details: (sendRes as any).error,
-        },
+        { success: false, message: "Resend error", details: (sendRes as any).error },
         { status: 500 },
       )
     }
 
     return NextResponse.json({ success: true, message: "Mensagem enviada com sucesso." }, { status: 200 })
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Erro em /api/contact:", error)
     return NextResponse.json(
-      {
-        success: false,
-        message: "Erro interno no servidor.",
-      },
+      { success: false, message: "Erro interno no servidor.", details: safeDetails(error) },
       { status: 500 },
     )
   }
