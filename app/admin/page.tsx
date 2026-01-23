@@ -3,7 +3,7 @@
 export const dynamic = "force-dynamic"
 
 import { useEffect, useMemo, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { useLanguage } from "@/contexts/language-context"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,8 +16,8 @@ export default function AdminDashboard() {
   const { user, isAdmin, isLoading } = useAuth()
   const { t, locale } = useLanguage()
   const router = useRouter()
-  const searchParams = useSearchParams()
 
+  const [hasAdminKey, setHasAdminKey] = useState(false)
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalOrders: 0,
@@ -25,16 +25,20 @@ export default function AdminDashboard() {
     pendingOrders: 0,
   })
 
-  // ✅ Chave secreta para acesso temporário (NÃO aparece no layout)
-  // Troque por algo só seu (ex: um código grande e difícil).
+  // ✅ Chave secreta (troque por algo só seu e difícil)
   const ADMIN_KEY = "NEWPRINT3D2026"
 
-  const hasAdminKey = useMemo(() => {
-    const key = searchParams?.get("key") || ""
-    return key === ADMIN_KEY
-  }, [searchParams])
+  // ✅ Lê a key do URL somente no browser (não quebra build/export)
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    const key = params.get("key") || ""
+    setHasAdminKey(key === ADMIN_KEY)
+  }, [])
 
-  const canAccess = isAdmin || hasAdminKey
+  const canAccess = useMemo(() => {
+    return isAdmin || hasAdminKey
+  }, [isAdmin, hasAdminKey])
 
   useEffect(() => {
     if (!isLoading && !canAccess) {
