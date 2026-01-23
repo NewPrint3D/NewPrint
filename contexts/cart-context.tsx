@@ -11,13 +11,16 @@ export type CartItem = {
   selectedMaterial?: string
   selectedImage?: string
   price: number
+
+  // ✅ chave única do item (produto + variações)
+  cartKey?: string
 }
 
 type CartContextType = {
   items: CartItem[]
   addItem: (item: CartItem) => void
-  removeItem: (productId: any, color?: string, size?: string, material?: string) => void
-  updateQuantity: (productId: any, quantity: number, color?: string, size?: string, material?: string) => void
+  removeItem: (productId: any, color?: string, size?: string, material?: string, image?: string) => void
+  updateQuantity: (productId: any, quantity: number, color?: string, size?: string, material?: string, image?: string) => void
   clearCart: () => void
   totalItems: number
   totalPrice: number
@@ -25,10 +28,29 @@ type CartContextType = {
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
-const normalize = (v?: string) => (v || "").toString().trim().toLowerCase().replace("#", "")
+const norm = (v?: string) =>
+  (v ?? "")
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
 
-const makeKey = (productId: any, color?: string, size?: string, material?: string) => {
-  return [String(productId), normalize(color), (size || "").trim(), (material || "").trim()].join("|")
+const normColor = (v?: string) => norm(v).replace("#", "")
+
+const getProductId = (product: any) => {
+  const id = product?.id ?? product?.product_id ?? product?.slug ?? product?.handle ?? product?.sku ?? ""
+  return String(id || "").trim()
+}
+
+const makeKey = (productId: any, color?: string, size?: string, material?: string, image?: string) => {
+  return [
+    String(productId || "").trim(),
+    normColor(color),
+    norm(size),
+    norm(material),
+    // ✅ imagem entra como parte da chave para evitar colisão em variações “sem cor”
+    norm(image),
+  ].join("|")
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -37,7 +59,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem("np3d:cart")
-      if (raw) setItems(JSON.parse(raw))
+      if (!raw) return
+
+      const parsed = JSON.parse(raw)
+      if (!Array.isArray(parsed)) return
+
+      // ✅ migração: garante cartKey em itens antigos
+      const hydrated: CartItem[] = parsed.map((p: CartItem) => {
+        const pid = getProductId(p?.product)
+        const k = p.cartKey || makeKey(pid, p.selectedColor, p.selectedSize, p.selectedMaterial, p.selectedImage)
+        return { ...p, cartKey: k }
+      })
+
+      setItems(hydrated)
     } catch {}
   }, [])
 
@@ -48,44 +82,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items])
 
   const addItem = (item: CartItem) => {
-    const productId = String(item?.product?.id ?? item?.product?.product_id ?? item?.product?.slug ?? "")
-    const key = makeKey(productId, item.selectedColor, item.selectedSize, item.selectedMaterial)
+    const pid = getProductId(item?.product)
+    const key = makeKey(pid, item.selectedColor, item.selectedSize, item.selectedMaterial, item.selectedImage)
 
     setItems((prev) => {
-      const idx = prev.findIndex((p) => {
-        const pid = String(p?.product?.id ?? p?.product?.product_id ?? p?.product?.slug ?? "")
-        return makeKey(pid, p.selectedColor, p.selectedSize, p.selectedMaterial) === key
-      })
+      const idx = prev.findIndex((p) => (p.cartKey || "") === key)
 
       if (idx >= 0) {
         const copy = [...prev]
-        copy[idx] = { ...copy[idx], quantity: (copy[idx].quantity || 1) + (item.quantity || 1) }
+        copy[idx] = { ...copy[idx], quantity: (copy[idx].quantity || 0) + (item.quantity || 1) }
         return copy
       }
 
-      return [...prev, { ...item, quantity: item.quantity || 1 }]
+      return [...prev, { ...item, quantity: item.quantity || 1, cartKey: key }]
     })
   }
 
-  const removeItem = (productId: any, color?: string, size?: string, material?: string) => {
-    const key = makeKey(productId, color, size, material)
-    setItems((prev) =>
-      prev.filter((p) => {
-        const pid = String(p?.product?.id ?? p?.product?.product_id ?? p?.product?.slug ?? "")
-        return makeKey(pid, p.selectedColor, p.selectedSize, p.selectedMaterial) !== key
-      }),
-    )
+  const removeItem = (productId: any, color?: string, size?: string, material?: string, image?: string) => {
+    const key = makeKey(productId, color, size, material, image)
+    setItems((prev) => prev.filter((p) => (p.cartKey || "") !== key))
   }
 
-  // ✅ quantity agora vem antes dos opcionais
-  const updateQuantity = (productId: any, quantity: number, color?: string, size?: string, material?: string) => {
-    const key = makeKey(productId, color, size, material)
+  const updateQuantity = (productId: any, quantity: number, color?: string, size?: string, material?: string, image?: string) => {
+    const key = makeKey(productId, color, size, material, image)
     setItems((prev) =>
       prev
         .map((p) => {
-          const pid = String(p?.product?.id ?? p?.product?.product_id ?? p?.product?.slug ?? "")
-          const k = makeKey(pid, p.selectedColor, p.selectedSize, p.selectedMaterial)
-          if (k !== key) return p
+          if ((p.cartKey || "") !== key) return p
           return { ...p, quantity }
         })
         .filter((p) => (p.quantity || 0) > 0),
