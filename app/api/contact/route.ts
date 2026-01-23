@@ -16,7 +16,6 @@ function isEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 }
 
-// ✅ nunca retorna segredos
 function safeDetails(err: any) {
   const msg = err?.message || String(err || "")
   return {
@@ -24,6 +23,58 @@ function safeDetails(err: any) {
     message: msg,
     statusCode: err?.statusCode,
     code: err?.code,
+  }
+}
+
+type ContactPayload = {
+  name?: string
+  email?: string
+  phone?: string
+  message?: string
+}
+
+async function readBody(req: Request): Promise<{ data: ContactPayload; file?: File | null }> {
+  const ct = (req.headers.get("content-type") || "").toLowerCase()
+
+  // ✅ JSON (seu frontend está assim)
+  if (ct.includes("application/json")) {
+    const json = (await req.json().catch(() => ({}))) as any
+    return {
+      data: {
+        name: String(json?.name || "").trim(),
+        email: String(json?.email || "").trim(),
+        phone: String(json?.phone || "").trim(),
+        message: String(json?.message || "").trim(),
+      },
+      file: null,
+    }
+  }
+
+  // ✅ FormData (caso você use upload no futuro)
+  if (ct.includes("multipart/form-data") || ct.includes("application/x-www-form-urlencoded")) {
+    const formData = await req.formData()
+    const file = formData.get("file")
+    return {
+      data: {
+        name: String(formData.get("name") || "").trim(),
+        email: String(formData.get("email") || "").trim(),
+        phone: String(formData.get("phone") || "").trim(),
+        message: String(formData.get("message") || "").trim(),
+      },
+      file: file instanceof File ? file : null,
+    }
+  }
+
+  // ✅ Qualquer outro content-type: tenta json como fallback
+  const json = (await req.json().catch(() => ({}))) as any
+  return {
+    data: {
+      name: String(json?.name || "").trim(),
+      email: String(json?.email || "").trim(),
+      phone: String(json?.phone || "").trim(),
+      message: String(json?.message || "").trim(),
+    },
+    file: null,
   }
 }
 
@@ -50,13 +101,12 @@ export async function POST(req: Request) {
 
     const resend = new Resend(RESEND_API_KEY)
 
-    const formData = await req.formData()
+    const { data, file } = await readBody(req)
 
-    const name = String(formData.get("name") || "").trim()
-    const email = String(formData.get("email") || "").trim()
-    const phone = String(formData.get("phone") || "").trim()
-    const message = String(formData.get("message") || "").trim()
-    const file = formData.get("file")
+    const name = data.name || ""
+    const email = data.email || ""
+    const phone = data.phone || ""
+    const message = data.message || ""
 
     if (!name || !email || !message) {
       return NextResponse.json(
@@ -110,7 +160,6 @@ export async function POST(req: Request) {
       attachments: attachments.length ? attachments : undefined,
     })
 
-    // ✅ se a Resend recusar, ela vem aqui
     if ((sendRes as any)?.error) {
       return NextResponse.json(
         { success: false, message: "Resend error", details: (sendRes as any).error },
