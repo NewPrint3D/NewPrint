@@ -8,7 +8,11 @@ interface User {
   email: string
   firstName: string
   lastName: string
-  role: "customer" | "admin"
+
+  // Pode vir em formatos diferentes dependendo da API
+  role?: string
+  isAdmin?: boolean
+  is_admin?: boolean
 }
 
 interface AuthContextType {
@@ -35,41 +39,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
-  // Verificar se há token salvo ao carregar
   useEffect(() => {
     if (typeof window === "undefined") {
       setIsLoading(false)
       return
     }
+
     const token = localStorage.getItem("auth_token")
-    if (token) {
-      // Verificar token com a API
-      fetch("/api/auth/verify", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.user) {
-            setUser(data.user)
-          } else {
-            if (typeof window !== "undefined") {
-              localStorage.removeItem("auth_token")
-            }
-          }
-        })
-        .catch(() => {
-          if (typeof window !== "undefined") {
-            localStorage.removeItem("auth_token")
-          }
-        })
-        .finally(() => {
-          setIsLoading(false)
-        })
-    } else {
+    if (!token) {
       setIsLoading(false)
+      return
     }
+
+    fetch("/api/auth/verify", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        // Se a API respondeu erro, não confia no body como user
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) return null
+        return data
+      })
+      .then((data) => {
+        if (data?.user) {
+          setUser(data.user)
+        } else {
+          localStorage.removeItem("auth_token")
+          setUser(null)
+        }
+      })
+      .catch(() => {
+        localStorage.removeItem("auth_token")
+        setUser(null)
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
   }, [])
 
   const login = async (email: string, password: string) => {
@@ -80,18 +87,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password }),
       })
 
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
 
       if (res.ok) {
-        if (typeof window !== "undefined") {
+        if (typeof window !== "undefined" && data?.token) {
           localStorage.setItem("auth_token", data.token)
         }
-        setUser(data.user)
+        setUser(data?.user ?? null)
         return { success: true }
       } else {
-        return { success: false, error: data.error || "Erro ao fazer login" }
+        return { success: false, error: data?.error || "Erro ao fazer login" }
       }
-    } catch (error) {
+    } catch {
       return { success: false, error: "Erro de conexão" }
     }
   }
@@ -104,18 +111,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(registerData),
       })
 
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
 
       if (res.ok) {
-        if (typeof window !== "undefined") {
+        if (typeof window !== "undefined" && data?.token) {
           localStorage.setItem("auth_token", data.token)
         }
-        setUser(data.user)
+        setUser(data?.user ?? null)
         return { success: true }
       } else {
-        return { success: false, error: data.error || "Erro ao criar conta" }
+        return { success: false, error: data?.error || "Erro ao criar conta" }
       }
-    } catch (error) {
+    } catch {
       return { success: false, error: "Erro de conexão" }
     }
   }
@@ -128,7 +135,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/")
   }
 
-  const isAdmin = user?.role === "admin"
+  // Admin robusto (aceita role, role em maiúsculo, ou flags)
+  const isAdmin = (() => {
+    if (!user) return false
+    const anyUser = user as any
+    if (anyUser.isAdmin === true) return true
+    if (anyUser.is_admin === true) return true
+
+    const role = String(anyUser.role ?? "").toLowerCase().trim()
+    return role === "admin"
+  })()
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, register, logout, isAdmin }}>
