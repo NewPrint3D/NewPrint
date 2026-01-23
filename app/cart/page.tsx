@@ -116,7 +116,9 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => (
-                <Card key={`${item.product.id}-${item.selectedColor}-${item.selectedSize}-${item.selectedMaterial}`}>
+                <Card
+                  key={(item as any).cartKey || `${item.product.id}-${item.selectedColor}-${item.selectedSize}-${item.selectedMaterial}`}
+                >
                   <CardContent className="p-6">
                     <div className="flex gap-6">
                       <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-muted flex-shrink-0">
@@ -145,7 +147,13 @@ export default function CartPage() {
                             variant="ghost"
                             size="icon"
                             onClick={() =>
-                              removeItem(item.product.id, item.selectedColor, item.selectedSize, item.selectedMaterial)
+                              removeItem(
+                                item.product.id,
+                                item.selectedColor,
+                                item.selectedSize,
+                                item.selectedMaterial,
+                                (item as any).selectedImage,
+                              )
                             }
                             className="text-destructive hover:text-destructive"
                           >
@@ -179,10 +187,11 @@ export default function CartPage() {
                               onClick={() =>
                                 updateQuantity(
                                   item.product.id,
+                                  Math.max(0, (item.quantity || 0) - 1),
                                   item.selectedColor,
                                   item.selectedSize,
                                   item.selectedMaterial,
-                                  item.quantity - 1
+                                  (item as any).selectedImage,
                                 )
                               }
                             >
@@ -198,10 +207,11 @@ export default function CartPage() {
                               onClick={() =>
                                 updateQuantity(
                                   item.product.id,
+                                  (item.quantity || 0) + 1,
                                   item.selectedColor,
                                   item.selectedSize,
                                   item.selectedMaterial,
-                                  item.quantity + 1
+                                  (item as any).selectedImage,
                                 )
                               }
                             >
