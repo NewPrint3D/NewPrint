@@ -1,284 +1,122 @@
 "use client"
 
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { useLanguage } from "@/contexts/language-context"
-import { useCart } from "@/contexts/cart-context"
-import { formatCurrency } from "@/lib/intl"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Trash2, ShoppingBag, ArrowRight } from "lucide-react"
-import Link from "next/link"
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react"
 
-const COLOR_NAME_MAP: Record<string, { pt: string; en: string; es: string }> = {
-  "000000": { pt: "Preto", en: "Black", es: "Negro" },
-  "ffffff": { pt: "Branco", en: "White", es: "Blanco" },
-  "f5f5f5": { pt: "Branco", en: "White", es: "Blanco" },
-  "d32f2f": { pt: "Vermelho", en: "Red", es: "Rojo" },
-  "ff0000": { pt: "Vermelho", en: "Red", es: "Rojo" },
-  "212121": { pt: "Cinza", en: "Gray", es: "Gris" },
-  "808080": { pt: "Cinza", en: "Gray", es: "Gris" },
-  "fbc02d": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
+type CartItem = {
+  product: any
+  quantity: number
+  selectedColor?: string
+  selectedColorName?: string
+  selectedSize?: string
+  selectedMaterial?: string
+  selectedImage?: string
+  price: number
 }
 
-function getColorName(color?: string, locale?: string) {
-  if (!color) return ""
-  const key = color.toLowerCase().replace("#", "")
-  const found = COLOR_NAME_MAP[key]
-  if (!found) return color
-  if (locale === "es") return found.es
-  if (locale === "en") return found.en
-  return found.pt
+type CartContextType = {
+  items: CartItem[]
+  addItem: (item: CartItem) => void
+  removeItem: (productId: any, color?: string, size?: string, material?: string) => void
+  updateQuantity: (productId: any, color: string | undefined, size: string | undefined, material: string | undefined, quantity: number) => void
+  clearCart: () => void
+  totalItems: number
+  totalPrice: number
 }
 
-export default function CartPage() {
-  const { t, locale } = useLanguage()
-  const { items, removeItem, updateQuantity, totalPrice } = useCart()
+const CartContext = createContext<CartContextType | undefined>(undefined)
 
-  const freeShippingThreshold = 50
-  const shipping = totalPrice >= freeShippingThreshold ? 0 : 5.99
-  const missingForFreeShipping = Math.max(0, freeShippingThreshold - totalPrice)
-  const orderTotal = totalPrice + shipping
+const normalize = (v?: string) => (v || "").toString().trim().toLowerCase().replace("#", "")
 
-  const thresholdText = formatCurrency(freeShippingThreshold, locale)
-  const missingText = formatCurrency(missingForFreeShipping, locale)
+const makeKey = (productId: any, color?: string, size?: string, material?: string) => {
+  return [String(productId), normalize(color), (size || "").trim(), (material || "").trim()].join("|")
+}
 
-  const fs = {
-    missingTitle:
-      locale === "pt"
-        ? `Faltam ${missingText} para ganhar frete grátis`
-        : locale === "es"
-          ? `Te faltan ${missingText} para conseguir envío gratis`
-          : `Add ${missingText} more to get free shipping`,
-    missingSubtitle:
-      locale === "pt"
-        ? `Compras acima de ${thresholdText} têm frete grátis.`
-        : locale === "es"
-          ? `Pedidos superiores a ${thresholdText} tienen envío gratis.`
-          : `Orders over ${thresholdText} ship free.`,
-    appliedTitle:
-      locale === "pt"
-        ? "Frete grátis aplicado ✅"
-        : locale === "es"
-          ? "Envío gratis aplicado ✅"
-          : "Free shipping applied ✅",
-    appliedSubtitle:
-      locale === "pt"
-        ? `Você atingiu ${thresholdText} ou mais.`
-        : locale === "es"
-          ? `Has alcanzado ${thresholdText} o más.`
-          : `You reached ${thresholdText} or more.`,
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [items, setItems] = useState<CartItem[]>([])
+
+  // load
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("np3d:cart")
+      if (raw) setItems(JSON.parse(raw))
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  // save
+  useEffect(() => {
+    try {
+      localStorage.setItem("np3d:cart", JSON.stringify(items))
+    } catch {
+      // ignore
+    }
+  }, [items])
+
+  const addItem = (item: CartItem) => {
+    const productId = String(item?.product?.id ?? item?.product?.product_id ?? item?.product?.slug ?? "")
+    const key = makeKey(productId, item.selectedColor, item.selectedSize, item.selectedMaterial)
+
+    setItems((prev) => {
+      const idx = prev.findIndex((p) => {
+        const pid = String(p?.product?.id ?? p?.product?.product_id ?? p?.product?.slug ?? "")
+        return makeKey(pid, p.selectedColor, p.selectedSize, p.selectedMaterial) === key
+      })
+
+      if (idx >= 0) {
+        const copy = [...prev]
+        copy[idx] = { ...copy[idx], quantity: (copy[idx].quantity || 1) + (item.quantity || 1) }
+        return copy
+      }
+
+      return [...prev, { ...item, quantity: item.quantity || 1 }]
+    })
   }
 
-  if (items.length === 0) {
-    return (
-      <main className="min-h-screen">
-        <Navbar />
-        <div className="pt-24 pb-12">
-          <div className="container mx-auto px-4">
-            <div className="max-w-2xl mx-auto text-center py-16">
-              <div className="mb-8">
-                <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
-                  <ShoppingBag className="w-12 h-12 text-muted-foreground" />
-                </div>
-
-                <h1 className="text-3xl font-bold mb-4">{t.cart.empty}</h1>
-                <p className="text-muted-foreground mb-8">{t.cart.emptyDescription}</p>
-
-                <Button asChild size="lg">
-                  <Link href="/products">
-                    {t.cart.continueShopping}
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </main>
+  const removeItem = (productId: any, color?: string, size?: string, material?: string) => {
+    const key = makeKey(productId, color, size, material)
+    setItems((prev) =>
+      prev.filter((p) => {
+        const pid = String(p?.product?.id ?? p?.product?.product_id ?? p?.product?.slug ?? "")
+        return makeKey(pid, p.selectedColor, p.selectedSize, p.selectedMaterial) !== key
+      }),
     )
   }
 
-  return (
-    <main className="min-h-screen">
-      <Navbar />
+  const updateQuantity = (productId: any, color?: string, size?: string, material?: string, quantity: number) => {
+    const key = makeKey(productId, color, size, material)
+    setItems((prev) =>
+      prev
+        .map((p) => {
+          const pid = String(p?.product?.id ?? p?.product?.product_id ?? p?.product?.slug ?? "")
+          const k = makeKey(pid, p.selectedColor, p.selectedSize, p.selectedMaterial)
+          if (k !== key) return p
+          return { ...p, quantity }
+        })
+        .filter((p) => (p.quantity || 0) > 0),
+    )
+  }
 
-      <div className="pt-24 pb-12">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-8">{t.cart.title}</h1>
+  const clearCart = () => setItems([])
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-4">
-              {items.map((item) => (
-                <Card key={`${item.productId}-${item.selectedColor}-${item.selectedSize}-${item.selectedMaterial}`}>
-                  <CardContent className="p-6">
-                    <div className="flex gap-6">
-                      <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                        <img
-                          src={(item as any).selectedImage || item.product?.image || "/placeholder.svg"}
-                          alt={item.product?.name?.[locale] ?? item.product?.name?.en ?? "Product"}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+  const totalItems = useMemo(() => items.reduce((acc, i) => acc + (i.quantity || 0), 0), [items])
+  const totalPrice = useMemo(() => items.reduce((acc, i) => acc + (i.price || 0) * (i.quantity || 0), 0), [items])
 
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h3 className="font-bold text-lg mb-1">
-                              {item.product?.name?.[locale] ?? item.product?.name?.en ?? "Product"}
-                            </h3>
+  const value: CartContextType = {
+    items,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    totalItems,
+    totalPrice,
+  }
 
-                            <p className="text-sm text-muted-foreground">
-                              {item.product?.description?.[locale] ?? item.product?.description?.en ?? ""}
-                            </p>
-                          </div>
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
+}
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() =>
-                              removeItem(item.productId, item.selectedColor, item.selectedSize, item.selectedMaterial)
-                            }
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-
-                        <div className="flex flex-wrap gap-4 mb-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">{t.cart.color}:</span>{" "}
-                            <span className="font-medium">
-                              {(item as any).selectedColorName || getColorName(item.selectedColor, locale)}
-                            </span>
-                          </div>
-
-                          <div>
-                            <span className="text-muted-foreground">{t.cart.size}:</span>{" "}
-                            <span className="font-medium">{item.selectedSize}</span>
-                          </div>
-
-                          <div>
-                            <span className="text-muted-foreground">{t.cart.material}:</span>{" "}
-                            <span className="font-medium">{item.selectedMaterial}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8 bg-transparent"
-                              onClick={() =>
-                                updateQuantity(
-                                  item.productId,
-                                  item.selectedColor,
-                                  item.selectedSize,
-                                  item.selectedMaterial,
-                                  item.quantity - 1
-                                )
-                              }
-                            >
-                              -
-                            </Button>
-
-                            <span className="font-medium w-8 text-center">{item.quantity}</span>
-
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8 bg-transparent"
-                              onClick={() =>
-                                updateQuantity(
-                                  item.productId,
-                                  item.selectedColor,
-                                  item.selectedSize,
-                                  item.selectedMaterial,
-                                  item.quantity + 1
-                                )
-                              }
-                            >
-                              +
-                            </Button>
-                          </div>
-
-                          <div className="text-right">
-                            <p className="text-sm text-muted-foreground">
-                              {formatCurrency(item.price, locale)} {t.cart.perItem}
-                            </p>
-                            <p className="text-xl font-bold text-primary">
-                              {formatCurrency(item.price * item.quantity, locale)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            <div className="lg:col-span-1">
-              <Card className="sticky top-24">
-                <CardContent className="p-6 space-y-4">
-                  <h2 className="text-2xl font-bold mb-6">{t.cart.orderSummary ?? t.checkout.orderSummary}</h2>
-
-                  <div className="rounded-2xl border bg-muted/30 p-4">
-                    {missingForFreeShipping > 0 ? (
-                      <div className="flex items-start gap-3">
-                        <div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary" />
-                        <div className="text-sm">
-                          <p className="font-medium">{fs.missingTitle}</p>
-                          <p className="text-muted-foreground">{fs.missingSubtitle}</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-start gap-3">
-                        <div className="mt-1 h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                        <div className="text-sm">
-                          <p className="font-medium">{fs.appliedTitle}</p>
-                          <p className="text-muted-foreground">{fs.appliedSubtitle}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{t.cart.subtotal}</span>
-                      <span className="font-medium">{formatCurrency(totalPrice, locale)}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{t.cart.shipping}</span>
-                      <span className="font-medium">{formatCurrency(shipping, locale)}</span>
-                    </div>
-
-                    <div className="border-t border-border pt-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold">{t.cart.orderTotal}</span>
-                        <span className="text-2xl font-bold text-primary">{formatCurrency(orderTotal, locale)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button asChild size="lg" className="w-full mt-6">
-                    <Link href="/checkout">{t.cart.proceedToCheckout}</Link>
-                  </Button>
-
-                  <Button asChild variant="outline" size="lg" className="w-full bg-transparent">
-                    <Link href="/products">{t.cart.continueShopping}</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <Footer />
-    </main>
-  )
+export function useCart() {
+  const ctx = useContext(CartContext)
+  if (!ctx) throw new Error("useCart must be used within CartProvider")
+  return ctx
 }
