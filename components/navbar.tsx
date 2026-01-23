@@ -1,16 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
 
 import { useLanguage } from "@/contexts/language-context"
 import { useCart } from "@/contexts/cart-context"
 import { useAuth } from "@/contexts/auth-context"
-import { LanguageSwitcher } from "@/components/language-switchx"
+import { LanguageSwitcher } from "@/components/language-switcher"
 import { Button } from "@/components/ui/button"
 
 import { ShoppingCart, Menu, X, User, LogOut } from "lucide-react"
-import { cn } from "@/lib/utils"
 
 import {
   DropdownMenu,
@@ -30,12 +29,8 @@ export function Navbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#0b1117] border-b border-white/10 shadow-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-
         {/* LOGO */}
-        <Link
-          href="/"
-          className="flex items-center gap-2 font-bold text-lg tracking-wide"
-        >
+        <Link href="/" className="flex items-center gap-2 font-bold text-lg tracking-wide">
           <span className="text-primary font-extrabold">N3D</span>
           <span className="text-white">NewPrint3D</span>
         </Link>
@@ -59,9 +54,7 @@ export function Navbar() {
           <Link href="/cart" className="relative">
             <ShoppingCart className="w-5 h-5" />
             {totalItems > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary text-xs rounded-full px-1">
-                {totalItems}
-              </span>
+              <span className="absolute -top-2 -right-2 bg-primary text-xs rounded-full px-1">{totalItems}</span>
             )}
           </Link>
 
@@ -92,10 +85,7 @@ export function Navbar() {
         </nav>
 
         {/* MOBILE BUTTON */}
-        <button
-          className="md:hidden"
-          onClick={() => setIsMobileMenuOpen(true)}
-        >
+        <button className="md:hidden" onClick={() => setIsMobileMenuOpen(true)} aria-label="Open menu">
           <Menu />
         </button>
       </div>
@@ -103,10 +93,7 @@ export function Navbar() {
       {/* MOBILE MENU */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-black z-50 p-6">
-          <button
-            className="mb-6"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
+          <button className="mb-6" onClick={() => setIsMobileMenuOpen(false)} aria-label="Close menu">
             <X />
           </button>
 
@@ -114,11 +101,9 @@ export function Navbar() {
             <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
               {t.nav.home}
             </Link>
-
             <Link href="/products" onClick={() => setIsMobileMenuOpen(false)}>
               {t.nav.products}
             </Link>
-
             <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
               {t.nav.contact}
             </Link>
