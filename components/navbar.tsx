@@ -6,7 +6,7 @@ import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
 import { useCart } from "@/contexts/cart-context"
 import { useAuth } from "@/contexts/auth-context"
-import { LanguageSwitcher } from "@/components/language-switcher"
+import { LanguageSwitcher } from "@/components/language-switchx"
 import { Button } from "@/components/ui/button"
 
 import { ShoppingCart, Menu, X, User, LogOut } from "lucide-react"
@@ -25,36 +25,34 @@ export function Navbar() {
   const { totalItems } = useCart()
   const { user, logout, isAdmin } = useAuth()
 
-  const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const handleScroll = () => setIsScrolled(window.scrollY > 10)
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
-
   return (
-    <header
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50",
-        "bg-[#0b1117] border-b border-white/10",
-        isScrolled && "shadow-lg"
-      )}
-    >
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0b1117] border-b border-white/10 shadow-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+
         {/* LOGO */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-          <span className="text-primary">N3D</span>
-          <span>NewPrint3D</span>
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-bold text-lg tracking-wide"
+        >
+          <span className="text-primary font-extrabold">N3D</span>
+          <span className="text-white">NewPrint3D</span>
         </Link>
 
         {/* DESKTOP */}
-        <nav className="hidden md:flex items-center gap-6">
-          <Link href="/">{t.nav.home}</Link>
-          <Link href="/products">{t.nav.products}</Link>
-          <Link href="/contact">{t.nav.contact}</Link>
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+          <Link href="/" className="hover:text-primary transition">
+            {t.nav.home}
+          </Link>
+
+          <Link href="/products" className="hover:text-primary transition">
+            {t.nav.products}
+          </Link>
+
+          <Link href="/contact" className="hover:text-primary transition">
+            {t.nav.contact}
+          </Link>
 
           <LanguageSwitcher />
 
@@ -67,7 +65,7 @@ export function Navbar() {
             )}
           </Link>
 
-          {user ? (
+          {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -81,18 +79,23 @@ export function Navbar() {
                     <Link href="/admin">Admin</Link>
                   </DropdownMenuItem>
                 )}
+
                 <DropdownMenuSeparator />
+
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="w-4 h-4 mr-2" />
                   Sair
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : null}
+          )}
         </nav>
 
-        {/* MOBILE */}
-        <button className="md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
+        {/* MOBILE BUTTON */}
+        <button
+          className="md:hidden"
+          onClick={() => setIsMobileMenuOpen(true)}
+        >
           <Menu />
         </button>
       </div>
@@ -100,7 +103,10 @@ export function Navbar() {
       {/* MOBILE MENU */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-black z-50 p-6">
-          <button className="mb-6" onClick={() => setIsMobileMenuOpen(false)}>
+          <button
+            className="mb-6"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
             <X />
           </button>
 
@@ -108,9 +114,11 @@ export function Navbar() {
             <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
               {t.nav.home}
             </Link>
+
             <Link href="/products" onClick={() => setIsMobileMenuOpen(false)}>
               {t.nav.products}
             </Link>
+
             <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
               {t.nav.contact}
             </Link>
