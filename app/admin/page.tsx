@@ -2,8 +2,8 @@
 
 export const dynamic = "force-dynamic"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { useLanguage } from "@/contexts/language-context"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,6 +16,8 @@ export default function AdminDashboard() {
   const { user, isAdmin, isLoading } = useAuth()
   const { t, locale } = useLanguage()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalOrders: 0,
@@ -23,14 +25,24 @@ export default function AdminDashboard() {
     pendingOrders: 0,
   })
 
-  useEffect(() => {
-    if (!isLoading && !isAdmin) {
-      router.push("/")
-    }
-  }, [isAdmin, isLoading, router])
+  // ✅ Chave secreta para acesso temporário (NÃO aparece no layout)
+  // Troque por algo só seu (ex: um código grande e difícil).
+  const ADMIN_KEY = "NEWPRINT3D2026"
+
+  const hasAdminKey = useMemo(() => {
+    const key = searchParams?.get("key") || ""
+    return key === ADMIN_KEY
+  }, [searchParams])
+
+  const canAccess = isAdmin || hasAdminKey
 
   useEffect(() => {
-    // Buscar estatísticas
+    if (!isLoading && !canAccess) {
+      router.push("/")
+    }
+  }, [canAccess, isLoading, router])
+
+  useEffect(() => {
     const fetchStats = async () => {
       if (typeof window === "undefined") return
       try {
@@ -54,10 +66,10 @@ export default function AdminDashboard() {
       }
     }
 
-    if (isAdmin) {
+    if (canAccess) {
       fetchStats()
     }
-  }, [isAdmin])
+  }, [canAccess])
 
   if (isLoading) {
     return (
@@ -67,7 +79,7 @@ export default function AdminDashboard() {
     )
   }
 
-  if (!isAdmin) {
+  if (!canAccess) {
     return null
   }
 
