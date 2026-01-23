@@ -41,13 +41,12 @@ export function Navbar() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50",
         "border-b border-white/10",
-        // Visual como o “antes”: barra escura elegante, com leve blur e glow
         "bg-[#0b1117]/85 backdrop-blur-md",
         isScrolled && "shadow-[0_10px_30px_rgba(0,0,0,0.35)]",
       )}
     >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* LOGO (como na 2ª imagem) */}
+        {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 select-none group">
           <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/95 to-primary/55 flex items-center justify-center shadow-[0_10px_25px_rgba(0,0,0,0.35)] ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-[1.03]">
             <span className="font-black text-white tracking-tight">N3D</span>
@@ -63,33 +62,26 @@ export function Navbar() {
         {/* DESKTOP MENU CENTRAL */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-semibold">
           <Link href="/" className="text-white/90 hover:text-white transition">
-            {t.nav.home ?? "Inicio"}
+            {t.nav.home}
           </Link>
 
           <Link href="/products" className="text-white/90 hover:text-white transition">
-            {t.nav.products ?? "Productos"}
-          </Link>
-
-          {/* Se existir no seu i18n, ótimo. Se não existir, o fallback mantém o texto. */}
-          <Link href="/custom-projects" className="text-white/90 hover:text-white transition">
-            {t.nav.customProjects ?? "Proyectos Personalizados"}
+            {t.nav.products}
           </Link>
 
           <Link href="/about" className="text-white/90 hover:text-white transition">
-            {t.nav.about ?? "Acerca"}
+            {t.nav.about}
           </Link>
 
           <Link href="/contact" className="text-white/90 hover:text-white transition">
-            {t.nav.contact ?? "Contacto"}
+            {t.nav.contact}
           </Link>
         </nav>
 
         {/* ÍCONES À DIREITA */}
         <div className="hidden md:flex items-center gap-3">
-          {/* Idioma (ícone/globo) */}
           <LanguageSwitcher />
 
-          {/* Conta */}
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -119,7 +111,6 @@ export function Navbar() {
             </Button>
           )}
 
-          {/* Carrinho */}
           <Link href="/cart" className="relative text-white/90 hover:text-white transition" aria-label="Cart">
             <ShoppingCart className="w-5 h-5" />
             {totalItems > 0 && (
@@ -192,31 +183,24 @@ export function Navbar() {
 
           <nav className="flex flex-col gap-4 text-lg font-semibold">
             <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="text-white/90 hover:text-white">
-              {t.nav.home ?? "Inicio"}
+              {t.nav.home}
             </Link>
             <Link
               href="/products"
               onClick={() => setIsMobileMenuOpen(false)}
               className="text-white/90 hover:text-white"
             >
-              {t.nav.products ?? "Productos"}
-            </Link>
-            <Link
-              href="/custom-projects"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-white/90 hover:text-white"
-            >
-              {t.nav.customProjects ?? "Proyectos Personalizados"}
+              {t.nav.products}
             </Link>
             <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="text-white/90 hover:text-white">
-              {t.nav.about ?? "Acerca"}
+              {t.nav.about}
             </Link>
             <Link
               href="/contact"
               onClick={() => setIsMobileMenuOpen(false)}
               className="text-white/90 hover:text-white"
             >
-              {t.nav.contact ?? "Contacto"}
+              {t.nav.contact}
             </Link>
 
             {isAdmin && user && (
