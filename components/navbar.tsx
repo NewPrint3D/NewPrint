@@ -43,71 +43,82 @@ export function Navbar() {
         isScrolled && "shadow-lg",
       )}
     >
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* LOGO */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-          <span className="text-primary">N3D</span>
+      <div className="container mx-auto px-4 h-16 flex items-center">
+        {/* LOGO (com animação 360° no N3D) */}
+        <Link href="/" className="flex items-center gap-3 font-bold text-lg group">
+          <span
+            className={cn(
+              "inline-flex items-center justify-center",
+              "w-11 h-11 rounded-xl",
+              "bg-[#0f1720] border border-white/10",
+              "text-primary",
+              "transition-transform duration-700",
+              "group-hover:rotate-[360deg]",
+            )}
+          >
+            N3D
+          </span>
           <span>NewPrint3D</span>
         </Link>
 
-        {/* DESKTOP */}
-        <nav className="hidden md:flex items-center gap-6">
+        {/* LINKS (CENTRO) */}
+        <nav className="hidden md:flex flex-1 items-center justify-center gap-8">
           <Link href="/">{t.nav.home}</Link>
           <Link href="/products">{t.nav.products}</Link>
           <Link href="/about">{t.nav.about}</Link>
           <Link href="/contact">{t.nav.contact}</Link>
-
-          {/* AÇÕES À DIREITA (globo / admin / user / cart) */}
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher />
-
-            {/* BOTÃO ADMIN FIXO AO LADO DO GLOBO (só se for admin) */}
-            {isAdmin ? (
-              <Button asChild variant="ghost" size="icon" aria-label="Admin">
-                <Link href="/admin">
-                  <Shield className="w-5 h-5" />
-                </Link>
-              </Button>
-            ) : null}
-
-            {/* USER MENU (bonequinho) */}
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="User menu">
-                    <User className="w-5 h-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent align="end">
-                  {isAdmin && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin">Admin</Link>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout}>
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sair
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : null}
-
-            {/* CART */}
-            <Link href="/cart" className="relative" aria-label="Cart">
-              <ShoppingCart className="w-5 h-5" />
-              {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary text-xs rounded-full px-1">
-                  {totalItems}
-                </span>
-              )}
-            </Link>
-          </div>
         </nav>
 
-        {/* MOBILE */}
-        <button className="md:hidden" onClick={() => setIsMobileMenuOpen(true)} aria-label="Open menu">
+        {/* AÇÕES (DIREITA) */}
+        <div className="hidden md:flex items-center gap-2 ml-auto">
+          <LanguageSwitcher />
+
+          {/* ADMIN AO LADO DO GLOBO (só se for admin) */}
+          {isAdmin ? (
+            <Button asChild variant="ghost" size="icon" aria-label="Admin">
+              <Link href="/admin">
+                <Shield className="w-5 h-5" />
+              </Link>
+            </Button>
+          ) : null}
+
+          {/* USER MENU (bonequinho) */}
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="User menu">
+                  <User className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="end">
+                {isAdmin && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin">Admin</Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : null}
+
+          {/* CART */}
+          <Link href="/cart" className="relative" aria-label="Cart">
+            <ShoppingCart className="w-5 h-5" />
+            {totalItems > 0 && (
+              <span className="absolute -top-2 -right-2 bg-primary text-xs rounded-full px-1">
+                {totalItems}
+              </span>
+            )}
+          </Link>
+        </div>
+
+        {/* MOBILE: botão menu */}
+        <button className="md:hidden ml-auto" onClick={() => setIsMobileMenuOpen(true)} aria-label="Open menu">
           <Menu />
         </button>
       </div>
@@ -136,7 +147,6 @@ export function Navbar() {
             <div className="pt-4 flex items-center gap-2">
               <LanguageSwitcher />
 
-              {/* ADMIN NO MOBILE (só se for admin) */}
               {isAdmin ? (
                 <Button
                   asChild
@@ -153,7 +163,6 @@ export function Navbar() {
               ) : null}
             </div>
 
-            {/* USER / ADMIN (mobile) */}
             {user ? (
               <div className="pt-4 flex flex-col gap-3">
                 <button
