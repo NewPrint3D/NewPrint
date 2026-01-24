@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useMemo, useState } from "react"
 
 type Language = "es" | "pt" | "en"
 
@@ -94,20 +94,26 @@ const translations: Record<Language, Translations> = {
   },
 }
 
-const LanguageContext = createContext<{
+type LanguageContextValue = {
   language: Language
+  locale: Language
   setLanguage: (lang: Language) => void
   t: Translations
-} | null>(null)
+}
+
+const LanguageContext = createContext<LanguageContextValue | null>(null)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>("es")
 
-  const value = {
-    language,
-    setLanguage,
-    t: translations[language],
-  }
+  const value = useMemo<LanguageContextValue>(() => {
+    return {
+      language,
+      locale: language, // ✅ compat: partes do site ainda usam "locale"
+      setLanguage,
+      t: translations[language],
+    }
+  }, [language])
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }
