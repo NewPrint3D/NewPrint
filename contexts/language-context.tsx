@@ -4,12 +4,6 @@ import { createContext, useContext, useMemo, useState, ReactNode } from "react"
 
 export type Language = "pt" | "en" | "es"
 
-/**
- * IMPORTANTE:
- * - Este tipo precisa cobrir TODAS as chaves usadas em `t.*` no app,
- *   senão o build do Render falha com erro de TypeScript.
- * - Aqui já deixei o bloco admin bem completo para evitar correções "pouco a pouco".
- */
 export type Translations = {
   common: {
     loading: string
@@ -49,11 +43,9 @@ export type Translations = {
   }
 
   admin: {
-    // Cabeçalho / boas-vindas
     dashboard: string
     welcomeBack: string
 
-    // Cards / métricas
     totalProducts: string
     totalOrders: string
     pendingOrders: string
@@ -64,14 +56,12 @@ export type Translations = {
     revenueToday: string
     revenueThisMonth: string
 
-    // Seções / menu
     products: string
     orders: string
     customers: string
     revenue: string
     settings: string
 
-    // Listas e tabelas
     recentOrders: string
     allOrders: string
     viewAll: string
@@ -81,16 +71,16 @@ export type Translations = {
     total: string
     actions: string
 
-    // Ações rápidas
     quickActions: string
     addProduct: string
+    addProductHelper: string
+    createProductHelper: string
     newProduct: string
     manageProducts: string
     manageOrders: string
     viewProducts: string
     viewOrders: string
 
-    // Produtos (admin)
     product: string
     productName: string
     productPrice: string
@@ -104,7 +94,6 @@ export type Translations = {
     editProduct: string
     deleteProduct: string
 
-    // Pedidos (admin)
     order: string
     orderId: string
     orderStatus: string
@@ -114,7 +103,6 @@ export type Translations = {
     orderDetails: string
     updateStatus: string
 
-    // Status comuns
     statusPending: string
     statusProcessing: string
     statusPaid: string
@@ -122,7 +110,6 @@ export type Translations = {
     statusDelivered: string
     statusCanceled: string
 
-    // Mensagens
     noOrders: string
     noProducts: string
     confirmDelete: string
@@ -199,6 +186,8 @@ const translations: Record<Language, Translations> = {
 
       quickActions: "Ações rápidas",
       addProduct: "Adicionar produto",
+      addProductHelper: "Crie um novo produto para a sua loja",
+      createProductHelper: "Crie um novo produto para a sua loja",
       newProduct: "Novo produto",
       manageProducts: "Gerenciar produtos",
       manageOrders: "Gerenciar pedidos",
@@ -309,6 +298,8 @@ const translations: Record<Language, Translations> = {
 
       quickActions: "Acciones rápidas",
       addProduct: "Añadir producto",
+      addProductHelper: "Crea un nuevo producto para tu tienda",
+      createProductHelper: "Crea un nuevo producto para tu tienda",
       newProduct: "Nuevo producto",
       manageProducts: "Gestionar productos",
       manageOrders: "Gestionar pedidos",
@@ -419,6 +410,8 @@ const translations: Record<Language, Translations> = {
 
       quickActions: "Quick actions",
       addProduct: "Add product",
+      addProductHelper: "Create a new product for your store",
+      createProductHelper: "Create a new product for your store",
       newProduct: "New product",
       manageProducts: "Manage products",
       manageOrders: "Manage orders",
