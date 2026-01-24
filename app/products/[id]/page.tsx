@@ -51,7 +51,7 @@ function colorNameFromHex(hexWithHash: string) {
     "fbc02d": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
     "00ae42": { pt: "Verde", en: "Green", es: "Verde" },
     "4b3621": { pt: "Marron", en: "Brown", es: "Marron" },
-    "d9d9d6": { pt: "Branco", en: "White", es: "Blanco" },
+    "d9d9d6": { pt: "Branco Granito", en: "White", es: "Blanco" },
   }
 
   return (
