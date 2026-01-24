@@ -41,15 +41,17 @@ export function ProductCategories() {
       gradient: "from-chart-5/20 via-chart-5/10 to-transparent",
       href: "/about#sustainability",
     },
-   {
-  icon: TabletSmartphone,
-  title: t.categories.accessories,
-  description: t.categories.accessoriesDesc,
-  color: "from-blue-500 to-blue-500/50",
-  gradient: "from-blue-500/20 via-blue-500/10 to-transparent",
-  href: "/products?category=accessories",
+    {
+      icon: TabletSmartphone,
+      title: "Tecnología 3D",
+      description: "Accesorios y soportes impresos en 3D para dispositivos modernos",
+      title: "Accesorios",
+      description: "Accesorios y soportes impresos en 3D para tableta y smatphone",
+      color: "from-blue-500 to-blue-500/50",
+      gradient: "from-blue-500/20 via-blue-500/10 to-transparent",
+      href: "/products?category=accessories",
    },
-  ]
+   ]
 
   return (
     <section className="py-24 relative overflow-hidden">
