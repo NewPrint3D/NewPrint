@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic"
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { useLanguage } from "@/contexts/language-context"
@@ -25,6 +25,8 @@ export default function NewProductPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [adminKey, setAdminKey] = useState<string>("")
+
   const [formData, setFormData] = useState({
     name_en: "",
     name_pt: "",
@@ -42,6 +44,17 @@ export default function NewProductPage() {
     stock_quantity: "0",
   })
 
+  // ✅ Pega a key salva na sessão (definida quando você entrou em /admin?key=...)
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      const saved = sessionStorage.getItem("admin_access_key") || ""
+      setAdminKey(saved)
+    } catch {
+      setAdminKey("")
+    }
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
@@ -53,30 +66,45 @@ export default function NewProductPage() {
         setIsLoading(false)
         return
       }
+
       const token = localStorage.getItem("auth_token")
-      const res = await fetch("/api/products", {
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      }
+
+      // Se existir token, manda também (para quando seu login estiver funcionando)
+      if (token) {
+        headers.Authorization = `Bearer ${token}`
+      }
+
+      // ✅ Se tiver adminKey (acesso temporário), manda para a API
+      if (adminKey) {
+        headers["x-admin-key"] = adminKey
+      }
+
+      const res = await fetch("/api/admin/products", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({
           ...formData,
           base_price: Number.parseFloat(formData.base_price),
           stock_quantity: Number.parseInt(formData.stock_quantity),
-          colors: formData.colors.split(",").map((c) => c.trim()),
-          sizes: formData.sizes.split(",").map((s) => s.trim()),
-          materials: formData.materials.split(",").map((m) => m.trim()),
+          colors: formData.colors.split(",").map((c) => c.trim()).filter(Boolean),
+          sizes: formData.sizes.split(",").map((s) => s.trim()).filter(Boolean),
+          materials: formData.materials.split(",").map((m) => m.trim()).filter(Boolean),
         }),
       })
 
       if (res.ok) {
         router.push("/admin/products")
-      } else {
-        const data = await res.json()
-        setError(data.error || t.admin.failedToCreate)
+        return
       }
-    } catch (error) {
+
+      // mostra erro real do backend
+      const data = await res.json().catch(() => ({}))
+      setError(data.error || t.admin.failedToCreate)
+    } catch {
       setError(t.admin.networkError)
     } finally {
       setIsLoading(false)
