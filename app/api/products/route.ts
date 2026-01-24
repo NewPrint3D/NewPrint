@@ -2,16 +2,14 @@ import { NextResponse } from "next/server"
 import { sql, isDemoMode } from "@/lib/db"
 import { requireAdmin } from "@/lib/auth"
 
-// ✅ Chave de acesso temporário (ideal: configurar no Render como ENV ADMIN_ACCESS_KEY)
 const ADMIN_ACCESS_KEY = process.env.ADMIN_ACCESS_KEY || "NEWPRINT3D2026"
 
-// ✅ Autoriza por key (header) quando você estiver acessando o admin sem token
 function hasValidAdminKey(request: Request) {
   const key = request.headers.get("x-admin-key") || ""
   return key === ADMIN_ACCESS_KEY
 }
 
-// GET - Listar todos os produtos
+// GET - Listar produtos (ativos)
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -20,7 +18,6 @@ export async function GET(request: Request) {
     const localeParam = (searchParams.get("locale") || "es").toLowerCase()
     const locale = localeParam === "pt" || localeParam === "en" || localeParam === "es" ? localeParam : "es"
 
-    // Se não tiver DB, não tenta consultar
     if (isDemoMode || !sql) {
       return NextResponse.json({ products: [] })
     }
@@ -66,11 +63,7 @@ export async function GET(request: Request) {
           ? product.description_pt
           : product.description_en
 
-      return {
-        ...product,
-        name,
-        description,
-      }
+      return { ...product, name, description }
     })
 
     return NextResponse.json({ products: productsLocalized })
@@ -82,7 +75,7 @@ export async function GET(request: Request) {
 
 // POST - Criar novo produto (admin)
 export async function POST(request: Request) {
-  // ✅ Se tiver key válida, libera. Se não tiver, exige token de admin.
+  // ✅ se tiver admin key válida, libera. Senão, exige token admin.
   if (!hasValidAdminKey(request)) {
     const authResult = await requireAdmin(request)
     if ("error" in authResult) {
@@ -92,10 +85,7 @@ export async function POST(request: Request) {
 
   try {
     if (isDemoMode || !sql) {
-      return NextResponse.json(
-        { error: "Modo demonstração: banco não configurado. Configure DATABASE_URL." },
-        { status: 503 },
-      )
+      return NextResponse.json({ error: "Banco de dados não configurado" }, { status: 503 })
     }
 
     const data = await request.json()
@@ -117,52 +107,51 @@ export async function POST(request: Request) {
       stock_quantity,
     } = data
 
-    // Validar campos obrigatórios
     if (!name_en || !name_pt || !name_es || !description_en || !description_pt || !description_es) {
-      return NextResponse.json({ error: "Todos os campos de nome e descrição são obrigatórios" }, { status: 400 })
+      return NextResponse.json({ error: "Todos os nomes e descrições são obrigatórios" }, { status: 400 })
     }
 
-    // ⚠️ base_price pode ser 0, então valida diferente
     if (!category || base_price === undefined || base_price === null) {
       return NextResponse.json({ error: "Categoria e preço são obrigatórios" }, { status: 400 })
     }
 
-    const basePriceNumber = Number(base_price)
-    if (!Number.isFinite(basePriceNumber) || basePriceNumber < 0) {
+    const price = Number(base_price)
+    if (!Number.isFinite(price) || price < 0) {
       return NextResponse.json({ error: "Preço inválido" }, { status: 400 })
     }
 
-    const stockNumber = Number(stock_quantity ?? 0)
-    const safeStock = Number.isFinite(stockNumber) && stockNumber >= 0 ? stockNumber : 0
+    const now = new Date()
 
-    const safeColors = Array.isArray(colors) ? colors : []
-    const safeSizes = Array.isArray(sizes) ? sizes : []
-    const safeMaterials = Array.isArray(materials) ? materials : []
-
-    // Criar produto (garantindo active = true)
-    const newProducts = await sql`
+    const result = await sql`
       INSERT INTO products (
         name_en, name_pt, name_es,
         description_en, description_pt, description_es,
         category, base_price, image_url,
         colors, sizes, materials,
         featured, stock_quantity,
-        active
+        active,
+        created_at,
+        updated_at
       )
       VALUES (
         ${name_en}, ${name_pt}, ${name_es},
         ${description_en}, ${description_pt}, ${description_es},
-        ${category}, ${basePriceNumber}, ${image_url || null},
-        ${safeColors}, ${safeSizes}, ${safeMaterials},
-        ${Boolean(featured)}, ${safeStock},
-        true
+        ${category}, ${price}, ${image_url || null},
+        ${Array.isArray(colors) ? colors : []},
+        ${Array.isArray(sizes) ? sizes : []},
+        ${Array.isArray(materials) ? materials : []},
+        ${Boolean(featured)},
+        ${Number(stock_quantity || 0)},
+        true,
+        ${now},
+        ${now}
       )
       RETURNING *
     `
 
-    return NextResponse.json({ product: newProducts[0] }, { status: 201 })
+    return NextResponse.json({ product: result[0] }, { status: 201 })
   } catch (error) {
-    console.error("Erro ao criar produto:", error)
-    return NextResponse.json({ error: "Erro ao criar produto" }, { status: 500 })
+    console.error("ERRO AO CRIAR PRODUTO:", error)
+    return NextResponse.json({ error: "Erro interno ao criar produto" }, { status: 500 })
   }
 }
