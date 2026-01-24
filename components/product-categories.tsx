@@ -43,8 +43,8 @@ export function ProductCategories() {
     },
     {
       icon: TabletSmartphone,
-      title: "Accesorios",
-      description: "Accesorios y soportes impresos en 3D para tableta y smatphone",
+      title: t.categories.accessories,
+      description: t.3D-printed accessories and stands for tablets and smartphones",
       color: "from-blue-500 to-blue-500/50",
       gradient: "from-blue-500/20 via-blue-500/10 to-transparent",
       href: "/products?category=accessories",
