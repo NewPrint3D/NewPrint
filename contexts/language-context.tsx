@@ -89,7 +89,7 @@ const translations: Record<Language, Translations> = {
       biodegradableDesc: "Sustainability in every print",
 
       accessories: "Accessories",
-      accessoriesDesc: "3D-printed accessories and mounts for tablets and smartphones",
+      accessoriesDesc: "3D-printed accessories and mounts for tablets and smartphone",
     },
   },
 }
