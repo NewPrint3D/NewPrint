@@ -4,15 +4,32 @@ import { createContext, useContext, useMemo, useState, ReactNode } from "react"
 
 export type Language = "pt" | "en" | "es"
 
+/**
+ * IMPORTANTE:
+ * - Este tipo precisa cobrir TODAS as chaves usadas em `t.*` no app,
+ *   senão o build do Render falha com erro de TypeScript.
+ * - Aqui já deixei o bloco admin bem completo para evitar correções "pouco a pouco".
+ */
 export type Translations = {
   common: {
     loading: string
+    save: string
+    cancel: string
+    back: string
+    search: string
+    yes: string
+    no: string
+    close: string
   }
 
   auth: {
     login: string
     logout: string
     welcome: string
+    signIn: string
+    signOut: string
+    email: string
+    password: string
   }
 
   navbar: {
@@ -21,6 +38,7 @@ export type Translations = {
     about: string
     contact: string
     admin: string
+    cart: string
   }
 
   categories: {
@@ -31,36 +49,117 @@ export type Translations = {
   }
 
   admin: {
+    // Cabeçalho / boas-vindas
     dashboard: string
     welcomeBack: string
 
+    // Cards / métricas
     totalProducts: string
     totalOrders: string
     pendingOrders: string
+    completedOrders: string
+    canceledOrders: string
     totalCustomers: string
     totalRevenue: string
+    revenueToday: string
+    revenueThisMonth: string
 
+    // Seções / menu
     products: string
     orders: string
     customers: string
     revenue: string
+    settings: string
 
+    // Listas e tabelas
     recentOrders: string
+    allOrders: string
     viewAll: string
     status: string
     date: string
     customer: string
     total: string
+    actions: string
+
+    // Ações rápidas
+    quickActions: string
+    addProduct: string
+    newProduct: string
+    manageProducts: string
+    manageOrders: string
+    viewProducts: string
+    viewOrders: string
+
+    // Produtos (admin)
+    product: string
+    productName: string
+    productPrice: string
+    productStock: string
+    productCategory: string
+    productColor: string
+    productImage: string
+    productImages: string
+    productDescription: string
+    createProduct: string
+    editProduct: string
+    deleteProduct: string
+
+    // Pedidos (admin)
+    order: string
+    orderId: string
+    orderStatus: string
+    orderDate: string
+    orderTotal: string
+    orderItems: string
+    orderDetails: string
+    updateStatus: string
+
+    // Status comuns
+    statusPending: string
+    statusProcessing: string
+    statusPaid: string
+    statusShipped: string
+    statusDelivered: string
+    statusCanceled: string
+
+    // Mensagens
+    noOrders: string
+    noProducts: string
+    confirmDelete: string
   }
 }
 
 const translations: Record<Language, Translations> = {
   pt: {
-    common: { loading: "Carregando..." },
+    common: {
+      loading: "Carregando...",
+      save: "Salvar",
+      cancel: "Cancelar",
+      back: "Voltar",
+      search: "Pesquisar",
+      yes: "Sim",
+      no: "Não",
+      close: "Fechar",
+    },
 
-    auth: { login: "Entrar", logout: "Sair", welcome: "Bem-vindo" },
+    auth: {
+      login: "Entrar",
+      logout: "Sair",
+      welcome: "Bem-vindo",
+      signIn: "Entrar",
+      signOut: "Sair",
+      email: "Email",
+      password: "Senha",
+    },
 
-    navbar: { home: "Início", products: "Produtos", about: "Sobre", contact: "Contato", admin: "Admin" },
+    navbar: {
+      home: "Início",
+      products: "Produtos",
+      about: "Sobre",
+      contact: "Contato",
+      admin: "Admin",
+      cart: "Carrinho",
+    },
 
     categories: {
       decor: "Decoração",
@@ -76,29 +175,101 @@ const translations: Record<Language, Translations> = {
       totalProducts: "Total de produtos",
       totalOrders: "Total de pedidos",
       pendingOrders: "Pedidos pendentes",
+      completedOrders: "Pedidos concluídos",
+      canceledOrders: "Pedidos cancelados",
       totalCustomers: "Total de clientes",
       totalRevenue: "Faturamento total",
+      revenueToday: "Receita de hoje",
+      revenueThisMonth: "Receita do mês",
 
       products: "Produtos",
       orders: "Pedidos",
       customers: "Clientes",
       revenue: "Receita",
+      settings: "Configurações",
 
       recentOrders: "Pedidos recentes",
+      allOrders: "Todos os pedidos",
       viewAll: "Ver todos",
       status: "Status",
       date: "Data",
       customer: "Cliente",
       total: "Total",
+      actions: "Ações",
+
+      quickActions: "Ações rápidas",
+      addProduct: "Adicionar produto",
+      newProduct: "Novo produto",
+      manageProducts: "Gerenciar produtos",
+      manageOrders: "Gerenciar pedidos",
+      viewProducts: "Ver produtos",
+      viewOrders: "Ver pedidos",
+
+      product: "Produto",
+      productName: "Nome do produto",
+      productPrice: "Preço",
+      productStock: "Estoque",
+      productCategory: "Categoria",
+      productColor: "Cor",
+      productImage: "Imagem do produto",
+      productImages: "Imagens do produto",
+      productDescription: "Descrição",
+      createProduct: "Criar produto",
+      editProduct: "Editar produto",
+      deleteProduct: "Excluir produto",
+
+      order: "Pedido",
+      orderId: "ID do pedido",
+      orderStatus: "Status do pedido",
+      orderDate: "Data do pedido",
+      orderTotal: "Total do pedido",
+      orderItems: "Itens do pedido",
+      orderDetails: "Detalhes do pedido",
+      updateStatus: "Atualizar status",
+
+      statusPending: "Pendente",
+      statusProcessing: "Processando",
+      statusPaid: "Pago",
+      statusShipped: "Enviado",
+      statusDelivered: "Entregue",
+      statusCanceled: "Cancelado",
+
+      noOrders: "Nenhum pedido encontrado",
+      noProducts: "Nenhum produto encontrado",
+      confirmDelete: "Tem certeza que deseja excluir?",
     },
   },
 
   es: {
-    common: { loading: "Cargando..." },
+    common: {
+      loading: "Cargando...",
+      save: "Guardar",
+      cancel: "Cancelar",
+      back: "Volver",
+      search: "Buscar",
+      yes: "Sí",
+      no: "No",
+      close: "Cerrar",
+    },
 
-    auth: { login: "Entrar", logout: "Salir", welcome: "Bienvenido" },
+    auth: {
+      login: "Entrar",
+      logout: "Salir",
+      welcome: "Bienvenido",
+      signIn: "Entrar",
+      signOut: "Salir",
+      email: "Email",
+      password: "Contraseña",
+    },
 
-    navbar: { home: "Inicio", products: "Productos", about: "Sobre nosotros", contact: "Contacto", admin: "Admin" },
+    navbar: {
+      home: "Inicio",
+      products: "Productos",
+      about: "Sobre nosotros",
+      contact: "Contacto",
+      admin: "Admin",
+      cart: "Carrito",
+    },
 
     categories: {
       decor: "Decoración",
@@ -114,29 +285,101 @@ const translations: Record<Language, Translations> = {
       totalProducts: "Total de productos",
       totalOrders: "Total de pedidos",
       pendingOrders: "Pedidos pendientes",
+      completedOrders: "Pedidos completados",
+      canceledOrders: "Pedidos cancelados",
       totalCustomers: "Total de clientes",
       totalRevenue: "Ingresos totales",
+      revenueToday: "Ingresos de hoy",
+      revenueThisMonth: "Ingresos del mes",
 
       products: "Productos",
       orders: "Pedidos",
       customers: "Clientes",
       revenue: "Ingresos",
+      settings: "Configuración",
 
       recentOrders: "Pedidos recientes",
+      allOrders: "Todos los pedidos",
       viewAll: "Ver todo",
       status: "Estado",
       date: "Fecha",
       customer: "Cliente",
       total: "Total",
+      actions: "Acciones",
+
+      quickActions: "Acciones rápidas",
+      addProduct: "Añadir producto",
+      newProduct: "Nuevo producto",
+      manageProducts: "Gestionar productos",
+      manageOrders: "Gestionar pedidos",
+      viewProducts: "Ver productos",
+      viewOrders: "Ver pedidos",
+
+      product: "Producto",
+      productName: "Nombre del producto",
+      productPrice: "Precio",
+      productStock: "Stock",
+      productCategory: "Categoría",
+      productColor: "Color",
+      productImage: "Imagen del producto",
+      productImages: "Imágenes del producto",
+      productDescription: "Descripción",
+      createProduct: "Crear producto",
+      editProduct: "Editar producto",
+      deleteProduct: "Eliminar producto",
+
+      order: "Pedido",
+      orderId: "ID del pedido",
+      orderStatus: "Estado del pedido",
+      orderDate: "Fecha del pedido",
+      orderTotal: "Total del pedido",
+      orderItems: "Artículos del pedido",
+      orderDetails: "Detalles del pedido",
+      updateStatus: "Actualizar estado",
+
+      statusPending: "Pendiente",
+      statusProcessing: "Procesando",
+      statusPaid: "Pagado",
+      statusShipped: "Enviado",
+      statusDelivered: "Entregado",
+      statusCanceled: "Cancelado",
+
+      noOrders: "No se encontraron pedidos",
+      noProducts: "No se encontraron productos",
+      confirmDelete: "¿Seguro que quieres eliminar?",
     },
   },
 
   en: {
-    common: { loading: "Loading..." },
+    common: {
+      loading: "Loading...",
+      save: "Save",
+      cancel: "Cancel",
+      back: "Back",
+      search: "Search",
+      yes: "Yes",
+      no: "No",
+      close: "Close",
+    },
 
-    auth: { login: "Login", logout: "Logout", welcome: "Welcome" },
+    auth: {
+      login: "Login",
+      logout: "Logout",
+      welcome: "Welcome",
+      signIn: "Sign in",
+      signOut: "Sign out",
+      email: "Email",
+      password: "Password",
+    },
 
-    navbar: { home: "Home", products: "Products", about: "About", contact: "Contact", admin: "Admin" },
+    navbar: {
+      home: "Home",
+      products: "Products",
+      about: "About",
+      contact: "Contact",
+      admin: "Admin",
+      cart: "Cart",
+    },
 
     categories: {
       decor: "Decor",
@@ -152,20 +395,68 @@ const translations: Record<Language, Translations> = {
       totalProducts: "Total products",
       totalOrders: "Total orders",
       pendingOrders: "Pending orders",
+      completedOrders: "Completed orders",
+      canceledOrders: "Canceled orders",
       totalCustomers: "Total customers",
       totalRevenue: "Total revenue",
+      revenueToday: "Revenue today",
+      revenueThisMonth: "Revenue this month",
 
       products: "Products",
       orders: "Orders",
       customers: "Customers",
       revenue: "Revenue",
+      settings: "Settings",
 
       recentOrders: "Recent orders",
+      allOrders: "All orders",
       viewAll: "View all",
       status: "Status",
       date: "Date",
       customer: "Customer",
       total: "Total",
+      actions: "Actions",
+
+      quickActions: "Quick actions",
+      addProduct: "Add product",
+      newProduct: "New product",
+      manageProducts: "Manage products",
+      manageOrders: "Manage orders",
+      viewProducts: "View products",
+      viewOrders: "View orders",
+
+      product: "Product",
+      productName: "Product name",
+      productPrice: "Price",
+      productStock: "Stock",
+      productCategory: "Category",
+      productColor: "Color",
+      productImage: "Product image",
+      productImages: "Product images",
+      productDescription: "Description",
+      createProduct: "Create product",
+      editProduct: "Edit product",
+      deleteProduct: "Delete product",
+
+      order: "Order",
+      orderId: "Order ID",
+      orderStatus: "Order status",
+      orderDate: "Order date",
+      orderTotal: "Order total",
+      orderItems: "Order items",
+      orderDetails: "Order details",
+      updateStatus: "Update status",
+
+      statusPending: "Pending",
+      statusProcessing: "Processing",
+      statusPaid: "Paid",
+      statusShipped: "Shipped",
+      statusDelivered: "Delivered",
+      statusCanceled: "Canceled",
+
+      noOrders: "No orders found",
+      noProducts: "No products found",
+      confirmDelete: "Are you sure you want to delete?",
     },
   },
 }
