@@ -45,7 +45,7 @@ const translations: Record<Language, Translations> = {
       biodegradableDesc: "Sostenibilidad en cada impresión",
 
       accessories: "Accesorios",
-      accessoriesDesc: "Accesorios y soportes impresos en 3D para dispositivos modernos",
+      accessoriesDesc: "accesorios y soportes impresos en 3D para tabletas y smartphone",
     },
   },
 
@@ -67,7 +67,7 @@ const translations: Record<Language, Translations> = {
       biodegradableDesc: "Sustentabilidade em cada impressão",
 
       accessories: "Acessórios",
-      accessoriesDesc: "Acessórios e suportes impressos em 3D para dispositivos modernos",
+      accessoriesDesc: "acessórios e suportes impressos em 3D para tablets e smartphone",
     },
   },
 
@@ -89,7 +89,7 @@ const translations: Record<Language, Translations> = {
       biodegradableDesc: "Sustainability in every print",
 
       accessories: "Accessories",
-      accessoriesDesc: "3D printed accessories and stands for modern devices",
+      accessoriesDesc: "3D-printed accessories and mounts for tablets and smartphones",
     },
   },
 }
