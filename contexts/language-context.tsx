@@ -1,58 +1,121 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { type Locale, defaultLocale, getTranslations, locales } from "@/lib/i18n"
+import { createContext, useContext, useState } from "react"
 
-interface LanguageContextType {
-  locale: Locale
-  setLocale: (locale: Locale) => void
-  t: ReturnType<typeof getTranslations>
+type Language = "es" | "pt" | "en"
+
+type Translations = {
+  categories: {
+    title: string
+    subtitle: string
+
+    homeDecor: string
+    homeDecorDesc: string
+
+    toys: string
+    toysDesc: string
+
+    sensoryObjects: string
+    sensoryObjectsDesc: string
+
+    biodegradable: string
+    biodegradableDesc: string
+
+    accessories: string
+    accessoriesDesc: string
+  }
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
+const translations: Record<Language, Translations> = {
+  es: {
+    categories: {
+      title: "Nuestras Categorías",
+      subtitle: "Productos sostenibles hechos con materiales biodegradables",
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(defaultLocale)
-  const [t, setT] = useState(getTranslations(defaultLocale))
+      homeDecor: "Decoración del Hogar",
+      homeDecorDesc: "Jarrones, lámparas, organizadores y mucho más",
 
-  useEffect(() => {
-    if (typeof window === "undefined") return
+      toys: "Juguetes",
+      toysDesc: "Diversión creativa y educativa para todas las edades",
 
-    const savedLocale = localStorage.getItem("locale")
+      sensoryObjects: "Objetos Sensoriales",
+      sensoryObjectsDesc: "Estimulación táctil y desarrollo cognitivo",
 
-    // só aceita idioma válido
-    if (savedLocale && locales.includes(savedLocale as Locale)) {
-      setLocaleState(savedLocale as Locale)
-      setT(getTranslations(savedLocale as Locale))
-    } else {
-      // garante espanhol como padrão
-      setLocaleState(defaultLocale)
-      setT(getTranslations(defaultLocale))
-      localStorage.setItem("locale", defaultLocale)
-    }
-  }, [])
+      biodegradable: "Materiales Biodegradables",
+      biodegradableDesc: "Sostenibilidad en cada impresión",
 
-  const setLocale = (newLocale: Locale) => {
-    if (!locales.includes(newLocale)) return
+      accessories: "Accesorios",
+      accessoriesDesc: "Accesorios y soportes impresos en 3D para dispositivos modernos",
+    },
+  },
 
-    setLocaleState(newLocale)
-    setT(getTranslations(newLocale))
-    localStorage.setItem("locale", newLocale)
+  pt: {
+    categories: {
+      title: "Nossas Categorias",
+      subtitle: "Produtos sustentáveis feitos com materiais biodegradáveis",
+
+      homeDecor: "Decoração do Lar",
+      homeDecorDesc: "Vasos, luminárias, organizadores e muito mais",
+
+      toys: "Brinquedos",
+      toysDesc: "Diversão criativa e educativa para todas as idades",
+
+      sensoryObjects: "Objetos Sensoriais",
+      sensoryObjectsDesc: "Estimulação tátil e desenvolvimento cognitivo",
+
+      biodegradable: "Materiais Biodegradáveis",
+      biodegradableDesc: "Sustentabilidade em cada impressão",
+
+      accessories: "Acessórios",
+      accessoriesDesc: "Acessórios e suportes impressos em 3D para dispositivos modernos",
+    },
+  },
+
+  en: {
+    categories: {
+      title: "Our Categories",
+      subtitle: "Sustainable products made with biodegradable materials",
+
+      homeDecor: "Home Decor",
+      homeDecorDesc: "Vases, lamps, organizers and much more",
+
+      toys: "Toys",
+      toysDesc: "Creative and educational fun for all ages",
+
+      sensoryObjects: "Sensory Objects",
+      sensoryObjectsDesc: "Tactile stimulation and cognitive development",
+
+      biodegradable: "Biodegradable Materials",
+      biodegradableDesc: "Sustainability in every print",
+
+      accessories: "Accessories",
+      accessoriesDesc: "3D printed accessories and stands for modern devices",
+    },
+  },
+}
+
+const LanguageContext = createContext<{
+  language: Language
+  setLanguage: (lang: Language) => void
+  t: Translations
+} | null>(null)
+
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const [language, setLanguage] = useState<Language>("es")
+
+  const value = {
+    language,
+    setLanguage,
+    t: translations[language],
   }
 
-  return (
-    <LanguageContext.Provider value={{ locale, setLocale, t }}>
-      {children}
-    </LanguageContext.Provider>
-  )
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }
 
 export function useLanguage() {
   const context = useContext(LanguageContext)
-
   if (!context) {
-    throw new Error("useLanguage must be used within a LanguageProvider")
+    throw new Error("useLanguage must be used within LanguageProvider")
   }
-
   return context
 }
