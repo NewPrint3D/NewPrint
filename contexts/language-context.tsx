@@ -36,6 +36,7 @@ export type Translations = {
 
     totalProducts: string
     totalOrders: string
+    pendingOrders: string
     totalCustomers: string
     totalRevenue: string
 
@@ -74,6 +75,7 @@ const translations: Record<Language, Translations> = {
 
       totalProducts: "Total de produtos",
       totalOrders: "Total de pedidos",
+      pendingOrders: "Pedidos pendentes",
       totalCustomers: "Total de clientes",
       totalRevenue: "Faturamento total",
 
@@ -111,6 +113,7 @@ const translations: Record<Language, Translations> = {
 
       totalProducts: "Total de productos",
       totalOrders: "Total de pedidos",
+      pendingOrders: "Pedidos pendientes",
       totalCustomers: "Total de clientes",
       totalRevenue: "Ingresos totales",
 
@@ -148,6 +151,7 @@ const translations: Record<Language, Translations> = {
 
       totalProducts: "Total products",
       totalOrders: "Total orders",
+      pendingOrders: "Pending orders",
       totalCustomers: "Total customers",
       totalRevenue: "Total revenue",
 
