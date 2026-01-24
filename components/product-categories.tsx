@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { Home, Gamepad2, Brain, Leaf } from "lucide-react"
+import { Home, Gamepad2, Brain, Leaf, TabletSmartphone } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/contexts/language-context"
 
@@ -41,7 +41,15 @@ export function ProductCategories() {
       gradient: "from-chart-5/20 via-chart-5/10 to-transparent",
       href: "/about#sustainability",
     },
-  ]
+    {
+      icon: TabletSmartphone,
+      title: "Tecnología 3D",
+      description: "Accesorios y soportes impresos en 3D para dispositivos modernos",
+      color: "from-blue-500 to-blue-500/50",
+      gradient: "from-blue-500/20 via-blue-500/10 to-transparent",
+      href: "/products?category=technology",
+   },
+   ]
 
   return (
     <section className="py-24 relative overflow-hidden">
