@@ -1,0 +1,44 @@
+# robots.txt - NewPrint3D
+
+# Permitir todos os crawlers
+User-agent: *
+
+# Permitir indexação geral
+Allow: /
+
+# Bloquear áreas sensíveis e administrativas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /checkout
+Disallow: /cart
+Disallow: /login
+Disallow: /register
+Disallow: /orders
+
+# Permitir explicitamente páginas públicas
+Allow: /products
+Allow: /about
+Allow: /contact
+
+# Sitemap
+Sitemap: https://newprint3d.com/sitemap.xml
+
+# Configurações específicas para crawlers
+
+# Google
+User-agent: Googlebot
+Allow: /
+
+# Bing
+User-agent: Bingbot
+Allow: /
+
+# Bloquear bots indesejados (opcional)
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+# Crawl delay (opcional - cuidado, pode afetar indexação)
+# Crawl-delay: 1
