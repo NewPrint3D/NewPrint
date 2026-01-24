@@ -47,7 +47,7 @@ export function ProductCategories() {
       description: "Accesorios y soportes impresos en 3D para dispositivos modernos",
       color: "from-blue-500 to-blue-500/50",
       gradient: "from-blue-500/20 via-blue-500/10 to-transparent",
-      href: "/products?category=technology",
+      href: "/products?category=accessories",
    },
    ]
 
