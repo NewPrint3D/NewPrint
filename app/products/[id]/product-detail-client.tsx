@@ -31,7 +31,7 @@ const colorNameFromHex = (hexNoHash: string) => {
   const map: Record<string, { pt: string; en: string; es: string }> = {
     "000000": { pt: "Preto", en: "Black", es: "Negro" },
     "ffffff": { pt: "Branco", en: "White", es: "Blanco" },
-    ¨d9d9d6¨: { pt: "Branco", en: "White", es: "Blanco" },
+    "d9d9d6": { pt: "Branco", en: "White", es: "Blanco" },
     "212121": { pt: "Cinza", en: "Gray", es: "Gris" },
     "ff0000": { pt: "Vermelho", en: "Red", es: "Rojo" },
 
