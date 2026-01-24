@@ -1,121 +1,163 @@
 "use client"
 
-import { createContext, useContext, useMemo, useState } from "react"
+import { createContext, useContext, useState, ReactNode } from "react"
 
-type Language = "es" | "pt" | "en"
+export type Language = "pt" | "en" | "es"
 
-type Translations = {
+export type Translations = {
+  common: {
+    loading: string
+  }
+
+  auth: {
+    login: string
+    logout: string
+    welcome: string
+  }
+
+  navbar: {
+    home: string
+    products: string
+    about: string
+    contact: string
+    admin: string
+  }
+
   categories: {
-    title: string
-    subtitle: string
-
-    homeDecor: string
-    homeDecorDesc: string
-
-    toys: string
-    toysDesc: string
-
-    sensoryObjects: string
-    sensoryObjectsDesc: string
-
-    biodegradable: string
-    biodegradableDesc: string
-
+    decor: string
+    decorDesc: string
     accessories: string
     accessoriesDesc: string
+  }
+
+  admin: {
+    dashboard: string
+    welcomeBack: string
   }
 }
 
 const translations: Record<Language, Translations> = {
-  es: {
+  pt: {
+    common: {
+      loading: "Carregando...",
+    },
+
+    auth: {
+      login: "Entrar",
+      logout: "Sair",
+      welcome: "Bem-vindo",
+    },
+
+    navbar: {
+      home: "Início",
+      products: "Produtos",
+      about: "Sobre",
+      contact: "Contato",
+      admin: "Admin",
+    },
+
     categories: {
-      title: "Nuestras Categorías",
-      subtitle: "Productos sostenibles hechos con materiales biodegradables",
+      decor: "Decoração",
+      decorDesc: "Peças decorativas modernas e exclusivas",
+      accessories: "Acessórios",
+      accessoriesDesc: "Acessórios personalizados impressos em 3D",
+    },
 
-      homeDecor: "Decoración del Hogar",
-      homeDecorDesc: "Jarrones, lámparas, organizadores y mucho más",
-
-      toys: "Juguetes",
-      toysDesc: "Diversión creativa y educativa para todas las edades",
-
-      sensoryObjects: "Objetos Sensoriales",
-      sensoryObjectsDesc: "Estimulación táctil y desarrollo cognitivo",
-
-      biodegradable: "Materiales Biodegradables",
-      biodegradableDesc: "Sostenibilidad en cada impresión",
-
-      accessories: "Accesorios",
-      accessoriesDesc: "accesorios y soportes impresos en 3D para tabletas y smartphone",
+    admin: {
+      dashboard: "Painel administrativo",
+      welcomeBack: "Bem-vindo de volta, {name}",
     },
   },
 
-  pt: {
+  es: {
+    common: {
+      loading: "Cargando...",
+    },
+
+    auth: {
+      login: "Entrar",
+      logout: "Salir",
+      welcome: "Bienvenido",
+    },
+
+    navbar: {
+      home: "Inicio",
+      products: "Productos",
+      about: "Sobre nosotros",
+      contact: "Contacto",
+      admin: "Admin",
+    },
+
     categories: {
-      title: "Nossas Categorias",
-      subtitle: "Produtos sustentáveis feitos com materiais biodegradáveis",
+      decor: "Decoración",
+      decorDesc: "Piezas decorativas modernas y exclusivas",
+      accessories: "Accesorios",
+      accessoriesDesc: "Accesorios personalizados impresos en 3D",
+    },
 
-      homeDecor: "Decoração do Lar",
-      homeDecorDesc: "Vasos, luminárias, organizadores e muito mais",
-
-      toys: "Brinquedos",
-      toysDesc: "Diversão criativa e educativa para todas as idades",
-
-      sensoryObjects: "Objetos Sensoriais",
-      sensoryObjectsDesc: "Estimulação tátil e desenvolvimento cognitivo",
-
-      biodegradable: "Materiais Biodegradáveis",
-      biodegradableDesc: "Sustentabilidade em cada impressão",
-
-      accessories: "Acessórios",
-      accessoriesDesc: "acessórios e suportes impressos em 3D para tablets e smartphone",
+    admin: {
+      dashboard: "Panel de administración",
+      welcomeBack: "Bienvenido de nuevo, {name}",
     },
   },
 
   en: {
+    common: {
+      loading: "Loading...",
+    },
+
+    auth: {
+      login: "Login",
+      logout: "Logout",
+      welcome: "Welcome",
+    },
+
+    navbar: {
+      home: "Home",
+      products: "Products",
+      about: "About",
+      contact: "Contact",
+      admin: "Admin",
+    },
+
     categories: {
-      title: "Our Categories",
-      subtitle: "Sustainable products made with biodegradable materials",
-
-      homeDecor: "Home Decor",
-      homeDecorDesc: "Vases, lamps, organizers and much more",
-
-      toys: "Toys",
-      toysDesc: "Creative and educational fun for all ages",
-
-      sensoryObjects: "Sensory Objects",
-      sensoryObjectsDesc: "Tactile stimulation and cognitive development",
-
-      biodegradable: "Biodegradable Materials",
-      biodegradableDesc: "Sustainability in every print",
-
+      decor: "Decor",
+      decorDesc: "Modern and exclusive decorative pieces",
       accessories: "Accessories",
-      accessoriesDesc: "3D-printed accessories and mounts for tablets and smartphone",
+      accessoriesDesc: "Personalized 3D printed accessories",
+    },
+
+    admin: {
+      dashboard: "Admin dashboard",
+      welcomeBack: "Welcome back, {name}",
     },
   },
 }
 
-type LanguageContextValue = {
+type LanguageContextType = {
   language: Language
-  locale: Language
   setLanguage: (lang: Language) => void
   t: Translations
 }
 
-const LanguageContext = createContext<LanguageContextValue | null>(null)
+const LanguageContext = createContext<LanguageContextType | undefined>(
+  undefined,
+)
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
+export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>("es")
 
-  const value = useMemo<LanguageContextValue>(() => {
-    return {
-      language,
-      locale: language, // ✅ compat: partes do site ainda usam "locale"
-      setLanguage,
-      t: translations[language],
-    }
-  }, [language])
-
-  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
+  return (
+    <LanguageContext.Provider
+      value={{
+        language,
+        setLanguage,
+        t: translations[language],
+      }}
+    >
+      {children}
+    </LanguageContext.Provider>
+  )
 }
 
 export function useLanguage() {
