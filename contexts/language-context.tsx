@@ -112,6 +112,8 @@ type AdminBase = {
 }
 export type AdminTranslations = AdminBase & Record<string, string>
 
+type SimpleSection = Record<string, string>
+
 export type Translations = {
   common: CommonTranslations
   cta: CtaTranslations
@@ -141,6 +143,12 @@ export type Translations = {
     accessories: string
     accessoriesDesc: string
   }
+
+  // ✅ adicionados para parar os erros em cascata (t.cart / t.checkout / t.customProjects / t.about)
+  cart: SimpleSection
+  checkout: SimpleSection
+  customProjects: SimpleSection
+  about: SimpleSection
 
   admin: AdminTranslations
 }
@@ -194,6 +202,11 @@ const translations: Record<Language, Translations> = {
       accessories: "Acessórios",
       accessoriesDesc: "Acessórios personalizados impressos em 3D",
     },
+
+    cart: {},
+    checkout: {},
+    customProjects: {},
+    about: {},
 
     admin: {
       dashboard: "Painel administrativo",
@@ -325,6 +338,11 @@ const translations: Record<Language, Translations> = {
       accessoriesDesc: "Accesorios personalizados impresos en 3D",
     },
 
+    cart: {},
+    checkout: {},
+    customProjects: {},
+    about: {},
+
     admin: {
       dashboard: "Panel de administración",
       welcomeBack: "Bienvenido de nuevo, {name}",
@@ -454,6 +472,11 @@ const translations: Record<Language, Translations> = {
       accessories: "Accessories",
       accessoriesDesc: "Personalized 3D printed accessories",
     },
+
+    cart: {},
+    checkout: {},
+    customProjects: {},
+    about: {},
 
     admin: {
       dashboard: "Admin dashboard",
