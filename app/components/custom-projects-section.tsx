@@ -14,19 +14,22 @@ import { useLanguage } from "@/contexts/language-context"
 export function CustomProjectsSection() {
   const { toast } = useToast()
   const { t, locale } = useLanguage()
-const sendingLabel =
-  locale === "pt"
-    ? "Enviando..."
-    : locale === "es"
-      ? "Enviando..."
-      : "Sending..."
 
-const sentLabel =
-  locale === "pt"
-    ? "Enviado com sucesso ✓"
-    : locale === "es"
-      ? "Enviado con éxito ✓"
-      : "Sent successfully ✓"
+  const customT = ((t as any)?.customProjects ?? {}) as Record<string, any>
+
+  const sendingLabel =
+    locale === "pt"
+      ? "Enviando..."
+      : locale === "es"
+        ? "Enviando..."
+        : "Sending..."
+
+  const sentLabel =
+    locale === "pt"
+      ? "Enviado com sucesso ✓"
+      : locale === "es"
+        ? "Enviado con éxito ✓"
+        : "Sent successfully ✓"
 
   const [formData, setFormData] = useState({
     name: "",
@@ -40,6 +43,7 @@ const sentLabel =
   const [preview, setPreview] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSent, setIsSent] = useState(false)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -64,8 +68,8 @@ const sentLabel =
       }
 
       toast({
-        title: t.customProjects.messageSent,
-        description: t.customProjects.messageDesc,
+        title: customT.messageSent ?? "Enviado",
+        description: customT.messageDesc ?? "Sua mensagem foi enviada com sucesso.",
       })
 
       setFormData({ name: "", email: "", phone: "", message: "", file: null })
@@ -77,9 +81,7 @@ const sentLabel =
         variant: "destructive",
         title: "Falha ao enviar",
         description:
-          err instanceof Error
-            ? err.message
-            : "Não foi possível enviar sua solicitação. Tente novamente.",
+          err instanceof Error ? err.message : "Não foi possível enviar sua solicitação. Tente novamente.",
       })
     } finally {
       setIsSubmitting(false)
@@ -129,18 +131,18 @@ const sentLabel =
   const features = [
     {
       icon: Lightbulb,
-      title: t.customProjects.customProjects,
-      description: t.customProjects.customProjectsDesc,
+      title: customT.customProjects ?? "Projetos personalizados",
+      description: customT.customProjectsDesc ?? "",
     },
     {
       icon: Wrench,
-      title: t.customProjects.replacementParts,
-      description: t.customProjects.replacementPartsDesc,
+      title: customT.replacementParts ?? "Peças de reposição",
+      description: customT.replacementPartsDesc ?? "",
     },
     {
       icon: Package,
-      title: t.customProjects.prototypes,
-      description: t.customProjects.prototypesDesc,
+      title: customT.prototypes ?? "Protótipos",
+      description: customT.prototypesDesc ?? "",
     },
   ]
 
@@ -150,8 +152,12 @@ const sentLabel =
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">{t.customProjects.title}</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">{t.customProjects.subtitle}</p>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
+            {customT.title ?? "Custom projects"}
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            {customT.subtitle ?? ""}
+          </p>
           <div className="w-20 h-1 bg-gradient-to-r from-primary via-accent to-chart-3 mx-auto rounded-full animate-[gradient_3s_linear_infinite] bg-[length:200%_auto] mt-4" />
         </div>
 
@@ -179,12 +185,14 @@ const sentLabel =
 
         <Card className="max-w-2xl mx-auto border-border/50 bg-card/50 backdrop-blur-sm shadow-2xl">
           <CardHeader>
-            <CardTitle className="text-2xl text-center">{t.customProjects.requestProject}</CardTitle>
+            <CardTitle className="text-2xl text-center">
+              {customT.requestProject ?? "Request a project"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">{t.customProjects.name}</Label>
+                <Label htmlFor="name">{customT.name ?? "Name"}</Label>
                 <Input
                   id="name"
                   name="name"
@@ -198,7 +206,7 @@ const sentLabel =
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t.customProjects.email}</Label>
+                  <Label htmlFor="email">{customT.email ?? "Email"}</Label>
                   <Input
                     id="email"
                     name="email"
@@ -212,7 +220,7 @@ const sentLabel =
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">{t.customProjects.phone}</Label>
+                  <Label htmlFor="phone">{customT.phone ?? "Phone"}</Label>
                   <Input
                     id="phone"
                     name="phone"
@@ -226,7 +234,7 @@ const sentLabel =
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="message">{t.customProjects.projectDetails}</Label>
+                <Label htmlFor="message">{customT.projectDetails ?? "Project details"}</Label>
                 <Textarea
                   id="message"
                   name="message"
@@ -235,13 +243,13 @@ const sentLabel =
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   required
                   rows={5}
-                  placeholder={t.customProjects.projectPlaceholder}
+                  placeholder={customT.projectPlaceholder ?? ""}
                   className="bg-background/50"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="file">{t.customProjects.uploadFile}</Label>
+                <Label htmlFor="file">{customT.uploadFile ?? "Upload file"}</Label>
 
                 {!formData.file ? (
                   <div
@@ -267,10 +275,10 @@ const sentLabel =
                         <Upload className="w-8 h-8 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium mb-1">{t.customProjects.dragDropFile}</p>
-                        <p className="text-xs text-muted-foreground">{t.customProjects.clickToSelect}</p>
+                        <p className="text-sm font-medium mb-1">{customT.dragDropFile ?? "Drag & drop a file"}</p>
+                        <p className="text-xs text-muted-foreground">{customT.clickToSelect ?? "Click to select"}</p>
                       </div>
-                      <p className="text-xs text-muted-foreground">{t.customProjects.acceptedFiles}</p>
+                      <p className="text-xs text-muted-foreground">{customT.acceptedFiles ?? ""}</p>
                     </div>
                   </div>
                 ) : (
@@ -302,17 +310,12 @@ const sentLabel =
               </div>
 
               <Button type="submit" size="lg" className="w-full group" disabled={isSubmitting || isSent}>
-              <span className="flex items-center gap-2">
-             {isSubmitting
-            ? sendingLabel
-            : isSent
-            ? sentLabel
-           : t.customProjects.sendRequest}
+                <span className="flex items-center gap-2">
+                  {isSubmitting ? sendingLabel : isSent ? sentLabel : (customT.sendRequest ?? "Send request")}
 
-    <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-  </span>
-</Button>
-
+                  <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </Button>
             </form>
           </CardContent>
         </Card>
