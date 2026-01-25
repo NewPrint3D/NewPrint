@@ -4,12 +4,27 @@ import { createContext, useContext, useMemo, useState, ReactNode } from "react"
 
 export type Language = "pt" | "en" | "es"
 
+/** Base do common (o que você usa mais) */
+type CommonBase = {
+  loading: string
+  save: string
+  cancel: string
+  back: string
+  search: string
+  yes: string
+  no: string
+  close: string
+  featured: string
+}
+
 /**
- * Tipos base do site.
- * No admin, permitimos chaves extras para não quebrar o build
- * se você adicionar um texto novo (ex.: manageProductsHelper, etc.).
+ * Truque anti-quebra:
+ * Permite `t.common.qualquerCoisa` e `t.admin.qualquerCoisa` sem falhar build.
  */
-type AdminTranslationsBase = {
+export type CommonTranslations = CommonBase & Record<string, string>
+
+/** Base do admin */
+type AdminBase = {
   dashboard: string
   welcomeBack: string
 
@@ -89,23 +104,10 @@ type AdminTranslationsBase = {
   confirmDelete: string
 }
 
-/**
- * Aqui está o truque que acaba com esses erros:
- * AdminTranslations = base + permite chaves extras string.
- */
-export type AdminTranslations = AdminTranslationsBase & Record<string, string>
+export type AdminTranslations = AdminBase & Record<string, string>
 
 export type Translations = {
-  common: {
-    loading: string
-    save: string
-    cancel: string
-    back: string
-    search: string
-    yes: string
-    no: string
-    close: string
-  }
+  common: CommonTranslations
 
   auth: {
     login: string
@@ -147,7 +149,9 @@ const translations: Record<Language, Translations> = {
       yes: "Sim",
       no: "Não",
       close: "Fechar",
+      featured: "Destaque",
     },
+
     auth: {
       login: "Entrar",
       logout: "Sair",
@@ -157,6 +161,7 @@ const translations: Record<Language, Translations> = {
       email: "Email",
       password: "Senha",
     },
+
     navbar: {
       home: "Início",
       products: "Produtos",
@@ -165,12 +170,14 @@ const translations: Record<Language, Translations> = {
       admin: "Admin",
       cart: "Carrinho",
     },
+
     categories: {
       decor: "Decoração",
       decorDesc: "Peças decorativas modernas e exclusivas",
       accessories: "Acessórios",
       accessoriesDesc: "Acessórios personalizados impressos em 3D",
     },
+
     admin: {
       dashboard: "Painel administrativo",
       welcomeBack: "Bem-vindo de volta, {name}",
@@ -262,7 +269,9 @@ const translations: Record<Language, Translations> = {
       yes: "Sí",
       no: "No",
       close: "Cerrar",
+      featured: "Destacado",
     },
+
     auth: {
       login: "Entrar",
       logout: "Salir",
@@ -272,6 +281,7 @@ const translations: Record<Language, Translations> = {
       email: "Email",
       password: "Contraseña",
     },
+
     navbar: {
       home: "Inicio",
       products: "Productos",
@@ -280,12 +290,14 @@ const translations: Record<Language, Translations> = {
       admin: "Admin",
       cart: "Carrito",
     },
+
     categories: {
       decor: "Decoración",
       decorDesc: "Piezas decorativas modernas y exclusivas",
       accessories: "Accesorios",
       accessoriesDesc: "Accesorios personalizados impresos en 3D",
     },
+
     admin: {
       dashboard: "Panel de administración",
       welcomeBack: "Bienvenido de nuevo, {name}",
@@ -377,7 +389,9 @@ const translations: Record<Language, Translations> = {
       yes: "Yes",
       no: "No",
       close: "Close",
+      featured: "Featured",
     },
+
     auth: {
       login: "Login",
       logout: "Logout",
@@ -387,6 +401,7 @@ const translations: Record<Language, Translations> = {
       email: "Email",
       password: "Password",
     },
+
     navbar: {
       home: "Home",
       products: "Products",
@@ -395,12 +410,14 @@ const translations: Record<Language, Translations> = {
       admin: "Admin",
       cart: "Cart",
     },
+
     categories: {
       decor: "Decor",
       decorDesc: "Modern and exclusive decorative pieces",
       accessories: "Accessories",
       accessoriesDesc: "Personalized 3D printed accessories",
     },
+
     admin: {
       dashboard: "Admin dashboard",
       welcomeBack: "Welcome back, {name}",
