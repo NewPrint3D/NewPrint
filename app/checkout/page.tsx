@@ -57,6 +57,9 @@ export default function CheckoutPage() {
   const { toast } = useToast()
   const { t, locale } = useLanguage()
 
+  const cartT = ((t as any)?.cart ?? {}) as Record<string, any>
+  const checkoutT = ((t as any)?.checkout ?? {}) as Record<string, any>
+
   const payCardLabel =
     locale === "pt"
       ? "Pagar com Cartão (Crédito/Débito)"
@@ -241,63 +244,63 @@ export default function CheckoutPage() {
 
       <div className="pt-24 pb-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-8">Checkout</h1>
+          <h1 className="text-4xl font-bold mb-8">{checkoutT.title ?? "Checkout"}</h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t.checkout.shippingInfo}</CardTitle>
+                  <CardTitle>{checkoutT.shippingInfo ?? "Shipping information"}</CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName">{t.checkout.firstName}</Label>
+                      <Label htmlFor="firstName">{checkoutT.firstName ?? "First name"}</Label>
                       <Input id="firstName" value={formData.firstName} onChange={handleInputChange} required />
                     </div>
 
                     <div>
-                      <Label htmlFor="lastName">{t.checkout.lastName}</Label>
+                      <Label htmlFor="lastName">{checkoutT.lastName ?? "Last name"}</Label>
                       <Input id="lastName" value={formData.lastName} onChange={handleInputChange} required />
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{checkoutT.email ?? "Email"}</Label>
                     <Input id="email" type="email" value={formData.email} onChange={handleInputChange} required />
                   </div>
 
                   <div>
-                    <Label htmlFor="phone">{t.checkout.phone}</Label>
+                    <Label htmlFor="phone">{checkoutT.phone ?? "Phone"}</Label>
                     <Input id="phone" value={formData.phone} onChange={handleInputChange} required />
                   </div>
 
                   <div>
-                    <Label htmlFor="address">{t.checkout.address}</Label>
+                    <Label htmlFor="address">{checkoutT.address ?? "Address"}</Label>
                     <Input id="address" value={formData.address} onChange={handleInputChange} required />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="city">{t.checkout.city}</Label>
+                      <Label htmlFor="city">{checkoutT.city ?? "City"}</Label>
                       <Input id="city" value={formData.city} onChange={handleInputChange} required />
                     </div>
 
                     <div>
-                      <Label htmlFor="state">{t.checkout.state}</Label>
+                      <Label htmlFor="state">{checkoutT.state ?? "State"}</Label>
                       <Input id="state" value={formData.state} onChange={handleInputChange} required />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="zipCode">{t.checkout.zipCode}</Label>
+                      <Label htmlFor="zipCode">{checkoutT.zipCode ?? "ZIP code"}</Label>
                       <Input id="zipCode" value={formData.zipCode} onChange={handleInputChange} required />
                     </div>
 
                     <div>
-                      <Label htmlFor="country">{t.checkout.country}</Label>
+                      <Label htmlFor="country">{checkoutT.country ?? "Country"}</Label>
                       <Input id="country" value={formData.country} onChange={handleInputChange} required />
                     </div>
                   </div>
@@ -308,7 +311,7 @@ export default function CheckoutPage() {
             <div>
               <Card>
                 <CardHeader>
-                  <CardTitle>{t.checkout.orderSummary}</CardTitle>
+                  <CardTitle>{checkoutT.orderSummary ?? "Order summary"}</CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
@@ -330,7 +333,7 @@ export default function CheckoutPage() {
                           <div className="text-sm">
                             <div className="font-medium">{name || "Product"}</div>
                             <div className="opacity-70">
-                              Qty: {qty} × € {to2(price)}
+                              {checkoutT.qtyLabel ?? "Qty"}: {qty} × € {to2(price)}
                             </div>
                           </div>
                           <div className="font-medium">€ {to2(price * qty)}</div>
@@ -341,18 +344,18 @@ export default function CheckoutPage() {
 
                   <div className="border-t pt-4 space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span>{t.cart.subtotal}</span>
+                      <span>{cartT.subtotal ?? "Subtotal"}</span>
                       <span>€ {to2(subtotal)}</span>
                     </div>
 
                     <div className="flex justify-between">
-                      <span>{t.cart.shipping}</span>
+                      <span>{cartT.shipping ?? "Shipping"}</span>
                       <span>€ {to2(shipping)}</span>
                     </div>
                   </div>
 
                   <div className="border-t pt-4 flex justify-between items-center">
-                    <span className="text-lg font-semibold">Total</span>
+                    <span className="text-lg font-semibold">{checkoutT.total ?? "Total"}</span>
                     <span className="text-xl font-bold">€ {to2(total)}</span>
                   </div>
 
@@ -377,10 +380,10 @@ export default function CheckoutPage() {
                   </div>
 
                   {!canSubmit ? (
-                    <p className="text-xs opacity-70">Fill in all fields to enable payment.</p>
+                    <p className="text-xs opacity-70">{checkoutT.fillAllFields ?? "Fill in all fields to enable payment."}</p>
                   ) : (
                     <p className="text-xs text-center text-muted-foreground">
-                      🔒 Secure payment • Encrypted checkout • No card data stored
+                      🔒 {checkoutT.securePayment ?? "Secure payment • Encrypted checkout • No card data stored"}
                     </p>
                   )}
                 </CardContent>
