@@ -4,6 +4,97 @@ import { createContext, useContext, useMemo, useState, ReactNode } from "react"
 
 export type Language = "pt" | "en" | "es"
 
+/**
+ * Tipos base do site.
+ * No admin, permitimos chaves extras para não quebrar o build
+ * se você adicionar um texto novo (ex.: manageProductsHelper, etc.).
+ */
+type AdminTranslationsBase = {
+  dashboard: string
+  welcomeBack: string
+
+  totalProducts: string
+  totalOrders: string
+  pendingOrders: string
+  completedOrders: string
+  canceledOrders: string
+  totalCustomers: string
+  totalRevenue: string
+  revenueToday: string
+  revenueThisMonth: string
+
+  products: string
+  orders: string
+  customers: string
+  revenue: string
+  settings: string
+
+  recentOrders: string
+  allOrders: string
+  viewAll: string
+  status: string
+  date: string
+  customer: string
+  total: string
+  actions: string
+
+  quickActions: string
+
+  addProduct: string
+  newProduct: string
+  manageProducts: string
+  manageOrders: string
+  viewProducts: string
+  viewOrders: string
+
+  addProductHelper: string
+  newProductHelper: string
+  createProductHelper: string
+  manageProductsHelper: string
+  manageOrdersHelper: string
+  viewProductsHelper: string
+  viewOrdersHelper: string
+
+  product: string
+  productName: string
+  productPrice: string
+  productStock: string
+  productCategory: string
+  productColor: string
+  productImage: string
+  productImages: string
+  productDescription: string
+  createProduct: string
+  editProduct: string
+  deleteProduct: string
+
+  order: string
+  orderId: string
+  orderStatus: string
+  orderDate: string
+  orderTotal: string
+  orderItems: string
+  orderDetails: string
+  updateStatus: string
+
+  statusPending: string
+  statusProcessing: string
+  statusPaid: string
+  statusShipped: string
+  statusDelivered: string
+  statusCanceled: string
+
+  noOrders: string
+  noProducts: string
+  confirmDelete: string
+}
+
+/**
+ * Aqui está o truque que acaba com esses erros:
+ * AdminTranslations = base + permite chaves extras string.
+ */
+export type AdminTranslations = AdminTranslationsBase & Record<string, string>
+
 export type Translations = {
   common: {
     loading: string
@@ -42,78 +133,7 @@ export type Translations = {
     accessoriesDesc: string
   }
 
-  admin: {
-    dashboard: string
-    welcomeBack: string
-
-    totalProducts: string
-    totalOrders: string
-    pendingOrders: string
-    completedOrders: string
-    canceledOrders: string
-    totalCustomers: string
-    totalRevenue: string
-    revenueToday: string
-    revenueThisMonth: string
-
-    products: string
-    orders: string
-    customers: string
-    revenue: string
-    settings: string
-
-    recentOrders: string
-    allOrders: string
-    viewAll: string
-    status: string
-    date: string
-    customer: string
-    total: string
-    actions: string
-
-    quickActions: string
-    addProduct: string
-    addProductHelper: string
-    createProductHelper: string
-    newProduct: string
-    manageProducts: string
-    manageOrders: string
-    viewProducts: string
-    viewOrders: string
-
-    product: string
-    productName: string
-    productPrice: string
-    productStock: string
-    productCategory: string
-    productColor: string
-    productImage: string
-    productImages: string
-    productDescription: string
-    createProduct: string
-    editProduct: string
-    deleteProduct: string
-
-    order: string
-    orderId: string
-    orderStatus: string
-    orderDate: string
-    orderTotal: string
-    orderItems: string
-    orderDetails: string
-    updateStatus: string
-
-    statusPending: string
-    statusProcessing: string
-    statusPaid: string
-    statusShipped: string
-    statusDelivered: string
-    statusCanceled: string
-
-    noOrders: string
-    noProducts: string
-    confirmDelete: string
-  }
+  admin: AdminTranslations
 }
 
 const translations: Record<Language, Translations> = {
@@ -128,7 +148,6 @@ const translations: Record<Language, Translations> = {
       no: "Não",
       close: "Fechar",
     },
-
     auth: {
       login: "Entrar",
       logout: "Sair",
@@ -138,7 +157,6 @@ const translations: Record<Language, Translations> = {
       email: "Email",
       password: "Senha",
     },
-
     navbar: {
       home: "Início",
       products: "Produtos",
@@ -147,14 +165,12 @@ const translations: Record<Language, Translations> = {
       admin: "Admin",
       cart: "Carrinho",
     },
-
     categories: {
       decor: "Decoração",
       decorDesc: "Peças decorativas modernas e exclusivas",
       accessories: "Acessórios",
       accessoriesDesc: "Acessórios personalizados impressos em 3D",
     },
-
     admin: {
       dashboard: "Painel administrativo",
       welcomeBack: "Bem-vindo de volta, {name}",
@@ -185,14 +201,21 @@ const translations: Record<Language, Translations> = {
       actions: "Ações",
 
       quickActions: "Ações rápidas",
+
       addProduct: "Adicionar produto",
-      addProductHelper: "Crie um novo produto para a sua loja",
-      createProductHelper: "Crie um novo produto para a sua loja",
       newProduct: "Novo produto",
       manageProducts: "Gerenciar produtos",
       manageOrders: "Gerenciar pedidos",
       viewProducts: "Ver produtos",
       viewOrders: "Ver pedidos",
+
+      addProductHelper: "Crie um novo produto para a sua loja",
+      newProductHelper: "Adicione um novo item ao catálogo",
+      createProductHelper: "Crie um novo produto para a sua loja",
+      manageProductsHelper: "Edite, organize e publique seus produtos",
+      manageOrdersHelper: "Acompanhe e atualize o status dos pedidos",
+      viewProductsHelper: "Veja todos os produtos cadastrados",
+      viewOrdersHelper: "Veja todos os pedidos realizados",
 
       product: "Produto",
       productName: "Nome do produto",
@@ -240,7 +263,6 @@ const translations: Record<Language, Translations> = {
       no: "No",
       close: "Cerrar",
     },
-
     auth: {
       login: "Entrar",
       logout: "Salir",
@@ -250,7 +272,6 @@ const translations: Record<Language, Translations> = {
       email: "Email",
       password: "Contraseña",
     },
-
     navbar: {
       home: "Inicio",
       products: "Productos",
@@ -259,14 +280,12 @@ const translations: Record<Language, Translations> = {
       admin: "Admin",
       cart: "Carrito",
     },
-
     categories: {
       decor: "Decoración",
       decorDesc: "Piezas decorativas modernas y exclusivas",
       accessories: "Accesorios",
       accessoriesDesc: "Accesorios personalizados impresos en 3D",
     },
-
     admin: {
       dashboard: "Panel de administración",
       welcomeBack: "Bienvenido de nuevo, {name}",
@@ -297,14 +316,21 @@ const translations: Record<Language, Translations> = {
       actions: "Acciones",
 
       quickActions: "Acciones rápidas",
+
       addProduct: "Añadir producto",
-      addProductHelper: "Crea un nuevo producto para tu tienda",
-      createProductHelper: "Crea un nuevo producto para tu tienda",
       newProduct: "Nuevo producto",
       manageProducts: "Gestionar productos",
       manageOrders: "Gestionar pedidos",
       viewProducts: "Ver productos",
       viewOrders: "Ver pedidos",
+
+      addProductHelper: "Crea un nuevo producto para tu tienda",
+      newProductHelper: "Añade un nuevo artículo al catálogo",
+      createProductHelper: "Crea un nuevo producto para tu tienda",
+      manageProductsHelper: "Edita, organiza y publica tus productos",
+      manageOrdersHelper: "Sigue y actualiza el estado de los pedidos",
+      viewProductsHelper: "Ver todos los productos registrados",
+      viewOrdersHelper: "Ver todos los pedidos realizados",
 
       product: "Producto",
       productName: "Nombre del producto",
@@ -352,7 +378,6 @@ const translations: Record<Language, Translations> = {
       no: "No",
       close: "Close",
     },
-
     auth: {
       login: "Login",
       logout: "Logout",
@@ -362,7 +387,6 @@ const translations: Record<Language, Translations> = {
       email: "Email",
       password: "Password",
     },
-
     navbar: {
       home: "Home",
       products: "Products",
@@ -371,14 +395,12 @@ const translations: Record<Language, Translations> = {
       admin: "Admin",
       cart: "Cart",
     },
-
     categories: {
       decor: "Decor",
       decorDesc: "Modern and exclusive decorative pieces",
       accessories: "Accessories",
       accessoriesDesc: "Personalized 3D printed accessories",
     },
-
     admin: {
       dashboard: "Admin dashboard",
       welcomeBack: "Welcome back, {name}",
@@ -409,14 +431,21 @@ const translations: Record<Language, Translations> = {
       actions: "Actions",
 
       quickActions: "Quick actions",
+
       addProduct: "Add product",
-      addProductHelper: "Create a new product for your store",
-      createProductHelper: "Create a new product for your store",
       newProduct: "New product",
       manageProducts: "Manage products",
       manageOrders: "Manage orders",
       viewProducts: "View products",
       viewOrders: "View orders",
+
+      addProductHelper: "Create a new product for your store",
+      newProductHelper: "Add a new item to the catalog",
+      createProductHelper: "Create a new product for your store",
+      manageProductsHelper: "Edit, organize and publish your products",
+      manageOrdersHelper: "Track and update order status",
+      viewProductsHelper: "See all registered products",
+      viewOrdersHelper: "See all placed orders",
 
       product: "Product",
       productName: "Product name",
@@ -456,7 +485,6 @@ const translations: Record<Language, Translations> = {
 
 type LanguageContextType = {
   language: Language
-  /** Compat: alguns arquivos usam "locale" */
   locale: Language
   setLanguage: (lang: Language) => void
   t: Translations
