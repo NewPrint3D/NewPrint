@@ -4,7 +4,7 @@ import { createContext, useContext, useMemo, useState, ReactNode } from "react"
 
 export type Language = "pt" | "en" | "es"
 
-/** Base do common (o que você usa mais) */
+/** Base do common */
 type CommonBase = {
   loading: string
   save: string
@@ -16,12 +16,19 @@ type CommonBase = {
   close: string
   featured: string
 }
-
-/**
- * Truque anti-quebra:
- * Permite `t.common.qualquerCoisa` e `t.admin.qualquerCoisa` sem falhar build.
- */
 export type CommonTranslations = CommonBase & Record<string, string>
+
+/** Base do CTA (botões/ações) */
+type CtaBase = {
+  view: string
+  edit: string
+  delete: string
+  add: string
+  create: string
+  update: string
+  confirm: string
+}
+export type CtaTranslations = CtaBase & Record<string, string>
 
 /** Base do admin */
 type AdminBase = {
@@ -103,11 +110,11 @@ type AdminBase = {
   noProducts: string
   confirmDelete: string
 }
-
 export type AdminTranslations = AdminBase & Record<string, string>
 
 export type Translations = {
   common: CommonTranslations
+  cta: CtaTranslations
 
   auth: {
     login: string
@@ -150,6 +157,16 @@ const translations: Record<Language, Translations> = {
       no: "Não",
       close: "Fechar",
       featured: "Destaque",
+    },
+
+    cta: {
+      view: "Ver",
+      edit: "Editar",
+      delete: "Excluir",
+      add: "Adicionar",
+      create: "Criar",
+      update: "Atualizar",
+      confirm: "Confirmar",
     },
 
     auth: {
@@ -272,6 +289,16 @@ const translations: Record<Language, Translations> = {
       featured: "Destacado",
     },
 
+    cta: {
+      view: "Ver",
+      edit: "Editar",
+      delete: "Eliminar",
+      add: "Añadir",
+      create: "Crear",
+      update: "Actualizar",
+      confirm: "Confirmar",
+    },
+
     auth: {
       login: "Entrar",
       logout: "Salir",
@@ -333,7 +360,7 @@ const translations: Record<Language, Translations> = {
       newProduct: "Nuevo producto",
       manageProducts: "Gestionar productos",
       manageOrders: "Gestionar pedidos",
-      viewProducts: "Ver productos",
+      viewProducts: "Ver produtos",
       viewOrders: "Ver pedidos",
 
       addProductHelper: "Crea un nuevo producto para tu tienda",
@@ -390,6 +417,16 @@ const translations: Record<Language, Translations> = {
       no: "No",
       close: "Close",
       featured: "Featured",
+    },
+
+    cta: {
+      view: "View",
+      edit: "Edit",
+      delete: "Delete",
+      add: "Add",
+      create: "Create",
+      update: "Update",
+      confirm: "Confirm",
     },
 
     auth: {
