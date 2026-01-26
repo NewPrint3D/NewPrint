@@ -4,6 +4,11 @@ import { createContext, useContext, useState, ReactNode } from "react"
 
 export type Language = "pt" | "en" | "es"
 
+type FeatureItem = {
+  title: string
+  description: string
+}
+
 export type AdminTranslations = Record<string, string> & {
   failedToLoad: string
   networkError: string
@@ -53,6 +58,13 @@ export type Translations = {
     subtitle: string
   }
 
+  features: Record<string, FeatureItem> & {
+    quality: FeatureItem
+    customization: FeatureItem
+    fastDelivery: FeatureItem
+    support: FeatureItem
+  }
+
   admin: AdminTranslations
 }
 
@@ -86,6 +98,24 @@ const translations: Record<Language, Translations> = {
     products: {
       title: "Produtos",
       subtitle: "Escolha o modelo ideal para você",
+    },
+    features: {
+      quality: {
+        title: "Qualidade Premium",
+        description: "Acabamento detalhado e impressão de alta precisão.",
+      },
+      customization: {
+        title: "Personalização",
+        description: "Cores e variações para combinar com seu estilo.",
+      },
+      fastDelivery: {
+        title: "Produção Rápida",
+        description: "Processo ágil para enviar o quanto antes.",
+      },
+      support: {
+        title: "Suporte",
+        description: "Atendimento para tirar dúvidas e ajudar no pedido.",
+      },
     },
     admin: {
       failedToLoad: "Falha ao carregar os dados",
@@ -140,6 +170,24 @@ const translations: Record<Language, Translations> = {
       title: "Productos",
       subtitle: "Elige el modelo ideal para ti",
     },
+    features: {
+      quality: {
+        title: "Calidad Premium",
+        description: "Acabado detallado e impresión de alta precisión.",
+      },
+      customization: {
+        title: "Personalización",
+        description: "Colores y variaciones para tu estilo.",
+      },
+      fastDelivery: {
+        title: "Producción Rápida",
+        description: "Proceso ágil para enviar lo antes posible.",
+      },
+      support: {
+        title: "Soporte",
+        description: "Atención para ayudarte con tu pedido.",
+      },
+    },
     admin: {
       failedToLoad: "Error al cargar los datos",
       networkError: "Error de red. Inténtalo de nuevo.",
@@ -192,6 +240,24 @@ const translations: Record<Language, Translations> = {
     products: {
       title: "Products",
       subtitle: "Choose the perfect model for you",
+    },
+    features: {
+      quality: {
+        title: "Premium Quality",
+        description: "High-precision printing with a detailed finish.",
+      },
+      customization: {
+        title: "Customization",
+        description: "Colors and variations to match your style.",
+      },
+      fastDelivery: {
+        title: "Fast Production",
+        description: "Quick process to ship as soon as possible.",
+      },
+      support: {
+        title: "Support",
+        description: "Help and guidance for your order.",
+      },
     },
     admin: {
       failedToLoad: "Failed to load data",
