@@ -109,12 +109,12 @@ export function HeroSection() {
             </span>
             <br />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-[gradient_3s_linear_infinite] inline-block hover:scale-110 transition-transform duration-300">
-              {t.hero.highQuality}
+             Alta qualidade
             </span>
           </h1>
 
           <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto text-balance animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
-            {t.hero.exclusiveProducts}
+            Produtos exclusivos
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300">
