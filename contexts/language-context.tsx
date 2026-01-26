@@ -4,6 +4,17 @@ import { createContext, useContext, useState, ReactNode } from "react"
 
 export type Language = "pt" | "en" | "es"
 
+export type AdminTranslations = Record<string, string> & {
+  failedToLoad: string
+  networkError: string
+  demoAuthWarning: string
+  failedToUpdate: string
+  backToProducts: string
+  editProduct: string
+  editProductHelper: string
+  productInformation: string
+}
+
 export type Translations = {
   common: {
     loading: string
@@ -30,15 +41,7 @@ export type Translations = {
     subtitle: string
   }
 
-  admin: {
-    failedToLoad: string
-    networkError: string
-    demoAuthWarning: string
-    failedToUpdate: string
-    backToProducts: string
-    editProduct: string
-    editProductHelper: string
-  }
+  admin: AdminTranslations
 }
 
 const translations: Record<Language, Translations> = {
@@ -70,6 +73,19 @@ const translations: Record<Language, Translations> = {
       backToProducts: "Voltar aos produtos",
       editProduct: "Editar produto",
       editProductHelper: "Atualize as informações do produto e salve as alterações.",
+      productInformation: "Informações do produto",
+
+      // extras comuns (evita “undefined” na tela)
+      save: "Salvar",
+      saving: "Salvando...",
+      cancel: "Cancelar",
+      update: "Atualizar",
+      name: "Nome",
+      description: "Descrição",
+      price: "Preço",
+      category: "Categoria",
+      stock: "Estoque",
+      images: "Imagens",
     },
   },
 
@@ -101,6 +117,18 @@ const translations: Record<Language, Translations> = {
       backToProducts: "Volver a productos",
       editProduct: "Editar producto",
       editProductHelper: "Actualiza la información del producto y guarda los cambios.",
+      productInformation: "Información del producto",
+
+      save: "Guardar",
+      saving: "Guardando...",
+      cancel: "Cancelar",
+      update: "Actualizar",
+      name: "Nombre",
+      description: "Descripción",
+      price: "Precio",
+      category: "Categoría",
+      stock: "Stock",
+      images: "Imágenes",
     },
   },
 
@@ -132,6 +160,18 @@ const translations: Record<Language, Translations> = {
       backToProducts: "Back to products",
       editProduct: "Edit product",
       editProductHelper: "Update the product information and save changes.",
+      productInformation: "Product information",
+
+      save: "Save",
+      saving: "Saving...",
+      cancel: "Cancel",
+      update: "Update",
+      name: "Name",
+      description: "Description",
+      price: "Price",
+      category: "Category",
+      stock: "Stock",
+      images: "Images",
     },
   },
 }
