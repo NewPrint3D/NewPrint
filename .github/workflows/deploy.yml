@@ -14,7 +14,7 @@ concurrency:
 jobs:
   ci:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       - name: Checkout
@@ -27,7 +27,10 @@ jobs:
           cache: "npm"
 
       - name: Install deps
-        run: npm install
+        run: npm install --include=optional
+
+      - name: Rebuild native deps
+        run: npm rebuild lightningcss
 
       - name: Build
         run: npm run build
