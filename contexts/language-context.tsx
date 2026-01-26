@@ -18,6 +18,7 @@ export type AdminTranslations = Record<string, string> & {
 export type Translations = {
   common: {
     loading: string
+    featured: string
   }
 
   categories: {
@@ -46,7 +47,7 @@ export type Translations = {
 
 const translations: Record<Language, Translations> = {
   pt: {
-    common: { loading: "Carregando..." },
+    common: { loading: "Carregando...", featured: "Destaque" },
     categories: {
       title: "Categorias",
       subtitle: "Explore nossos produtos impressos em 3D",
@@ -89,7 +90,7 @@ const translations: Record<Language, Translations> = {
   },
 
   es: {
-    common: { loading: "Cargando..." },
+    common: { loading: "Cargando...", featured: "Destacado" },
     categories: {
       title: "Categorías",
       subtitle: "Explora nuestros productos impresos en 3D",
@@ -132,7 +133,7 @@ const translations: Record<Language, Translations> = {
   },
 
   en: {
-    common: { loading: "Loading..." },
+    common: { loading: "Loading...", featured: "Featured" },
     categories: {
       title: "Categories",
       subtitle: "Explore our 3D printed products",
