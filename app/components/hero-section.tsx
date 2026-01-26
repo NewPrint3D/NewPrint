@@ -105,7 +105,7 @@ export function HeroSection() {
 
           <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
             <span className="text-balance inline-block hover:scale-105 transition-transform duration-300">
-              {t.hero.printing3d}
+             Impressão 3D premium
             </span>
             <br />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-[gradient_3s_linear_infinite] inline-block hover:scale-110 transition-transform duration-300">
