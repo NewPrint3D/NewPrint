@@ -97,7 +97,10 @@ export function HeroSection() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 hover:scale-105 transition-transform cursor-default relative overflow-hidden">
             <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             <ShoppingBag className="w-4 h-4 text-primary animate-pulse" />
-            <span className="text-sm font-medium text-primary relative z-10">{t.hero.readyForDelivery}</span>
+           <span className="text-sm font-medium text-primary relative z-10"> 
+            Listo para entrega
+           </span>
+
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
