@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server"
-import { Resend } from "resend"
 
 export const runtime = "nodejs"
 
@@ -36,7 +35,6 @@ type ContactPayload = {
 async function readBody(req: Request): Promise<{ data: ContactPayload; file?: File | null }> {
   const ct = (req.headers.get("content-type") || "").toLowerCase()
 
-  // ✅ JSON (seu frontend está assim)
   if (ct.includes("application/json")) {
     const json = (await req.json().catch(() => ({}))) as any
     return {
@@ -50,7 +48,6 @@ async function readBody(req: Request): Promise<{ data: ContactPayload; file?: Fi
     }
   }
 
-  // ✅ FormData (caso você use upload no futuro)
   if (ct.includes("multipart/form-data") || ct.includes("application/x-www-form-urlencoded")) {
     const formData = await req.formData()
     const file = formData.get("file")
@@ -65,7 +62,6 @@ async function readBody(req: Request): Promise<{ data: ContactPayload; file?: Fi
     }
   }
 
-  // ✅ Qualquer outro content-type: tenta json como fallback
   const json = (await req.json().catch(() => ({}))) as any
   return {
     data: {
@@ -84,21 +80,24 @@ export async function POST(req: Request) {
     const CONTACT_FROM = process.env.CONTACT_FROM || ""
     const CONTACT_TO = process.env.CONTACT_TO || ""
 
+    // ✅ NÃO quebra build: se faltar config, responde controlado em runtime
     if (!RESEND_API_KEY || !CONTACT_FROM || !CONTACT_TO) {
       return NextResponse.json(
         {
           success: false,
-          message: "Missing env vars",
+          message: "Contact service not configured.",
           details: {
             has_RESEND_API_KEY: !!RESEND_API_KEY,
             has_CONTACT_FROM: !!CONTACT_FROM,
             has_CONTACT_TO: !!CONTACT_TO,
           },
         },
-        { status: 500 },
+        { status: 503 },
       )
     }
 
+    // ✅ Import dinâmico: evita problemas no build/collect page data
+    const { Resend } = await import("resend")
     const resend = new Resend(RESEND_API_KEY)
 
     const { data, file } = await readBody(req)
@@ -135,11 +134,13 @@ export async function POST(req: Request) {
     let attachmentNote = ""
 
     if (file instanceof File) {
-      const MAX_BYTES = 7 * 1024 * 1024 // ~7MB
+      const MAX_BYTES = 7 * 1024 * 1024
       if (file.size > MAX_BYTES) {
-        attachmentNote = `<p><b>Arquivo não anexado:</b> ${escapeHtml(file.name)} (${(file.size / 1024 / 1024).toFixed(
-          2,
-        )} MB) — tamanho acima do limite.</p>`
+        attachmentNote = `<p><b>Arquivo não anexado:</b> ${escapeHtml(file.name)} (${(
+          file.size /
+          1024 /
+          1024
+        ).toFixed(2)} MB) — tamanho acima do limite.</p>`
       } else {
         const ab = await file.arrayBuffer()
         attachments.push({
