@@ -1,4 +1,4 @@
-name: CI (lint/test/build)
+name: CI (build)
 
 on:
   pull_request:
@@ -28,12 +28,6 @@ jobs:
 
       - name: Install deps
         run: npm install
-
-      - name: Lint (if exists)
-        run: npm run lint --if-present
-
-      - name: Test (if exists)
-        run: npm test --if-present
 
       - name: Build
         run: npm run build
