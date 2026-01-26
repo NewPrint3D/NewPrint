@@ -148,8 +148,8 @@ const guessColorByUrl = (url: string, locale: string) => {
   const u = toLower(url)
   if (!u) return ""
 
-  if (u.includes("amarill") || u.includes("yellow") || u.includes("amarelo")) return getLocaleColorName(locale, "yellow")
-  if (u.includes("rojo") || u.includes("red") || u.includes("vermelh")) return getLocaleColorName(locale, "red")
+  if (u.includes("amarillo") || u.includes("yellow") || u.includes("amarelo")) return getLocaleColorName(locale, "yellow")
+  if (u.includes("rojo") || u.includes("red") || u.includes("vermelho")) return getLocaleColorName(locale, "red")
   if (u.includes("negro") || u.includes("black") || u.includes("preto")) return getLocaleColorName(locale, "black")
   if (u.includes("gris") || u.includes("gray") || u.includes("cinza") || u.includes("grey")) return getLocaleColorName(locale, "gray")
   if (u.includes("azul") || u.includes("blue")) return getLocaleColorName(locale, "blue")
