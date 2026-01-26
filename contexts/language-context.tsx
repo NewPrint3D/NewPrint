@@ -34,6 +34,7 @@ export type Translations = {
     failedToLoad: string
     networkError: string
     demoAuthWarning: string
+    failedToUpdate: string
   }
 }
 
@@ -62,6 +63,7 @@ const translations: Record<Language, Translations> = {
       failedToLoad: "Falha ao carregar os dados",
       networkError: "Erro de rede. Tente novamente.",
       demoAuthWarning: "Aviso: autenticação em modo demonstração.",
+      failedToUpdate: "Falha ao atualizar. Tente novamente.",
     },
   },
 
@@ -89,6 +91,7 @@ const translations: Record<Language, Translations> = {
       failedToLoad: "Error al cargar los datos",
       networkError: "Error de red. Inténtalo de nuevo.",
       demoAuthWarning: "Aviso: autenticación en modo demostración.",
+      failedToUpdate: "Error al actualizar. Inténtalo de nuevo.",
     },
   },
 
@@ -116,6 +119,7 @@ const translations: Record<Language, Translations> = {
       failedToLoad: "Failed to load data",
       networkError: "Network error. Please try again.",
       demoAuthWarning: "Warning: authentication is running in demo mode.",
+      failedToUpdate: "Failed to update. Please try again.",
     },
   },
 }
