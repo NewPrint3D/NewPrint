@@ -35,6 +35,10 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  // ✅ Compat: alguns projetos usam t.nav, outros t.navbar, etc.
+  const nav = ((t as any)?.nav ?? (t as any)?.navbar ?? (t as any)?.navigation ?? {}) as Record<string, string>
+  const tr = (key: string, fallback: string) => nav?.[key] ?? fallback
+
   return (
     <header
       className={cn(
@@ -63,10 +67,10 @@ export function Navbar() {
 
         {/* LINKS (CENTRO) */}
         <nav className="hidden md:flex flex-1 items-center justify-center gap-8">
-          <Link href="/">{t.nav.home}</Link>
-          <Link href="/products">{t.nav.products}</Link>
-          <Link href="/about">{t.nav.about}</Link>
-          <Link href="/contact">{t.nav.contact}</Link>
+          <Link href="/">{tr("home", "Home")}</Link>
+          <Link href="/products">{tr("products", "Productos")}</Link>
+          <Link href="/about">{tr("about", "Sobre")}</Link>
+          <Link href="/contact">{tr("contact", "Contacto")}</Link>
         </nav>
 
         {/* AÇÕES (DIREITA) */}
@@ -132,16 +136,16 @@ export function Navbar() {
 
           <nav className="flex flex-col gap-4 text-lg">
             <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
-              {t.nav.home}
+              {tr("home", "Home")}
             </Link>
             <Link href="/products" onClick={() => setIsMobileMenuOpen(false)}>
-              {t.nav.products}
+              {tr("products", "Productos")}
             </Link>
             <Link href="/about" onClick={() => setIsMobileMenuOpen(false)}>
-              {t.nav.about}
+              {tr("about", "Sobre")}
             </Link>
             <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
-              {t.nav.contact}
+              {tr("contact", "Contacto")}
             </Link>
 
             <div className="pt-4 flex items-center gap-2">
