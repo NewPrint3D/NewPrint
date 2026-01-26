@@ -75,7 +75,6 @@ const translations: Record<Language, Translations> = {
       editProductHelper: "Atualize as informações do produto e salve as alterações.",
       productInformation: "Informações do produto",
 
-      // extras comuns (evita “undefined” na tela)
       save: "Salvar",
       saving: "Salvando...",
       cancel: "Cancelar",
@@ -178,6 +177,7 @@ const translations: Record<Language, Translations> = {
 
 type LanguageContextType = {
   language: Language
+  locale: Language
   setLanguage: (lang: Language) => void
   t: Translations
 }
@@ -188,7 +188,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>("es")
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t: translations[language] }}>
+    <LanguageContext.Provider
+      value={{
+        language,
+        locale: language,
+        setLanguage,
+        t: translations[language],
+      }}
+    >
       {children}
     </LanguageContext.Provider>
   )
