@@ -38,10 +38,7 @@ export type Translations = {
 
 const translations: Record<Language, Translations> = {
   pt: {
-    common: {
-      loading: "Carregando...",
-    },
-
+    common: { loading: "Carregando..." },
     categories: {
       title: "Categorias",
       subtitle: "Explore nossos produtos impressos em 3D",
@@ -61,12 +58,10 @@ const translations: Record<Language, Translations> = {
       technology3d: "Tecnologia 3D",
       technology3dDesc: "Acessórios e suportes impressos em 3D",
     },
-
     products: {
       title: "Produtos",
       subtitle: "Escolha o modelo ideal para você",
     },
-
     admin: {
       failedToLoad: "Falha ao carregar os dados",
       networkError: "Erro de rede. Tente novamente.",
@@ -74,22 +69,19 @@ const translations: Record<Language, Translations> = {
   },
 
   es: {
-    common: {
-      loading: "Cargando...",
-    },
-
+    common: { loading: "Cargando..." },
     categories: {
       title: "Categorías",
       subtitle: "Explora nuestros productos impresos en 3D",
 
       homeDecor: "Decoración del Hogar",
-      homeDecorDesc: "Jarrones, organizadores y decoración",
+      homeDecorDesc: "Jarrones, organizadores y mucho más",
 
       toys: "Juguetes",
-      toysDesc: "Diversión creativa para todas las edades",
+      toysDesc: "Diversión creativa y educativa para todas las edades",
 
       sensoryObjects: "Objetos Sensoriales",
-      sensoryObjectsDesc: "Estimulación táctil y cognitiva",
+      sensoryObjectsDesc: "Estimulación táctil y desarrollo cognitivo",
 
       biodegradable: "Materiales Biodegradables",
       biodegradableDesc: "Sostenibilidad en cada impresión",
@@ -97,12 +89,10 @@ const translations: Record<Language, Translations> = {
       technology3d: "Tecnología 3D",
       technology3dDesc: "Accesorios y soportes impresos en 3D",
     },
-
     products: {
       title: "Productos",
       subtitle: "Elige el modelo ideal para ti",
     },
-
     admin: {
       failedToLoad: "Error al cargar los datos",
       networkError: "Error de red. Inténtalo de nuevo.",
@@ -110,35 +100,30 @@ const translations: Record<Language, Translations> = {
   },
 
   en: {
-    common: {
-      loading: "Loading...",
-    },
-
+    common: { loading: "Loading..." },
     categories: {
       title: "Categories",
       subtitle: "Explore our 3D printed products",
 
       homeDecor: "Home Decor",
-      homeDecorDesc: "Vases and decorative items",
+      homeDecorDesc: "Vases, organizers and more",
 
       toys: "Toys",
-      toysDesc: "Creative fun for all ages",
+      toysDesc: "Creative and educational fun for all ages",
 
       sensoryObjects: "Sensory Objects",
-      sensoryObjectsDesc: "Tactile and cognitive stimulation",
+      sensoryObjectsDesc: "Tactile stimulation and cognitive development",
 
       biodegradable: "Biodegradable Materials",
       biodegradableDesc: "Sustainability in every print",
 
       technology3d: "3D Technology",
-      technology3dDesc: "3D printed accessories",
+      technology3dDesc: "3D printed accessories and mounts",
     },
-
     products: {
       title: "Products",
       subtitle: "Choose the perfect model for you",
     },
-
     admin: {
       failedToLoad: "Failed to load data",
       networkError: "Network error. Please try again.",
@@ -158,13 +143,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>("es")
 
   return (
-    <LanguageContext.Provider
-      value={{
-        language,
-        setLanguage,
-        t: translations[language],
-      }}
-    >
+    <LanguageContext.Provider value={{ language, setLanguage, t: translations[language] }}>
       {children}
     </LanguageContext.Provider>
   )
@@ -172,8 +151,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
 export function useLanguage() {
   const context = useContext(LanguageContext)
-  if (!context) {
-    throw new Error("useLanguage must be used within LanguageProvider")
-  }
+  if (!context) throw new Error("useLanguage must be used within LanguageProvider")
   return context
 }
