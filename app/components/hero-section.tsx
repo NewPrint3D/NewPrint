@@ -109,12 +109,12 @@ export function HeroSection() {
             </span>
             <br />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-[gradient_3s_linear_infinite] inline-block hover:scale-110 transition-transform duration-300">
-             Alta qualidade
+             Alta calidad
             </span>
           </h1>
 
           <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto text-balance animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
-            Produtos exclusivos
+            Productos exclusivos
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300">
@@ -125,7 +125,7 @@ export function HeroSection() {
             >
               <Link href="/products">
                 <span className="relative z-10 flex items-center gap-2">
-                  {t.hero.viewProducts}
+                  Ver productos
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-2 group-hover:scale-125 transition-all duration-300" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-[gradient_2s_linear_infinite]" />
@@ -139,7 +139,7 @@ export function HeroSection() {
             >
               <Link href="#custom">
                 <span className="relative z-10 flex items-center gap-2">
-                  {t.hero.customProjects}
+                  Proyectos personalizados
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform duration-300" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
