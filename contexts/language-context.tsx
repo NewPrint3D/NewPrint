@@ -36,6 +36,8 @@ export type Translations = {
     demoAuthWarning: string
     failedToUpdate: string
     backToProducts: string
+    editProduct: string
+    editProductHelper: string
   }
 }
 
@@ -66,6 +68,8 @@ const translations: Record<Language, Translations> = {
       demoAuthWarning: "Aviso: autenticação em modo demonstração.",
       failedToUpdate: "Falha ao atualizar. Tente novamente.",
       backToProducts: "Voltar aos produtos",
+      editProduct: "Editar produto",
+      editProductHelper: "Atualize as informações do produto e salve as alterações.",
     },
   },
 
@@ -95,6 +99,8 @@ const translations: Record<Language, Translations> = {
       demoAuthWarning: "Aviso: autenticación en modo demostración.",
       failedToUpdate: "Error al actualizar. Inténtalo de nuevo.",
       backToProducts: "Volver a productos",
+      editProduct: "Editar producto",
+      editProductHelper: "Actualiza la información del producto y guarda los cambios.",
     },
   },
 
@@ -124,6 +130,8 @@ const translations: Record<Language, Translations> = {
       demoAuthWarning: "Warning: authentication is running in demo mode.",
       failedToUpdate: "Failed to update. Please try again.",
       backToProducts: "Back to products",
+      editProduct: "Edit product",
+      editProductHelper: "Update the product information and save changes.",
     },
   },
 }
