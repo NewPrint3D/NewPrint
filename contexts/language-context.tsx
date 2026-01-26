@@ -21,6 +21,16 @@ export type Translations = {
     featured: string
   }
 
+  cta: {
+    view: string
+    edit: string
+    delete: string
+    add: string
+    create: string
+    update: string
+    confirm: string
+  }
+
   categories: {
     title: string
     subtitle: string
@@ -48,6 +58,15 @@ export type Translations = {
 const translations: Record<Language, Translations> = {
   pt: {
     common: { loading: "Carregando...", featured: "Destaque" },
+    cta: {
+      view: "Ver",
+      edit: "Editar",
+      delete: "Excluir",
+      add: "Adicionar",
+      create: "Criar",
+      update: "Atualizar",
+      confirm: "Confirmar",
+    },
     categories: {
       title: "Categorias",
       subtitle: "Explore nossos produtos impressos em 3D",
@@ -91,6 +110,15 @@ const translations: Record<Language, Translations> = {
 
   es: {
     common: { loading: "Cargando...", featured: "Destacado" },
+    cta: {
+      view: "Ver",
+      edit: "Editar",
+      delete: "Eliminar",
+      add: "Añadir",
+      create: "Crear",
+      update: "Actualizar",
+      confirm: "Confirmar",
+    },
     categories: {
       title: "Categorías",
       subtitle: "Explora nuestros productos impresos en 3D",
@@ -134,6 +162,15 @@ const translations: Record<Language, Translations> = {
 
   en: {
     common: { loading: "Loading...", featured: "Featured" },
+    cta: {
+      view: "View",
+      edit: "Edit",
+      delete: "Delete",
+      add: "Add",
+      create: "Create",
+      update: "Update",
+      confirm: "Confirm",
+    },
     categories: {
       title: "Categories",
       subtitle: "Explore our 3D printed products",
