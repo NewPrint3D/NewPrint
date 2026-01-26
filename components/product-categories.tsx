@@ -13,43 +13,43 @@ export function ProductCategories() {
       icon: Home,
       title: t.categories.homeDecor,
       description: t.categories.homeDecorDesc,
+      href: "/products?category=home",
       color: "from-primary to-primary/50",
       gradient: "from-primary/20 via-primary/10 to-transparent",
-      href: "/products?category=home",
     },
     {
       icon: Gamepad2,
       title: t.categories.toys,
       description: t.categories.toysDesc,
+      href: "/products?category=toys",
       color: "from-accent to-accent/50",
       gradient: "from-accent/20 via-accent/10 to-transparent",
-      href: "/products?category=toys",
     },
     {
       icon: Brain,
       title: t.categories.sensoryObjects,
       description: t.categories.sensoryObjectsDesc,
+      href: "/products?category=sensory",
       color: "from-chart-3 to-chart-3/50",
       gradient: "from-chart-3/20 via-chart-3/10 to-transparent",
-      href: "/products?category=sensory",
     },
     {
       icon: Leaf,
       title: t.categories.biodegradable,
       description: t.categories.biodegradableDesc,
+      href: "/about#sustainability",
       color: "from-chart-5 to-chart-5/50",
       gradient: "from-chart-5/20 via-chart-5/10 to-transparent",
-      href: "/about#sustainability",
     },
     {
       icon: TabletSmartphone,
-      title: t.categories.accessories,
-      description: t.categories.accessoriesDesc,
+      title: t.categories.technology3d,
+      description: t.categories.technology3dDesc,
+      href: "/products?category=accessories",
       color: "from-blue-500 to-blue-500/50",
       gradient: "from-blue-500/20 via-blue-500/10 to-transparent",
-      href: "/products?category=accessories",
-   },
-   ]
+    },
+  ]
 
   return (
     <section className="py-24 relative overflow-hidden">
@@ -57,7 +57,9 @@ export function ProductCategories() {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">{t.categories.title}</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
+            {t.categories.title}
+          </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             {t.categories.subtitle}
           </p>
@@ -75,28 +77,24 @@ export function ProductCategories() {
                   className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
                 />
 
-                <div className="absolute inset-0 overflow-hidden">
-                  <div className="absolute -inset-full bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:animate-shimmer" />
-                </div>
-
                 <CardContent className="p-6 relative z-10">
                   <div className="mb-4 relative">
                     <div
-                      className={`absolute inset-0 bg-gradient-to-br ${category.color} blur-2xl opacity-20 group-hover:opacity-60 transition-all duration-500 animate-pulse-glow`}
+                      className={`absolute inset-0 bg-gradient-to-br ${category.color} blur-2xl opacity-20 group-hover:opacity-60 transition-all duration-500`}
                     />
-                    <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-background to-muted flex items-center justify-center border-2 border-border group-hover:scale-125 group-hover:rotate-12 transition-all duration-500 shadow-lg group-hover:shadow-2xl">
-                      <category.icon className="w-8 h-8 text-primary group-hover:scale-125 transition-all duration-500" />
+                    <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-background to-muted flex items-center justify-center border-2 border-border group-hover:scale-125 group-hover:rotate-12 transition-all duration-500 shadow-lg">
+                      <category.icon className="w-8 h-8 text-primary" />
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors duration-300">
+
+                  <h3 className="text-xl font-bold mb-3">
                     {category.title}
                   </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed group-hover:text-foreground/80 transition-colors duration-300">
+
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     {category.description}
                   </p>
                 </CardContent>
-
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </Card>
             </Link>
           ))}
