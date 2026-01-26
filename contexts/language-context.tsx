@@ -1,3 +1,4 @@
+
 "use client"
 
 import { createContext, useContext, useState, ReactNode } from "react"
@@ -58,7 +59,9 @@ export type Translations = {
     subtitle: string
   }
 
-  features: Record<string, FeatureItem> & {
+  features: {
+    title: string
+    subtitle: string
     quality: FeatureItem
     customization: FeatureItem
     fastDelivery: FeatureItem
@@ -100,6 +103,8 @@ const translations: Record<Language, Translations> = {
       subtitle: "Escolha o modelo ideal para você",
     },
     features: {
+      title: "Por que escolher a NewPrint",
+      subtitle: "Qualidade, personalização e suporte em cada pedido",
       quality: {
         title: "Qualidade Premium",
         description: "Acabamento detalhado e impressão de alta precisão.",
@@ -171,6 +176,8 @@ const translations: Record<Language, Translations> = {
       subtitle: "Elige el modelo ideal para ti",
     },
     features: {
+      title: "Por qué elegir NewPrint",
+      subtitle: "Calidad, personalización y soporte en cada pedido",
       quality: {
         title: "Calidad Premium",
         description: "Acabado detallado e impresión de alta precisión.",
@@ -242,6 +249,8 @@ const translations: Record<Language, Translations> = {
       subtitle: "Choose the perfect model for you",
     },
     features: {
+      title: "Why choose NewPrint",
+      subtitle: "Quality, customization and support on every order",
       quality: {
         title: "Premium Quality",
         description: "High-precision printing with a detailed finish.",
