@@ -1,20 +1,12 @@
-name: CI (build)
+name: CI (build only)
 
 on:
-  pull_request:
-    branches: ["main"]
   push:
-    branches: ["main"]
-  workflow_dispatch: {}
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+    branches: [main]
 
 jobs:
-  ci:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
 
     steps:
       - name: Checkout
@@ -23,14 +15,12 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: 20
 
-      - name: Install deps
-        run: npm install --include=optional
-
-      - name: Rebuild native deps
-        run: npm rebuild lightningcss
+      # ❌ NÃO usar npm ci (quebra com binários nativos)
+      # ✅ usar npm install
+      - name: Install dependencies
+        run: npm install
 
       - name: Build
         run: npm run build
