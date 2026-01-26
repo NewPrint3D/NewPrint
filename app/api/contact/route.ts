@@ -80,7 +80,7 @@ export async function POST(req: Request) {
     const CONTACT_FROM = process.env.CONTACT_FROM || ""
     const CONTACT_TO = process.env.CONTACT_TO || ""
 
-    // ✅ NÃO quebra build: se faltar config, responde controlado em runtime
+    // ✅ Se faltar config, NÃO quebra build. Responde controlado em runtime.
     if (!RESEND_API_KEY || !CONTACT_FROM || !CONTACT_TO) {
       return NextResponse.json(
         {
@@ -96,7 +96,7 @@ export async function POST(req: Request) {
       )
     }
 
-    // ✅ Import dinâmico: evita problemas no build/collect page data
+    // ✅ Import dinâmico evita problemas durante build/collect page data
     const { Resend } = await import("resend")
     const resend = new Resend(RESEND_API_KEY)
 
