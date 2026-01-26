@@ -26,8 +26,8 @@ export function FeaturesSection() {
     },
     {
       icon: Zap,
-      title: t.features.fast.title,
-      description: t.features.fast.description,
+      title: t.features.fastDelivery.title,
+      description: t.features.fastDelivery.description,
       color: "from-chart-3 to-chart-3/50",
       gradient: "from-chart-3/20 via-chart-3/10 to-transparent",
     },
