@@ -23,6 +23,7 @@ export type Translations = {
 
   cta: {
     view: string
+    viewAll: string
     edit: string
     delete: string
     add: string
@@ -60,6 +61,7 @@ const translations: Record<Language, Translations> = {
     common: { loading: "Carregando...", featured: "Destaque" },
     cta: {
       view: "Ver",
+      viewAll: "Ver todos",
       edit: "Editar",
       delete: "Excluir",
       add: "Adicionar",
@@ -112,6 +114,7 @@ const translations: Record<Language, Translations> = {
     common: { loading: "Cargando...", featured: "Destacado" },
     cta: {
       view: "Ver",
+      viewAll: "Ver todos",
       edit: "Editar",
       delete: "Eliminar",
       add: "Añadir",
@@ -164,6 +167,7 @@ const translations: Record<Language, Translations> = {
     common: { loading: "Loading...", featured: "Featured" },
     cta: {
       view: "View",
+      viewAll: "View all",
       edit: "Edit",
       delete: "Delete",
       add: "Add",
