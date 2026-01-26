@@ -33,6 +33,7 @@ export type Translations = {
   admin: {
     failedToLoad: string
     networkError: string
+    demoAuthWarning: string
   }
 }
 
@@ -60,6 +61,7 @@ const translations: Record<Language, Translations> = {
     admin: {
       failedToLoad: "Falha ao carregar os dados",
       networkError: "Erro de rede. Tente novamente.",
+      demoAuthWarning: "Aviso: autenticação em modo demonstração.",
     },
   },
 
@@ -86,6 +88,7 @@ const translations: Record<Language, Translations> = {
     admin: {
       failedToLoad: "Error al cargar los datos",
       networkError: "Error de red. Inténtalo de nuevo.",
+      demoAuthWarning: "Aviso: autenticación en modo demostración.",
     },
   },
 
@@ -112,6 +115,7 @@ const translations: Record<Language, Translations> = {
     admin: {
       failedToLoad: "Failed to load data",
       networkError: "Network error. Please try again.",
+      demoAuthWarning: "Warning: authentication is running in demo mode.",
     },
   },
 }
