@@ -102,7 +102,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </span>
           <span className="text-xs text-muted-foreground">•</span>
           <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors duration-300">
-            {sizes.length} {t.common.sizes}
+            {sizes.length} {t.common.featured}
           </span>
         </div>
 
