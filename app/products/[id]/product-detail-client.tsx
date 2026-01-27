@@ -36,6 +36,7 @@ const colorNameFromHex = (hexNoHash: string) => {
     "ff0000": { pt: "Vermelho", en: "Red", es: "Rojo" },
     "4b3621": { pt: "Marron", en: "Brown", es: "Marron" },
     "00ae42": { pt: "Verde", en: "Green", es: "Verde" },
+    "0000ff": { pt: "Azul", en "Blue", es: "Azul" },
 
     // ✅ amarelos comuns
     "ffff00": { pt: "Amarelo", en: "Yellow", es: "Amarillo" },
