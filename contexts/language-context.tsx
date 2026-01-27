@@ -345,7 +345,7 @@ type LanguageContextType = {
   language: Language
   locale: Language
   setLanguage: (lang: Language) => void
-  t: Translations
+  t: any
 }
 
 const LanguageContext = createContext<LanguageContextType | null>(null)
