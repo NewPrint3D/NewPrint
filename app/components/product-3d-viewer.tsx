@@ -56,13 +56,12 @@ export function Product3DViewer({
           className="relative w-full h-full transition-all duration-500"
           style={{ transform: `rotate(${rotation}deg) scale(${zoom})` }}
         >
-          {/* ✅ USAR <img> normal (sem Next/Image) pra não bloquear Cloudinary */}
+          {/* img normal proposital */}
           <img
             src={currentSrc}
             alt={productName}
             className="w-full h-full object-contain drop-shadow-2xl relative z-10"
             onError={() => {
-              // se a url da cor falhar, volta pra base
               if (currentSrc !== safeBaseImage) setCurrentSrc(safeBaseImage)
             }}
           />
@@ -98,7 +97,7 @@ export function Product3DViewer({
         </div>
 
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-muted-foreground bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full">
-          {t.common.interactive3d}
+          {t.common.featured}
         </div>
       </div>
     </Card>
