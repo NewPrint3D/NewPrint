@@ -1,7 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-
+import { Analytics } from "@vercel/analytics/react"
 import { LanguageProvider } from "@/contexts/language-context"
 import { CartProvider } from "@/contexts/cart-context"
 import { AuthProvider } from "@/contexts/auth-context"
@@ -64,6 +64,7 @@ export default function RootLayout({
             </CartProvider>
           </AuthProvider>
         </LanguageProvider>
+        <Analytics />
       </body>
     </html>
   )
