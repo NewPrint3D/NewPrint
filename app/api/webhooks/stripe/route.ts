@@ -79,7 +79,9 @@ export async function POST(request: Request) {
         // Validate payment amount (converting to cents)
         const expectedAmount = Math.round(parseFloat(order.total) * 100)
         if (paymentIntent.amount !== expectedAmount) {
-          console.error(`[STRIPE WEBHOOK] Amount mismatch - Expected: ${expectedAmount}, Received: ${paymentIntent.amount}`)
+          console.error(
+            `[STRIPE WEBHOOK] Amount mismatch - Expected: ${expectedAmount}, Received: ${paymentIntent.amount}`,
+          )
           return NextResponse.json({ error: "Payment amount mismatch" }, { status: 400 })
         }
 
@@ -184,10 +186,6 @@ export async function POST(request: Request) {
         console.log(`[STRIPE WEBHOOK] Reembolso atualizado: ${event.data.object.id}`)
         break
 
-      case "refund.failed":
-        console.log(`[STRIPE WEBHOOK] Reembolso falhou: ${event.data.object.id}`)
-        break
-
       default:
         console.log(`[STRIPE WEBHOOK] Evento não tratado: ${event.type}`)
     }
@@ -213,26 +211,26 @@ export async function POST(request: Request) {
  * Idempotente - pode ser chamada múltiplas vezes com segurança
  */
 async function fulfillCheckout(sessionId: string) {
-  console.log('[STRIPE] Fulfilling checkout session:', sessionId)
+  console.log("[STRIPE] Fulfilling checkout session:", sessionId)
 
   if (!stripe) {
-    console.error('[STRIPE] Stripe not configured - cannot fulfill checkout')
+    console.error("[STRIPE] Stripe not configured - cannot fulfill checkout")
     return
   }
 
   if (!sql) {
-    console.error('[STRIPE] Database not configured - cannot fulfill checkout')
+    console.error("[STRIPE] Database not configured - cannot fulfill checkout")
     return
   }
 
   try {
     // Recuperar a sessão com line_items expandidos
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['line_items', 'payment_intent']
+      expand: ["line_items", "payment_intent"],
     })
 
     // Verificar se o pagamento foi concluído
-    if (session.payment_status !== 'paid') {
+    if (session.payment_status !== "paid") {
       console.log(`[STRIPE] Payment not completed yet: ${session.payment_status}`)
       return
     }
@@ -249,7 +247,7 @@ async function fulfillCheckout(sessionId: string) {
       const order = existingOrders[0]
 
       // Verificar se já foi executado (idempotência)
-      if (order.payment_status === 'paid') {
+      if (order.payment_status === "paid") {
         console.log(`[STRIPE] Order already fulfilled: ${order.id}`)
         return
       }
@@ -267,10 +265,10 @@ async function fulfillCheckout(sessionId: string) {
       const lineItems = session.line_items?.data || []
 
       // CRITICAL FIX: Read totals from metadata (not from shipping_cost)
-      const subtotal = parseFloat(session.metadata?.subtotal || '0')
-      const shipping = parseFloat(session.metadata?.shipping || '0')
-      const tax = parseFloat(session.metadata?.tax || '0')
-      const total = parseFloat(session.metadata?.total || '0')
+      const subtotal = parseFloat(session.metadata?.subtotal || "0")
+      const shipping = parseFloat(session.metadata?.shipping || "0")
+      const tax = parseFloat(session.metadata?.tax || "0")
+      const total = parseFloat(session.metadata?.total || "0")
 
       // CRITICAL: Validate against Stripe's total - REJECT if mismatch
       const stripeTotal = session.amount_total ? session.amount_total / 100 : 0
@@ -285,17 +283,18 @@ async function fulfillCheckout(sessionId: string) {
       const sessionData = session as any
 
       // Read shipping info from metadata (stored by checkout session creation)
-      const firstName = session.metadata?.shipping_first_name || ''
-      const lastName = session.metadata?.shipping_last_name || ''
-      const shippingEmail = session.metadata?.shipping_email || sessionData.customer_email || sessionData.customer_details?.email || ''
-      const shippingPhone = session.metadata?.shipping_phone || ''
-      const shippingAddress = session.metadata?.shipping_address || ''
-      const shippingCity = session.metadata?.shipping_city || ''
-      const shippingState = session.metadata?.shipping_state || ''
-      const shippingZipCode = session.metadata?.shipping_zip_code || ''
-      const shippingCountry = session.metadata?.shipping_country || ''
+      const firstName = session.metadata?.shipping_first_name || ""
+      const lastName = session.metadata?.shipping_last_name || ""
+      const shippingEmail =
+        session.metadata?.shipping_email || sessionData.customer_email || sessionData.customer_details?.email || ""
+      const shippingPhone = session.metadata?.shipping_phone || ""
+      const shippingAddress = session.metadata?.shipping_address || ""
+      const shippingCity = session.metadata?.shipping_city || ""
+      const shippingState = session.metadata?.shipping_state || ""
+      const shippingZipCode = session.metadata?.shipping_zip_code || ""
+      const shippingCountry = session.metadata?.shipping_country || ""
 
-      console.log('[STRIPE] Creating order with shipping info from metadata:', {
+      console.log("[STRIPE] Creating order with shipping info from metadata:", {
         firstName,
         lastName,
         email: shippingEmail,
@@ -304,7 +303,7 @@ async function fulfillCheckout(sessionId: string) {
         city: shippingCity,
         state: shippingState,
         zipCode: shippingZipCode,
-        country: shippingCountry
+        country: shippingCountry,
       })
 
       const newOrder = await sql`
@@ -373,7 +372,7 @@ async function fulfillCheckout(sessionId: string) {
           ) VALUES (
             ${orderId},
             ${productData?.metadata?.product_id || null},
-            ${item.description || ''},
+            ${item.description || ""},
             ${item.quantity || 1},
             ${(priceData?.unit_amount || 0) / 100},
             ${productData?.metadata?.color || null},
@@ -394,7 +393,9 @@ async function fulfillCheckout(sessionId: string) {
           `
 
           if (stockUpdate.length === 0) {
-            console.warn(`[STRIPE] Insufficient stock for product ${productData.metadata.product_id} - order processed but stock at 0`)
+            console.warn(
+              `[STRIPE] Insufficient stock for product ${productData.metadata.product_id} - order processed but stock at 0`,
+            )
             // Payment already captured - we accept the order but log the issue
           }
         }
@@ -403,7 +404,7 @@ async function fulfillCheckout(sessionId: string) {
       console.log(`[STRIPE] New order ${orderId} created and fulfilled`)
     }
   } catch (error) {
-    console.error('[STRIPE] Error fulfilling checkout:', error)
+    console.error("[STRIPE] Error fulfilling checkout:", error)
     // Não lançar erro - deixar Stripe tentar novamente
   }
 }
@@ -412,15 +413,15 @@ async function fulfillCheckout(sessionId: string) {
  * Trata checkouts com pagamento falhado
  */
 async function handleFailedCheckout(sessionId: string) {
-  console.log('[STRIPE] Handling failed checkout:', sessionId)
+  console.log("[STRIPE] Handling failed checkout:", sessionId)
 
   if (!stripe) {
-    console.error('[STRIPE] Stripe not configured - cannot handle failed checkout')
+    console.error("[STRIPE] Stripe not configured - cannot handle failed checkout")
     return
   }
 
   if (!sql) {
-    console.error('[STRIPE] Database not configured - cannot handle failed checkout')
+    console.error("[STRIPE] Database not configured - cannot handle failed checkout")
     return
   }
 
@@ -435,8 +436,8 @@ async function handleFailedCheckout(sessionId: string) {
       `
     }
 
-    console.log('[STRIPE] Failed checkout handled')
+    console.log("[STRIPE] Failed checkout handled")
   } catch (error) {
-    console.error('[STRIPE] Error handling failed checkout:', error)
+    console.error("[STRIPE] Error handling failed checkout:", error)
   }
 }
