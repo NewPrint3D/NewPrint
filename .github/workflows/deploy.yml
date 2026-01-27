@@ -1,8 +1,14 @@
-name: CI (build only)
+name: CI (lint/test/build)
 
 on:
   push:
-    branches: [main]
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -15,12 +21,14 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: "18"
+          cache: "npm"
 
-      # ❌ NÃO usar npm ci (quebra com binários nativos)
-      # ✅ usar npm install
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
+
+      - name: Lint (if exists)
+        run: npm run lint --if-present
 
       - name: Build
         run: npm run build
