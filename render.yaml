@@ -1,29 +1,31 @@
 services:
   - type: web
-    name: newprint3d
+    name: newprint3d-web
     runtime: node
     plan: starter
-    region: oregon
-    buildCommand: npm install -g pnpm && pnpm install && pnpm build
-    startCommand: pnpm start
+    region: frankfurt
+    autoDeploy: true
+
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+
     envVars:
-      - key: NODE_ENV
-        value: production
+      - key: NODE_VERSION
+        value: "20"
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: NEXT_PUBLIC_SITE_URL
+        value: "https://www.newprint3d.com"
+
+      # Segredos (configurar no Render, não no GitHub):
       - key: DATABASE_URL
         sync: false
-      - key: JWT_SECRET
-        sync: false
-      - key: NEXT_PUBLIC_SITE_URL
-        sync: false
-      - key: STRIPE_SECRET_KEY
-        sync: false
-      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-        sync: false
-      - key: STRIPE_WEBHOOK_SECRET
-        sync: false
-      - key: NEXT_PUBLIC_PAYPAL_CLIENT_ID
+      - key: PAYPAL_CLIENT_ID
         sync: false
       - key: PAYPAL_CLIENT_SECRET
         sync: false
-    healthCheckPath: /
-    autoDeploy: true
+      - key: NEXTAUTH_SECRET
+        sync: false
+      - key: NEXTAUTH_URL
+        value: "https://www.newprint3d.com"
