@@ -98,7 +98,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <div className="flex items-center gap-2 mb-3">
           <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors duration-300">
-            {colors.length} {t.common.colors}
+            {colors.length} {t.common.featured}
           </span>
           <span className="text-xs text-muted-foreground">•</span>
           <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors duration-300">
