@@ -1,7 +1,6 @@
 "use client"
 
-import { useMemo, useState, useEffect } from "react"
-import Image from "next/image"
+import { useEffect, useMemo, useState } from "react"
 
 type MediaItem = {
   type: "image" | "video"
@@ -18,13 +17,29 @@ type Props = {
 
 function getKeyForItem(item: MediaItem) {
   if (item.type === "image") {
-    return item.src.replace(/\.webp$/i, "").replace(/\.png$/i, "")
+    return item.src.replace(/\.webp$/i, "").replace(/\.png$/i, "").replace(/\.jpg$/i, "").replace(/\.jpeg$/i, "")
   }
   return item.src
 }
 
 function isWebp(src: string) {
   return /\.webp$/i.test(src)
+}
+
+function normalizeSrc(src: string) {
+  if (!src) return "/placeholder.svg"
+
+  // Se vier URL do GitHub (blob), força raw
+  if (src.includes("github.com/") && src.includes("/blob/")) {
+    return src.replace("/blob/", "/raw/")
+  }
+
+  // Se vier caminho absoluto sem barra, corrige
+  if (!src.startsWith("http") && !src.startsWith("/")) {
+    return `/${src}`
+  }
+
+  return src
 }
 
 export default function ProductGallery({ media, onSelectItem }: Props) {
@@ -61,23 +76,21 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
 
   useEffect(() => {
     if (uniqueMedia.length) {
-      setActive(uniqueMedia[0])
-      onSelectItem?.(uniqueMedia[0])
+      const first = uniqueMedia[0]
+      setActive(first)
+      onSelectItem?.(first)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uniqueMedia])
 
   if (!active) return null
 
-  // ✅ tamanhos padronizados
   const THUMB = 52
+  const activeSrc = normalizeSrc(active.src)
 
   return (
     <div>
-      {/* ✅ MÍDIA PRINCIPAL
-          - remove “moldura/borda preta” (sem letterbox)
-          - força o conteúdo a preencher o quadro
-      */}
+      {/* MÍDIA PRINCIPAL */}
       <div
         style={{
           marginBottom: 14,
@@ -90,13 +103,12 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
           style={{
             position: "relative",
             width: "100%",
-            // ✅ quadro fixo para padronizar todas as imagens (evita “bordas”)
             aspectRatio: "1 / 1",
           }}
         >
           {active.type === "video" ? (
             <video
-              src={active.src}
+              src={activeSrc}
               controls
               playsInline
               style={{
@@ -108,22 +120,29 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
               }}
             />
           ) : (
-            <Image
-              src={active.src}
+            <img
+              src={activeSrc}
               alt={active.alt || "Produto"}
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, 50vw"
+              loading="eager"
               style={{
+                width: "100%",
+                height: "100%",
                 objectFit: "cover",
                 display: "block",
+              }}
+              onError={(e) => {
+                const img = e.currentTarget
+                if (!img.dataset.fallback) {
+                  img.dataset.fallback = "1"
+                  img.src = "/placeholder.svg"
+                }
               }}
             />
           )}
         </div>
       </div>
 
-      {/* ✅ MINIATURAS (menores + padronizadas) */}
+      {/* MINIATURAS */}
       <div
         style={{
           display: "flex",
@@ -134,13 +153,13 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
       >
         {uniqueMedia.map((item, index) => {
           const isActive = active.src === item.src
+          const src = normalizeSrc(item.src)
 
           return (
             <button
               key={`${item.type}-${item.src}-${index}`}
               onClick={() => {
                 setActive(item)
-                // 🔒 vídeo NÃO altera cor
                 if (item.type === "image") onSelectItem?.(item)
               }}
               style={{
@@ -164,7 +183,7 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
               >
                 {item.type === "video" ? (
                   <video
-                    src={item.src}
+                    src={src}
                     muted
                     playsInline
                     style={{
@@ -175,16 +194,22 @@ export default function ProductGallery({ media, onSelectItem }: Props) {
                     }}
                   />
                 ) : (
-                  <Image
-                    src={item.src}
+                  <img
+                    src={src}
                     alt={item.alt || "Miniatura"}
-                    width={THUMB}
-                    height={THUMB}
+                    loading="lazy"
                     style={{
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
                       display: "block",
+                    }}
+                    onError={(e) => {
+                      const img = e.currentTarget
+                      if (!img.dataset.fallback) {
+                        img.dataset.fallback = "1"
+                        img.src = "/placeholder.svg"
+                      }
                     }}
                   />
                 )}
