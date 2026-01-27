@@ -62,6 +62,13 @@ export type Translations = {
     from: string
   }
 
+  customizer: {
+    color: string
+    selectedColor: string
+    size: string
+    material: string
+  }
+
   features: {
     title: string
     subtitle: string
@@ -111,6 +118,12 @@ const translations: Record<Language, Translations> = {
       title: "Produtos",
       subtitle: "Escolha o modelo ideal para você",
       from: "A partir de",
+    },
+    customizer: {
+      color: "Cor",
+      selectedColor: "Cor selecionada",
+      size: "Tamanho",
+      material: "Material",
     },
     features: {
       title: "Por que escolher a NewPrint",
@@ -192,6 +205,12 @@ const translations: Record<Language, Translations> = {
       subtitle: "Elige el modelo ideal para ti",
       from: "Desde",
     },
+    customizer: {
+      color: "Color",
+      selectedColor: "Color seleccionado",
+      size: "Tamaño",
+      material: "Material",
+    },
     features: {
       title: "Por qué elegir NewPrint",
       subtitle: "Calidad, personalización y soporte en cada pedido",
@@ -271,6 +290,12 @@ const translations: Record<Language, Translations> = {
       title: "Products",
       subtitle: "Choose the perfect model for you",
       from: "From",
+    },
+    customizer: {
+      color: "Color",
+      selectedColor: "Selected color",
+      size: "Size",
+      material: "Material",
     },
     features: {
       title: "Why choose NewPrint",
