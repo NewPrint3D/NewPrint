@@ -1,4 +1,3 @@
-
 "use client"
 
 import { createContext, useContext, useState, ReactNode } from "react"
@@ -25,6 +24,9 @@ export type Translations = {
   common: {
     loading: string
     featured: string
+    colors: string
+    sizes: string
+    interactive3d: string
   }
 
   cta: {
@@ -57,6 +59,7 @@ export type Translations = {
   products: {
     title: string
     subtitle: string
+    from: string
   }
 
   features: {
@@ -73,7 +76,13 @@ export type Translations = {
 
 const translations: Record<Language, Translations> = {
   pt: {
-    common: { loading: "Carregando...", featured: "Destaque" },
+    common: {
+      loading: "Carregando...",
+      featured: "Destaque",
+      colors: "cores",
+      sizes: "tamanhos",
+      interactive3d: "Interativo 3D",
+    },
     cta: {
       view: "Ver",
       viewAll: "Ver todos",
@@ -101,6 +110,7 @@ const translations: Record<Language, Translations> = {
     products: {
       title: "Produtos",
       subtitle: "Escolha o modelo ideal para você",
+      from: "A partir de",
     },
     features: {
       title: "Por que escolher a NewPrint",
@@ -146,7 +156,13 @@ const translations: Record<Language, Translations> = {
   },
 
   es: {
-    common: { loading: "Cargando...", featured: "Destacado" },
+    common: {
+      loading: "Cargando...",
+      featured: "Destacado",
+      colors: "colores",
+      sizes: "tamaños",
+      interactive3d: "Interactivo 3D",
+    },
     cta: {
       view: "Ver",
       viewAll: "Ver todos",
@@ -174,6 +190,7 @@ const translations: Record<Language, Translations> = {
     products: {
       title: "Productos",
       subtitle: "Elige el modelo ideal para ti",
+      from: "Desde",
     },
     features: {
       title: "Por qué elegir NewPrint",
@@ -219,7 +236,13 @@ const translations: Record<Language, Translations> = {
   },
 
   en: {
-    common: { loading: "Loading...", featured: "Featured" },
+    common: {
+      loading: "Loading...",
+      featured: "Featured",
+      colors: "colors",
+      sizes: "sizes",
+      interactive3d: "3D Interactive",
+    },
     cta: {
       view: "View",
       viewAll: "View all",
@@ -247,6 +270,7 @@ const translations: Record<Language, Translations> = {
     products: {
       title: "Products",
       subtitle: "Choose the perfect model for you",
+      from: "From",
     },
     features: {
       title: "Why choose NewPrint",
